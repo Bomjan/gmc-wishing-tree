@@ -109,3 +109,7 @@ The installation is a **55-inch Samsung UHD touchscreen mounted in portrait**, w
 UI dimensions use a 1080 × 1920 portrait design basis, scaling to 2× at native UHD. Smaller development windows fit the complete portrait stage; landscape desktop windows show unused space at the sides rather than changing the layout or cropping the tree. This is a portrait kiosk interface, not a landscape installation. OS display scaling follows the actual CSS viewport. Software-rendered screenshots verify composition and layout only; installed Samsung hardware performance still needs measurement.
 
 The museum wall display has no website header, footer, utility bar or navigation branding. Only the tree and its interaction area appear. Demo mode is identified in the tree progress label. Keyboard controls appear only during text entry, and rendering quality is configured by the operator URL rather than visitor-facing chrome.
+
+## Handprint Wall contributor scaffold
+
+The shared-app extension folders are prepared for the next contributor. **The menu, new routes and Handprint Wall are not implemented or mounted yet**; the existing Wishing Tree continues to run unchanged. Start with [the handoff brief](docs/handprint-wall-handoff.md) and [AGENTS.md](AGENTS.md). Proposed menu metadata, handprint transport contracts, palette/defaults, tracked empty feature folders and an **inactive** migration template are included. The actual filesystem and implementation responsibilities are documented in the handoff. Do not start a separate application or backend.

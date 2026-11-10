@@ -1,0 +1,17 @@
+-- INACTIVE IMPLEMENTATION TEMPLATE. This file is not a migration and applies no DDL.
+-- Replace with a reviewed 002_handprints.sql only when the feature is implemented.
+-- First extend server/migrate.ts: it currently explicitly applies only 001_forest.sql.
+-- Add ordered, tracked, transactional migration execution; do not edit 001_forest.sql.
+--
+-- Tables to design:
+-- wall_sections: UUID, stable world x/y, width/height, seed, creation time.
+-- handprint_submissions: UUID, section FK, sanitised normalised point data,
+--   outline source, allowlisted paint ID, texture seed, position/size/rotation,
+--   pending/finalised/cancelled/removed state, moderation status, undo_deadline,
+--   creation timestamp, token hash, UNIQUE idempotency key, request fingerprint.
+-- Operator removal audit: protected actor, reason and timestamp as appropriate.
+--
+-- Required: numeric/shape/state constraints, deadline indexes, section locking
+-- for concurrent overlap checks, RLS with no public table policies, and no
+-- visitor names, messages, arbitrary SVG/HTML or biometric data.
+-- Document a retention and migration/rollback policy before deployment.
