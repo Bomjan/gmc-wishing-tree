@@ -13,6 +13,7 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
 import { leafPoint, treeScale, forestBounds, type Tree } from "./shared";
 import { useSanctuary } from "./state";
+import { gmcxBrand } from "./shared/branding";
 import {
   terrainHeight as ridge,
   fractal,
@@ -297,7 +298,9 @@ function WishTree({
     gold = useMemo(
       () =>
         new THREE.LineBasicMaterial({
-          color: "#ead4a0",
+          color: gmcxBrand.actionGold,
+          // Keep the yellow accent from washing out in the morning tone mapping.
+          toneMapped: false,
           transparent: true,
           opacity: 0.8,
           depthWrite: false,
