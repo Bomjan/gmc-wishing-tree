@@ -26,6 +26,7 @@ Undo remains server-authorised for the original ten-second deadline and removes 
 - [108-leaf mature tree](screenshots/tree-mature-108.png)
 - [GMCX-branded wish form](screenshots/gmcx-branded-form.png)
 - [GMCX-branded receipt](screenshots/gmcx-branded-receipt.png)
+- [Inline form validation](screenshots/form-validation-feedback.png)
 - [Current right-edge controls](screenshots/right-edge-controls.png)
 - [Earlier native portrait UHD, before right-edge controls](screenshots/minimal-tree-4k.png)
 - [Current compact form and keyboard](screenshots/compact-sheet-keyboard.png)

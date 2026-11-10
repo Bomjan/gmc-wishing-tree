@@ -103,6 +103,18 @@ test("rejection preserves form, optional keyboard works, pending survives reload
     "true",
   );
   await page.getByRole("button", { name: "Make a wish", exact: true }).click();
+  await page.getByRole("button", { name: "Let my wish take root" }).click();
+  await expect(
+    page.getByText("Use 3–24 letters, numbers or underscores."),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Enter a wish of up to 500 characters."),
+  ).toBeVisible();
+  await expect(page.getByLabel("Username", { exact: true })).toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
+  await page.screenshot({ path: "test-results/form-validation-error.png" });
   await page
     .getByLabel("Username", { exact: true })
     .fill(`reject_${Date.now().toString().slice(-9)}`);
@@ -115,6 +127,7 @@ test("rejection preserves form, optional keyboard works, pending survives reload
       "Please revise your wish to keep this space welcoming for everyone.",
     ),
   ).toBeVisible();
+  await expect(page.locator(".form-feedback")).toBeVisible();
   await expect(page.getByLabel("Your wish", { exact: true })).toHaveValue(
     "reject this demo wish",
   );

@@ -113,3 +113,9 @@ Verification: production frontend and backend TypeScript build passed. Three tar
 The wish form and accepted-wish sheet now carry the GMCX identity directly: translucent glass surfaces, a compact GMC Experience Centre wordmark, blue Lora headings, a blue-to-gold edge rule, Roboto fields and the yellow-gold primary action. Focused inputs and navigation use GMCX blue. The changes keep the existing content-sized, right-aligned layout and preserve the Wishing Tree flow. A light seven-pixel backdrop blur and 72% white tint keep the tree visible behind the sheets while preserving legibility.
 
 Verification: production build passed. The targeted browser flow passed submission → Undo → finalisation → search and checks the form and receipt wordmark, white sheet surface, Lora/blue heading and yellow-gold CTA. [Wish form capture](docs/screenshots/gmcx-branded-form.png) and [receipt capture](docs/screenshots/gmcx-branded-receipt.png). No visitor-entered text is included in either committed image.
+
+## Refined form validation feedback · 11 November 2026
+
+Replaced browser-native validation popups with custom inline field feedback. Invalid fields receive concise guidance, accessible `aria-invalid` / `aria-describedby` state and a restrained outline. Server-side moderation and submission failures remain in the form as a compact branded alert strip; drafts stay available for revision.
+
+Verification: production build and the focused browser flow pass. Browser coverage checks empty fields, the inline errors, accessibility state, server rejection with preserved input, optional keyboard and receipt recovery. [Empty-form validation state](docs/screenshots/form-validation-feedback.png).

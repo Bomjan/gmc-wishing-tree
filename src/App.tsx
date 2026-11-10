@@ -71,6 +71,10 @@ export default function App() {
   const reach = useReachablePanel(view);
   const [username, setUsername] = useState(""),
     [wish, setWish] = useState(""),
+    [fieldErrors, setFieldErrors] = useState<{
+      username?: string;
+      wish?: string;
+    }>({}),
     [search, setSearch] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
@@ -105,6 +109,7 @@ export default function App() {
     setSearchOpen(false);
     setUsername("");
     setWish("");
+    setFieldErrors({});
     setSearch("");
     setMessage("");
     setKeyboard(false);
@@ -247,6 +252,22 @@ export default function App() {
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (requesting.current) return;
+    const errors: { username?: string; wish?: string } = {};
+    if (
+      username.length < config.usernameMin ||
+      username.length > config.usernameMax ||
+      !/^[a-zA-Z0-9_]+$/.test(username)
+    )
+      errors.username = `Use ${config.usernameMin}–${config.usernameMax} letters, numbers or underscores.`;
+    if (!wish.trim() || wish.length > config.wishMax)
+      errors.wish = `Enter a wish of up to ${config.wishMax} characters.`;
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) {
+      setMessage("");
+      if (errors.username) inputRef.current?.focus();
+      else wishRef.current?.focus();
+      return;
+    }
     requesting.current = true;
     setBusy(true);
     setMessage("");
@@ -461,13 +482,21 @@ export default function App() {
                 Back
               </button>
             </div>
-            <form onSubmit={submit} className="wish-form">
+            <form onSubmit={submit} className="wish-form" noValidate>
               <label htmlFor="username">Username</label>
               <input
                 id="username"
                 ref={inputRef}
                 value={username}
-                onChange={(e) => edit("username", e.target.value)}
+                aria-invalid={!!fieldErrors.username}
+                aria-describedby={`username-help${fieldErrors.username ? " username-error" : ""}`}
+                onChange={(e) => {
+                  edit("username", e.target.value);
+                  setFieldErrors((errors) => ({
+                    ...errors,
+                    username: undefined,
+                  }));
+                }}
                 onFocus={() => setActive("username")}
                 inputMode={keyboard ? "none" : "text"}
                 autoComplete="off"
@@ -477,19 +506,28 @@ export default function App() {
                 maxLength={config.usernameMax}
                 pattern="[a-zA-Z0-9_]+"
                 placeholder="Your unique username"
-                aria-describedby="username-help"
                 required
                 disabled={busy}
               />
               <p className="field-help" id="username-help">
                 {config.usernameMin}–{config.usernameMax} letters, numbers or _.
               </p>
+              {fieldErrors.username && (
+                <p className="field-error" id="username-error" role="alert">
+                  {fieldErrors.username}
+                </p>
+              )}
               <label htmlFor="wish">Your wish</label>
               <textarea
                 id="wish"
                 ref={wishRef}
                 value={wish}
-                onChange={(e) => edit("wish", e.target.value)}
+                aria-invalid={!!fieldErrors.wish}
+                aria-describedby={fieldErrors.wish ? "wish-error" : undefined}
+                onChange={(e) => {
+                  edit("wish", e.target.value);
+                  setFieldErrors((errors) => ({ ...errors, wish: undefined }));
+                }}
                 onFocus={() => setActive("wish")}
                 inputMode={keyboard ? "none" : "text"}
                 maxLength={config.wishMax}
@@ -498,6 +536,11 @@ export default function App() {
                 required
                 disabled={busy}
               />
+              {fieldErrors.wish && (
+                <p className="field-error" id="wish-error" role="alert">
+                  {fieldErrors.wish}
+                </p>
+              )}
               <div className="field-meta">
                 <span>English</span>
                 <button
@@ -516,6 +559,14 @@ export default function App() {
               <p className="privacy">
                 Only your leaf is public. One wish per username.
               </p>
+              {message && (
+                <div className="form-feedback" role="alert">
+                  <span className="feedback-mark" aria-hidden="true">
+                    !
+                  </span>
+                  <span>{message}</span>
+                </div>
+              )}
               <button className="primary" disabled={busy || !online}>
                 <LeafIcon />
                 {busy ? "Tending your wish…" : "Let my wish take root"}
@@ -729,7 +780,7 @@ export default function App() {
             </div>
           </>
         )}
-        {message && (
+        {message && view !== "form" && (
           <p className="notice" role="status">
             {message}
           </p>

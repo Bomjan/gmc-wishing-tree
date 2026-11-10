@@ -123,3 +123,5 @@ Wish entry and confirmation sheets use translucent white glass surfaces that kee
 Current sheet captures: [wish form](docs/screenshots/gmcx-branded-form.png) · [accepted wish](docs/screenshots/gmcx-branded-receipt.png).
 
 Latest scene comparison: [4-leaf sapling](docs/screenshots/tree-sapling-4.png) · [108-leaf mature tree](docs/screenshots/tree-mature-108.png). Playwright runs its demo on dedicated ports 5187/3017 by default; override `PLAYWRIGHT_PORT` and `PLAYWRIGHT_API_PORT` if those ports are occupied.
+
+Form validation uses calm inline field errors and a compact moderation feedback strip instead of browser-native validation popups. See [validation feedback](docs/screenshots/form-validation-feedback.png).
