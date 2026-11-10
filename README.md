@@ -1,6 +1,6 @@
 # GMC Wishing Tree — second touchscreen
 
-React / TypeScript / Vite, React Three Fiber / drei, Tailwind, Zustand, Express / TypeScript, PostgreSQL and standard `ws`. No Godot, walkthrough or chatbot. The canvas remains mounted throughout the visitor interaction.
+React / TypeScript / Vite, React Three Fiber / drei, Tailwind, Zustand, Express / TypeScript, PostgreSQL and standard `ws`. No Godot, walkthrough or chatbot. The shared menu at `/` opens `/wishing-tree` or `/handprint-wall`. Only the selected experience mounts; route changes release the tree WebGL scene. The wall uses one Canvas 2D section surface.
 
 ## Run the isolated demonstration
 
@@ -52,7 +52,7 @@ chromium --kiosk --no-first-run --disable-pinch http://localhost:3001
 
 Use the window manager / display settings to place the kiosk on touchscreen two. `--disable-pinch` prevents browser page zoom; the 3D mountain's two-finger dolly/pan controls still work. Configure OS screen blanking and OS touch keyboard on the kiosk. The Keyboard control inside the form or expanded leaf search supplies an HTML keyboard if necessary. Never pass `--disable-web-security` or disable WebGL. For operator setup, append `?quality=low` or `?quality=high` to the kiosk URL; the setting persists locally and controls DPR, shadow resolution and grass instances. Test both quality settings on the actual display resolution before launch.
 
-## Visitor behaviour
+## Wishing Tree visitor behaviour
 
 Exactly two submission fields: username and wish. ASCII letters/numbers/underscores, 3–24 by default; one accepted wish per normalised username, not verified per human. Wish defaults to 1–500 English characters. Limits are configurable on the server and loaded by the interface. Username limits remain within the database's 3–24 hard bounds.
 
@@ -60,7 +60,7 @@ A database transaction reserves the lowest free slot on the oldest incomplete tr
 
 Acceptance returns an opaque temporary bearer token and server deadline. Undo requires that token and checks the database clock. Expired reservations are finalised by a server worker and opportunistically on reads/writes; a restart or disconnection cannot reopen the deadline. A restart finalises overdue records on the next worker tick. Permanent leaves have no visitor editing/deletion endpoint.
 
-The browser holds only temporary receipt credentials in sessionStorage to recover a reload or lost acceptance response. A random idempotency key recovers a confirmed request even if its response was lost. Exact retries retain their key; editing the form creates a new attempt. Form contents are never persisted. Ending a visitor session or 90 seconds of inactivity clears the form, search, temporary credentials and highlight, then returns to the current tree. Client idempotency keys and temporary tokens must be treated as secrets until the interaction ends.
+The browser holds only temporary receipt credentials in sessionStorage to recover a reload or lost acceptance response. A random idempotency key recovers a confirmed request even if its response was lost. Exact retries retain their key; editing the form creates a new attempt. Form contents are never persisted. Ending a visitor session or 90 seconds of inactivity clears the form, search, temporary credentials and highlight, then returns to the shared menu. Client idempotency keys and temporary tokens must be treated as secrets until the interaction ends.
 
 Search trims whitespace and normalises case. Exact matches take priority; only inputs of six or more characters permit one insertion, deletion or substitution, and only one candidate is accepted. No suggestions or usernames are returned. A successful search focuses and outlines only the leaf, then clears the highlight (12 seconds by default). Camera moves caused by remote submissions are suppressed; new leaves appear without disturbing typing or mountain exploration. Search and the visitor's own accepted leaf intentionally focus the camera.
 
@@ -110,6 +110,12 @@ UI dimensions use a 1080 × 1920 portrait design basis, scaling to 2× at native
 
 The museum wall display has no website header, footer, utility bar or navigation branding. Only the tree and its interaction area appear. Demo mode is identified in the tree progress label. Keyboard controls appear only during text entry, and rendering quality is configured by the operator URL rather than visitor-facing chrome.
 
-## Handprint Wall contributor scaffold
+## Wall of Us and shared menu
 
-The shared-app extension folders are prepared for the next contributor. **The menu, new routes and Handprint Wall are not implemented or mounted yet**; the existing Wishing Tree continues to run unchanged. Start with [the handoff brief](docs/handprint-wall-handoff.md) and [AGENTS.md](AGENTS.md). Proposed menu metadata, handprint transport contracts, palette/defaults, tracked empty feature folders and an **inactive** migration template are included. The actual filesystem and implementation responsibilities are documented in the handoff. Do not start a separate application or backend.
+See [Handprint Wall setup and behaviour](docs/handprint-wall-handoff.md) for routes, controls, moderation, operator removal, rendering and limits. `VITE_HANDPRINT_WALL_TITLE` changes the working title. Both experiences use the same server/database, and the walkthrough remains outside this application.
+
+Run `npm run migrate` before starting an upgraded installation. The runner tracks ordered `.sql` migrations transactionally under an advisory lock; existing forest tables are retained. `002_handprints.sql.example` remains an inactive historical checklist.
+
+Wall of Us opens with a five-fingertip guide that fits a stylised hand outline. Visitors can also size a default hand. They choose a colour, optionally add a name to the palm, and submit. The server chooses the print’s position and rotation, and the gallery reveals it after acceptance. Exact-name search highlights matching prints without including names in public wall snapshots. Home and idle reset wait through submission and the server-owned Undo window.
+
+Production image moderation uses `HANDPRINT_AI_MODEL` (falling back to `AI_MODEL`) at the existing provider; it must accept image URLs containing PNG data and JSON-object responses. Missing credentials, unsupported image input and provider failures stop publishing. Demo mode clearly labels its simulated approval and stores no production data. Test-provider contract checks do not establish paid-provider quality.

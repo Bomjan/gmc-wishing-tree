@@ -1,4 +1,4 @@
-/** Menu metadata for the next routing implementation. Not mounted yet. */
+/** Shared menu metadata. */
 export const handprintWallTitle =
   import.meta.env.VITE_HANDPRINT_WALL_TITLE?.trim() || "Wall of Us";
 
@@ -15,7 +15,7 @@ export const experiences = [
     path: "/handprint-wall",
     title: handprintWallTitle,
     description: "Leave your mark.",
-    status: "planned",
+    status: "implemented",
   },
 ] as const;
 

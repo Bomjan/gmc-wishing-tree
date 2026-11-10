@@ -9,6 +9,8 @@ import { resolve } from "node:path";
 import { Store } from "./store.js";
 import { DemoStore } from "./demo.js";
 import { moderate, PublicError } from "./moderation.js";
+import { handprintRouter } from "./handprints/router.js";
+import type { HandprintEvent } from "../src/shared/handprints.js";
 import type { ForestEvent } from "../src/shared.js";
 const app = express(),
   server = createServer(app),
@@ -24,14 +26,17 @@ if (
   throw new Error(
     "Set DATABASE_URL, TOKEN_SECRET and a 32-byte base64 ENCRYPTION_KEY. See .env.example.",
   );
-const broadcast = (e: ForestEvent) => {
+const broadcast = (e: ForestEvent | HandprintEvent) => {
   for (const client of wss.clients)
     if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify(e));
 };
+const pool = demo
+  ? null
+  : new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 12 });
 const store = demo
   ? new DemoStore(broadcast)
   : new Store(
-      new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 12 }),
+      pool!,
       moderate,
       broadcast,
       process.env.TOKEN_SECRET!,
@@ -53,6 +58,7 @@ app.use(
     },
   }),
 );
+app.use("/api/handprints", express.json({ limit: "64kb" }));
 app.use(express.json({ limit: "8kb" }));
 app.use("/api", (_req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
@@ -84,6 +90,7 @@ app.use("/api", (req, _res, next) => {
     return next(new PublicError(429, "Please pause a moment and try again."));
   next();
 });
+app.use("/api/handprints", handprintRouter(demo, pool, broadcast));
 const uuid = z.uuid();
 const auth = (req: express.Request) => {
   const id = uuid.parse(req.params.id),
@@ -155,13 +162,19 @@ app.use(
     _next: express.NextFunction,
   ) => {
     const status =
-      e instanceof PublicError ? e.status : e instanceof z.ZodError ? 400 : 503;
+      e instanceof PublicError
+        ? e.status
+        : e instanceof z.ZodError
+          ? 400
+          : (e as { status?: number })?.status === 413
+            ? 413
+            : 503;
     res.status(status).json({
       message:
         e instanceof PublicError
           ? e.message
           : status === 400
-            ? "Check your username and wish, then try again."
+            ? "Check your input, then try again."
             : "The sanctuary is temporarily offline. Please retry.",
     });
   },

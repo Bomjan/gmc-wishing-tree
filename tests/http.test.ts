@@ -6,6 +6,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { readFile } from "node:fs/promises";
 import pg from "pg";
+import { outline } from "../src/experiences/handprint-wall/paint.js";
 import { WebSocket } from "ws";
 
 // Exercise the actual Express/ws server and provider adapter, with a local fake
@@ -32,6 +33,9 @@ test(
     url.searchParams.set("options", `-c search_path=${schema}`);
     const pool = new pg.Pool({ connectionString: url.toString() });
     await pool.query(await readFile("db/migrations/001_forest.sql", "utf8"));
+    await pool.query(
+      await readFile("db/migrations/002_handprints.sql", "utf8"),
+    );
     let providerStatus = 200,
       accepted = true,
       english = true;
@@ -64,6 +68,7 @@ test(
       AI_BASE_URL: `http://127.0.0.1:${providerPort}`,
       AI_API_KEY: "test-provider-key",
       TOKEN_SECRET: "test-secret-for-persisted-receipt",
+      OPERATOR_TOKEN: "operator-test-only",
       ENCRYPTION_KEY: Buffer.alloc(32, 9).toString("base64"),
       UNDO_SECONDS: "10",
     };
@@ -102,6 +107,37 @@ test(
         },
         body: JSON.stringify(body),
       });
+    const handBody = {
+      outline: outline(),
+      source: "outline",
+      colour: "teal",
+      placement: { sectionId: "section-0", x: 4, y: 6, size: 1, rotation: 0 },
+    };
+    const autoHand = {
+      outline: handBody.outline,
+      source: handBody.source,
+      colour: handBody.colour,
+      size: 0.9,
+      palmName: "Sonam Private",
+    };
+    const handSubmit = (
+      key = randomUUID(),
+      design: typeof handBody | typeof autoHand = handBody,
+    ) =>
+      fetch(base + "/api/handprints/submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Idempotency-Key": key },
+        body: JSON.stringify(design),
+      });
+    const searchHands = async (name: string) =>
+      (
+        await fetch(base + "/api/handprints/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        })
+      ).json();
+    let handReceipt: any;
     try {
       await start();
       providerStatus = 503;
@@ -110,8 +146,10 @@ test(
         (await pool.query("SELECT count(*) FROM submissions")).rows[0].count,
         "0",
       );
+      assert.equal((await handSubmit()).status, 503);
       providerStatus = 200;
       accepted = false;
+      assert.equal((await handSubmit(randomUUID(), autoHand)).status, 422);
       assert.equal((await submit()).status, 422);
       accepted = true;
       english = false;
@@ -147,6 +185,21 @@ test(
         ).status,
         404,
       );
+      const handKey = randomUUID();
+      const handResults = await Promise.all([
+        handSubmit(handKey),
+        handSubmit(handKey),
+      ]);
+      assert(handResults.every((r) => r.ok));
+      handReceipt = await handResults[0].json();
+      assert.equal((await handResults[1].json()).id, handReceipt.id);
+      const conflict = await handSubmit();
+      assert.equal(conflict.status, 409);
+      assert((await conflict.json()).suggestedPlacement);
+      const wallBefore = await (
+        await fetch(base + "/api/handprints/sections")
+      ).json();
+      assert(!JSON.stringify(wallBefore).includes(handReceipt.token));
       ws.close();
       await once(ws, "close");
       ws = undefined;
@@ -158,6 +211,30 @@ test(
         })
       ).json();
       assert.equal(recovered.state, "pending");
+      const handRecovered = await (
+        await fetch(`${base}/api/handprints/submissions/${handReceipt.id}`, {
+          headers: { Authorization: `Bearer ${handReceipt.token}` },
+        })
+      ).json();
+      assert.equal(handRecovered.state, "pending");
+      assert.equal(
+        (
+          await fetch(
+            `${base}/api/handprints/submissions/${handReceipt.id}/undo`,
+            {
+              method: "POST",
+              headers: { Authorization: `Bearer ${handReceipt.token}` },
+            },
+          )
+        ).status,
+        200,
+      );
+      const automatic = await handSubmit(randomUUID(), autoHand);
+      assert.equal(automatic.status, 201);
+      handReceipt = await automatic.json();
+      assert.equal(handReceipt.placement.size, autoHand.size);
+      assert.ok(Math.abs(handReceipt.placement.rotation) <= Math.PI / 6);
+      assert.deepEqual(await searchHands(autoHand.palmName), []);
       assert.equal(
         (
           await fetch(`${base}/api/submissions/${receipt.id}/undo`, {
@@ -173,7 +250,83 @@ test(
         "UPDATE submissions SET undo_deadline=clock_timestamp() WHERE id=$1",
         [receipt.id],
       );
+      await pool.query(
+        "UPDATE handprints SET undo_deadline=clock_timestamp() WHERE id=$1",
+        [handReceipt.id],
+      );
       await start();
+      const handStatus = await (
+        await fetch(`${base}/api/handprints/submissions/${handReceipt.id}`, {
+          headers: { Authorization: `Bearer ${handReceipt.token}` },
+        })
+      ).json();
+      assert.equal(handStatus.state, "finalised");
+      const wallAfter = await (
+        await fetch(base + "/api/handprints/sections")
+      ).json();
+      const permanent = wallAfter.sections
+        .flatMap((s: any) => s.prints)
+        .find((p: any) => p.id === handReceipt.id);
+      assert.deepEqual(permanent.placement, handReceipt.placement);
+      assert.deepEqual(permanent.outline, handBody.outline);
+      assert.ok(!JSON.stringify(wallAfter).includes(autoHand.palmName));
+      assert.deepEqual(await searchHands("sonam"), []);
+      assert.deepEqual(await searchHands("  sonam  private "), [
+        { id: handReceipt.id, sectionId: handReceipt.placement.sectionId },
+      ]);
+      assert.equal(
+        (
+          await fetch(
+            `${base}/api/handprints/operator/${handReceipt.id}/remove`,
+            { method: "POST" },
+          )
+        ).status,
+        403,
+      );
+      assert.equal(
+        (
+          await fetch(
+            `${base}/api/handprints/operator/${handReceipt.id}/remove`,
+            {
+              method: "POST",
+              headers: { Authorization: "Bearer operator-test-only" },
+            },
+          )
+        ).status,
+        200,
+      );
+      assert.equal(
+        (
+          await pool.query(
+            "SELECT count(*) FROM handprint_operator_audit WHERE handprint_id=$1",
+            [handReceipt.id],
+          )
+        ).rows[0].count,
+        "1",
+      );
+      const removedWall = await (
+        await fetch(base + "/api/handprints/sections")
+      ).json();
+      assert.deepEqual(await searchHands(autoHand.palmName), []);
+      assert(
+        !removedWall.sections
+          .flatMap((s: any) => s.prints)
+          .some((p: any) => p.id === handReceipt.id),
+      );
+      assert.equal(
+        (
+          await fetch(base + "/api/handprints/submissions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Idempotency-Key": randomUUID(),
+            },
+            body: JSON.stringify({ ...handBody, extra: "x".repeat(70000) }),
+          })
+        ).status,
+        413,
+      );
+
       const status = await (
         await fetch(`${base}/api/submissions/${receipt.id}`, {
           headers: { Authorization: `Bearer ${receipt.token}` },
@@ -198,6 +351,7 @@ test(
       ]) {
         assert(!publicData.includes(body.username));
         assert(!publicData.includes("PRIVATE_WISH_MARKER"));
+        assert(!publicData.includes(autoHand.palmName));
       }
       assert(events.some((e) => JSON.parse(e).type === "leaf_reserved"));
     } finally {

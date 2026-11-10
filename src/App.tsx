@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { TouchKeyboard } from "./shared/ui/TouchKeyboard";
 import { Scene } from "./Scene";
 import { api, connectForest, loadForest, useSanctuary } from "./state";
 import type { Locator, Receipt } from "./shared";
@@ -65,7 +66,11 @@ function MountainIcon() {
 }
 const idleSeconds = Number(import.meta.env.VITE_IDLE_SECONDS || 90),
   highlightSeconds = Number(import.meta.env.VITE_HIGHLIGHT_SECONDS || 12);
-export default function App() {
+export default function App({
+  onSessionLock,
+}: {
+  onSessionLock?: (locked: boolean) => void;
+}) {
   const { forest, online, view, receipt } = useSanctuary();
   const [username, setUsername] = useState(""),
     [wish, setWish] = useState(""),
@@ -81,6 +86,10 @@ export default function App() {
       usernameMax: 24,
       wishMax: 500,
     });
+  useEffect(() => {
+    onSessionLock?.(busy || receipt?.state === "pending");
+    return () => onSessionLock?.(false);
+  }, [busy, receipt?.state]);
   const key = useRef<string | null>(null),
     lastInput = useRef(Date.now()),
     offset = useRef(0),
@@ -171,11 +180,13 @@ export default function App() {
       lastInput.current = Date.now();
     };
     window.addEventListener("pointerdown", activity);
+    window.addEventListener("pointermove", activity);
     window.addEventListener("keydown", activity);
     const timer = setInterval(() => {
       if (
         Date.now() - lastInput.current > idleSeconds * 1000 &&
-        !requesting.current
+        !requesting.current &&
+        useSanctuary.getState().receipt?.state !== "pending"
       ) {
         clearPrivate();
         lastInput.current = Date.now();
@@ -185,6 +196,7 @@ export default function App() {
       disconnect();
       clearInterval(timer);
       window.removeEventListener("pointerdown", activity);
+      window.removeEventListener("pointermove", activity);
       window.removeEventListener("keydown", activity);
       if (highlightTimer.current) clearTimeout(highlightTimer.current);
     };
@@ -476,7 +488,11 @@ export default function App() {
             ) : (
               <p className="rooted">Permanently rooted</p>
             )}
-            <button className="primary" onClick={clearPrivate} disabled={busy}>
+            <button
+              className="primary"
+              onClick={clearPrivate}
+              disabled={busy || receipt?.state === "pending"}
+            >
               Return to the tree
             </button>
           </div>
@@ -622,47 +638,17 @@ export default function App() {
         )}
       </section>
       {keyboard && (
-        <div
-          className="touch-keyboard"
-          role="group"
-          aria-label="On-screen keyboard"
-          onPointerDown={(e) => e.preventDefault()}
-        >
-          <div className="keyboard-heading">
-            <span>
-              {active === "wish"
-                ? "Your wish"
-                : active === "search"
-                  ? "Find your username"
-                  : "Username"}
-            </span>
-            <button
-              onClick={() => setKeyboard(false)}
-              aria-label="Close keyboard"
-            >
-              ✕
-            </button>
-          </div>
-          {["1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm"].map((row) => (
-            <div className="key-row" key={row}>
-              {row.split("").map((letter) => (
-                <button type="button" key={letter} onClick={() => type(letter)}>
-                  {letter}
-                </button>
-              ))}
-            </div>
-          ))}
-          <div className="key-row">
-            <button onClick={() => type("_")}>_</button>
-            <button onClick={() => type(".")}>.</button>
-            <button className="space-key" onClick={() => type(" ")}>
-              Space
-            </button>
-            <button onClick={() => type("⌫")} aria-label="Backspace">
-              ⌫
-            </button>
-          </div>
-        </div>
+        <TouchKeyboard
+          label={
+            active === "wish"
+              ? "Your wish"
+              : active === "search"
+                ? "Find your username"
+                : "Username"
+          }
+          onClose={() => setKeyboard(false)}
+          onType={type}
+        />
       )}
     </main>
   );

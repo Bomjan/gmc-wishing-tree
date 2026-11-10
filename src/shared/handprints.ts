@@ -1,4 +1,4 @@
-/** Proposed shared contracts. No Handprint Wall endpoints are active yet. */
+/** Shared Handprint Wall transport contracts. Validate all input server-side. */
 export const PAINT_COLOURS = {
   terracotta: "#A65F45",
   ochre: "#B18A3B",
@@ -22,18 +22,28 @@ export type HandprintPlacement = {
   size: number;
   rotation: number;
 };
-export type HandprintSubmission = {
+type HandprintDesign = {
   outline: readonly OutlinePoint[];
   source: OutlineSource;
   colour: PaintColourId;
-  placement: HandprintPlacement;
 };
-export type PublicHandprint = HandprintSubmission & {
+export type HandprintSubmission = HandprintDesign & {
+  size: number;
+  palmName?: string;
+};
+export type PublicHandprint = HandprintDesign & {
+  placement: HandprintPlacement;
   id: string;
   seed: number;
   state: "pending" | "finalised";
   createdAt: string;
 };
+export type HandprintSearchMatch = {
+  id: string;
+  sectionId: string;
+};
+export const PALM_NAME_MAX = 24;
+export const PALM_NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M} ’'-]*$/u;
 export type PublicWallSection = {
   id: string;
   x: number;
@@ -72,13 +82,11 @@ export type HandprintEvent = {
   sectionId: string;
   handprintId?: string;
 };
-/** Proposed defaults to enforce in the future server validator and UI. */
+/** Defaults enforced by the server validator and visitor UI. */
 export const HANDPRINT_DEFAULTS = {
   maxOutlinePoints: 512,
   maxRequestBytes: 64 * 1024,
   undoSeconds: 10,
-  holdMilliseconds: 1200,
-  singleDrawingPointer: true,
   sectionWidth: 8,
   sectionHeight: 12,
   minSize: 0.5,

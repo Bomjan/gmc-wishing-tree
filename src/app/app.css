@@ -1,0 +1,594 @@
+.menu,
+.wall-experience {
+  color: #294c3c;
+  background: #f6f0e4;
+  min-height: 100dvh;
+  font-family: inherit;
+}
+.menu {
+  padding: 8vh max(6vw, 24px);
+  text-align: center;
+}
+.menu h1,
+.wall-heading h1 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(36px, 5vw, 76px);
+  line-height: 1.13;
+  margin: 20px 0;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 13px;
+  color: #8f7844;
+}
+.experience-cards {
+  display: flex;
+  gap: 28px;
+  max-width: 1050px;
+  margin: 50px auto;
+  text-align: left;
+}
+.experience-card {
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid #bbaa803f;
+  border-radius: 20px;
+  background: #fffaf0;
+  color: #294c3c;
+  text-align: left;
+  padding: 0 0 28px;
+  box-shadow: 0 12px 40px #3b4d3110;
+  cursor: pointer;
+}
+.experience-card h2,
+.experience-card p,
+.card-enter,
+.card-number {
+  margin-left: 30px;
+  margin-right: 30px;
+}
+.experience-card h2 {
+  font:
+    36px Georgia,
+    serif;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+.card-number {
+  display: block;
+  color: #a78b50;
+  margin-top: 24px;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+}
+.card-enter {
+  display: block;
+  margin-top: 30px;
+  color: #6b795c;
+}
+.card-art {
+  height: 240px;
+  overflow: hidden;
+  background: #e6ddc8;
+}
+.card-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.wall-art {
+  background:
+    radial-gradient(ellipse at 20% 40%, #d7cbb4, transparent), #eee3cd;
+  display: flex;
+  justify-content: center;
+}
+.wall-art svg {
+  height: 90%;
+  margin-top: 15px;
+  fill: #a65f45;
+  opacity: 0.8;
+  transform: rotate(-12deg);
+}
+.menu-foot {
+  font:
+    italic 20px Georgia,
+    serif;
+  color: #7b826c;
+}
+.home-control {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 50;
+  border: 1px solid #a9986a66;
+  background: #faf4e7ec;
+  color: #294c3c;
+  border-radius: 30px;
+  min-height: 54px;
+  padding: 12px 24px;
+  font-size: 18px;
+}
+.home-control:disabled {
+  opacity: 0.55;
+}
+.idle-warning {
+  position: fixed;
+  bottom: 20px;
+  left: 10%;
+  right: 10%;
+  z-index: 70;
+  background: #294c3c;
+  color: #fff;
+  padding: 22px;
+  border-radius: 15px;
+  text-align: center;
+}
+.wall-experience {
+  max-width: 1000px;
+  margin: auto;
+  padding: 90px 28px 35px;
+}
+.wall-heading {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.wall-heading p {
+  font-size: 18px;
+  line-height: 1.6;
+}
+.wall-canvas {
+  display: block;
+  width: 100%;
+  max-height: 54dvh;
+  aspect-ratio: 8/11;
+  object-fit: fill;
+  background: #eee4d2;
+  border-radius: 18px;
+  box-shadow:
+    inset 0 0 40px #786c4122,
+    0 12px 40px #3b4d3110;
+  touch-action: none;
+}
+.wall-controls {
+  padding-top: 20px;
+  text-align: center;
+}
+.wall-controls button {
+  min-height: 54px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 17px;
+  cursor: pointer;
+}
+.wall-controls .primary,
+.wall-controls .secondary {
+  width: 100%;
+  max-width: 620px;
+  margin: 12px auto;
+  display: block;
+}
+.wall-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+.wall-toolbar button {
+  background: #faf6ed;
+  border: 1px solid #b4a98577;
+  color: #294c3c;
+}
+.wall-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin: 12px;
+  font-size: 17px;
+}
+.wall-controls input[type="range"] {
+  min-height: 48px;
+  width: 150px;
+  accent-color: #365944;
+}
+.paint-palette {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 24px 0 45px;
+}
+.paint-palette button {
+  height: 62px;
+  width: 62px;
+  border: 4px solid transparent;
+  border-radius: 50%;
+  position: relative;
+}
+.paint-palette button[aria-pressed="true"] {
+  outline: 2px solid #365944;
+  outline-offset: 4px;
+}
+.paint-palette span {
+  position: absolute;
+  top: 65px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #294c3c;
+  font-size: 12px;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+.demo-label {
+  font-size: 12px;
+  color: #806b43;
+}
+.mark-accepted {
+  animation: transfer 900ms ease-out;
+}
+.mark-accepted h2 {
+  font:
+    32px Georgia,
+    serif;
+}
+@keyframes transfer {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-aspect-ratio: 3/4) {
+  .experience-cards {
+    flex-direction: column;
+    max-width: 700px;
+    margin: 5vh auto;
+  }
+  .card-art {
+    height: 20vh;
+  }
+  .menu {
+    padding-top: 8vh;
+  }
+  .wall-canvas {
+    max-height: 53dvh;
+  }
+  .wall-experience {
+    padding-top: 100px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* Use the same fitted portrait stage as the tree, including landscape previews. */
+.menu,
+.wall-experience {
+  width: var(--stage-width);
+  height: var(--stage-height);
+  min-height: 0;
+  max-width: none;
+  overflow-y: auto;
+  font-size: 1.35rem;
+  overscroll-behavior: contain;
+}
+.menu {
+  padding: 6rem 4rem 3rem;
+}
+.menu h1,
+.wall-heading h1 {
+  font-size: 4rem;
+  margin: 1.5rem 0;
+}
+.eyebrow {
+  font-size: 1rem;
+}
+.experience-cards {
+  flex-direction: column;
+  gap: 2rem;
+  margin: 4rem auto;
+  max-width: none;
+}
+.experience-card {
+  border-radius: 1.5rem;
+  padding-bottom: 2rem;
+  flex: none;
+}
+.card-art {
+  height: 17rem;
+}
+.card-art canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.experience-card h2 {
+  font-size: 2.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+.experience-card h2,
+.experience-card p,
+.card-enter,
+.card-number {
+  margin-left: 2.5rem;
+  margin-right: 2.5rem;
+}
+.card-number {
+  font-size: 1rem;
+  margin-top: 1.5rem;
+}
+.card-enter {
+  margin-top: 2rem;
+}
+.menu-foot {
+  font-size: 1.5rem;
+}
+.wall-experience {
+  padding: 6rem 2.5rem 2rem;
+}
+.wall-heading {
+  margin-bottom: 2rem;
+}
+.wall-heading p {
+  font-size: 1.35rem;
+}
+.wall-canvas {
+  height: calc(var(--stage-height) * 0.5);
+  max-height: none;
+  width: 100%;
+  border-radius: 1.5rem;
+}
+.wall-controls {
+  padding-top: 1.5rem;
+}
+.wall-controls button {
+  min-height: 4rem;
+  padding: 1rem 1.5rem;
+  font-size: 1.25rem;
+  border-radius: 1rem;
+}
+.wall-controls .primary,
+.wall-controls .secondary {
+  max-width: none;
+  margin: 1rem auto;
+}
+.wall-controls label {
+  font-size: 1.25rem;
+  gap: 1rem;
+  margin: 1rem;
+}
+.wall-controls input[type="range"] {
+  min-height: 3.5rem;
+  width: 11rem;
+}
+.paint-palette {
+  gap: 2rem;
+  margin: 2rem 0 4rem;
+}
+.paint-palette button {
+  width: 4rem;
+  height: 4rem;
+  padding: 0;
+}
+.paint-palette span {
+  font-size: 0.9rem;
+  top: 4.5rem;
+}
+.demo-label {
+  font-size: 0.9rem;
+}
+.wall-toolbar {
+  gap: 0.75rem;
+}
+.mark-accepted h2 {
+  font-size: 2.25rem;
+}
+.home-control {
+  font-size: 1.3rem;
+  min-height: 3.5rem;
+  padding: 0.8rem 1.5rem;
+  left: max(12px, calc((100vw - var(--stage-width)) / 2 + 1rem));
+  top: 1rem;
+}
+.idle-warning {
+  font-size: 1.5rem;
+}
+
+/* Wall capture, print preview and gallery share the portrait kiosk stage. */
+.wall-experience {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 50% 36%, #fffaf0 0%, transparent 65%), #f2eadb;
+}
+.wall-heading h1 {
+  margin-block: 0.75rem;
+}
+.wall-heading p:last-child {
+  margin: 0 auto;
+  max-width: 33rem;
+}
+.wall-stage {
+  animation: wall-stage-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes wall-stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.9rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.wall-gallery,
+.wall-print-preview {
+  height: auto;
+  aspect-ratio: 2 / 3;
+}
+.wall-gallery {
+  border: 1px solid #b4a98566;
+  cursor: grab;
+  width: 73%;
+  margin-inline: auto;
+}
+.wall-gallery:active {
+  cursor: grabbing;
+}
+.wall-print-preview {
+  width: 59%;
+  margin-inline: auto;
+  background: radial-gradient(ellipse at center, #fffaf1, #eadbc4);
+  touch-action: auto;
+}
+.capture-surface {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  border: 1px solid #a79d7790;
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(#ad9f7840 1px, transparent 1px) 50% 50% / 1rem 1rem,
+    radial-gradient(ellipse at 50% 46%, #fbf6ea, #e7e1cc);
+  box-shadow: inset 0 0 2.5rem #6272571c;
+}
+.capture-surface svg {
+  width: 100%;
+  pointer-events: none;
+}
+.capture-guide {
+  fill: #4b755320;
+  stroke: #4c6e55;
+  stroke-width: 0.7;
+  stroke-dasharray: 2 1.6;
+  transition:
+    fill 220ms ease,
+    stroke 220ms ease;
+}
+.capture-surface[data-ready="true"] .capture-guide {
+  fill: #4b75534d;
+  stroke: #386346;
+}
+.capture-contact {
+  fill: #386346;
+  stroke: #fff9df;
+  stroke-width: 0.5;
+  animation: contact-in 220ms ease-out;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes contact-in {
+  from {
+    transform: scale(0.4);
+    opacity: 0.4;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.capture-status {
+  text-align: center;
+  font-size: 1.1rem;
+  margin: 0.8rem 0 0;
+}
+.capture-progress {
+  position: absolute;
+  inset: auto 0 0;
+  height: 0.35rem;
+  background: #4b7553;
+  transform-origin: left;
+  animation: capture-hold 650ms linear both;
+}
+@keyframes capture-hold {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.wall-controls .paint-palette {
+  margin: 0.65rem 0 2.8rem;
+  gap: 1.3rem;
+}
+.paint-palette button {
+  transition:
+    transform 180ms ease,
+    outline-offset 180ms ease;
+}
+.paint-palette button[aria-pressed="true"] {
+  transform: translateY(-0.2rem);
+}
+.wall-field {
+  text-align: left;
+}
+.wall-field label {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+.wall-field small {
+  color: #5c6651;
+  font-weight: normal;
+}
+.wall-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.wall-input-row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 4rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid #9a997f;
+  border-radius: 0.85rem;
+  background: #fffaf1;
+  color: inherit;
+  font: inherit;
+}
+.wall-keyboard-toggle {
+  background: #eee5d0;
+  color: inherit;
+  border: 1px solid #a79d7770;
+}
+.wall-keyboard-toggle[aria-pressed="true"] {
+  background: #d9e1cd;
+}
+.wall-search {
+  margin-block: 1rem;
+}
+.wall-search .wall-toolbar {
+  margin-top: 0.75rem;
+}
+.wall-gallery-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.wall-controls button:disabled {
+  cursor: default;
+}
+.wall-experience .touch-keyboard {
+  position: sticky;
+  inset: auto auto 0;
+  width: 100%;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .capture-progress {
+    transform: none;
+  }
+}

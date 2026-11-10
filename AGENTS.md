@@ -4,11 +4,11 @@ One React/TypeScript/Vite application, one Express/TypeScript server, one Postgr
 
 ## Current status
 
-Wishing Tree is implemented. Shared-menu and Handprint Wall **structure and proposed contracts only** are prepared for the next contributor. They are not connected to the runtime. See `docs/handprint-wall-handoff.md` before implementing them. Do not present scaffold folders, proposed endpoints or the inactive migration template as finished features.
+Wishing Tree, shared menu and Handprint Wall are connected to the runtime. See `docs/handprint-wall-handoff.md` for setup, implementation boundaries and verification. Empty scaffold directories and `002_handprints.sql.example` remain historical preparation; the active migration is `002_handprints.sql`.
 
 ## Preserve existing behaviour
 
-- Current entry: `src/main.tsx` → `src/App.tsx`. Scene: `src/Scene.tsx`; state/network: `src/state.ts`; forest contracts: `src/shared.ts`.
+- Current entry: `src/main.tsx` → `src/app/Router.tsx`, which lazy-loads `src/App.tsx` for Wishing Tree. Scene: `src/Scene.tsx`; state/network: `src/state.ts`; forest contracts: `src/shared.ts`.
 - `src/experiences/wishing-tree/index.ts` re-exports the existing experience for future lazy routing. Keep existing files/imports working until a tested refactor is needed.
 - The museum wall has no website header/footer, branding navigation or visitor utility bar. The portrait tree is above its controls. Username lookup is secondary.
 - Preserve 108 stable leaf slots, private wishes, server moderation, idempotency, token-authorised Undo, durable finalisation and conservative leaf lookup.
@@ -19,7 +19,7 @@ Wishing Tree is implemented. Shared-menu and Handprint Wall **structure and prop
 - Shared app/menu/routing: `src/app/`. New feature: `src/experiences/handprint-wall/`. Reusable kiosk/graphics/UI code: `src/shared/`.
 - Backend extension: `server/handprints/`, mounted into the existing `server/index.ts`; reuse its server, database, security and WebSocket infrastructure. Do not create a second project or service.
 - Shared handprint types/defaults: `src/shared/handprints.ts`. Types do not replace server validation.
-- `db/migrations/002_handprints.sql.example` is inactive. The current runner explicitly applies `001_forest.sql`; implement tracked, transactional migration sequencing before activating a second migration.
+- `db/migrations/002_handprints.sql.example` is inactive. The runner now applies tracked, ordered `.sql` files transactionally; preserve this sequencing.
 - Label demo data explicitly; no silent production moderation stub. Hand tracing is manual drawing, never biometric scanning or fingerprint capture.
 - Lazy-load one expensive scene at a time and dispose of textures/resources on route changes. Clear private drafts/visitor data on Home/idle while preserving accepted contributions and active server-owned Undo deadlines.
 
