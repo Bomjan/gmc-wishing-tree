@@ -1327,3 +1327,86 @@ textarea:focus {
 .dock-options svg {
   color: white;
 }
+
+/* GMCX identity stays visible on the compact visitor sheets. */
+.panel:has(.wish-form),
+.panel:has(.acceptance) {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #1776b238;
+  border-radius: 0.4rem;
+  box-shadow: 0 0.75rem 2.5rem #102b3d35;
+}
+.panel:has(.wish-form)::before,
+.panel:has(.acceptance)::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0.22rem;
+  background: linear-gradient(
+    90deg,
+    var(--gmc-blue) 0 76%,
+    var(--gmc-gold) 76%
+  );
+  pointer-events: none;
+}
+.sheet-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 1.55rem;
+  margin: 0 0 0.55rem;
+  padding: 0 0.1rem 0.45rem;
+  border-bottom: 1px solid #b69a5a66;
+  color: var(--gmc-blue);
+}
+.sheet-brand > span {
+  font:
+    600 1.1rem/1 "Lora",
+    Georgia,
+    serif;
+  letter-spacing: -0.04em;
+}
+.sheet-brand > i {
+  width: 1px;
+  height: 0.9rem;
+  background: var(--gmc-gold);
+}
+.sheet-brand > small {
+  color: var(--gmc-text);
+  font:
+    700 0.58rem/1 "Roboto",
+    Arial,
+    sans-serif;
+  letter-spacing: 0.16em;
+}
+.panel:has(.wish-form) .sheet-header h1,
+.panel:has(.acceptance) .receipt-header h1 {
+  color: var(--gmc-blue);
+  font-family: "Lora", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+}
+.wish-form label {
+  color: var(--gmc-text);
+  font-weight: 600;
+}
+.wish-form input,
+.wish-form textarea {
+  background: #fff;
+  border-color: #b69a5a80;
+}
+.wish-form input:focus,
+.wish-form textarea:focus {
+  outline: 2px solid var(--gmc-blue);
+  outline-offset: 1px;
+  border-color: var(--gmc-blue);
+}
+.sheet-back {
+  color: var(--gmc-blue);
+  border-color: #1776b24d;
+  background: #1776b20a;
+}
+.panel:has(.acceptance) .rooted {
+  color: var(--gmc-blue);
+}

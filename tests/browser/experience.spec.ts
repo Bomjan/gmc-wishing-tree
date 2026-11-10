@@ -25,6 +25,22 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
   await expect(canvas).toHaveCount(1);
   const name = `browser_${Date.now().toString().slice(-10)}`;
   await page.getByRole("button", { name: "Make a wish", exact: true }).click();
+  const formSheet = page.locator(".panel:has(.wish-form)");
+  await expect(formSheet.locator(".sheet-brand > span")).toHaveText("GMC");
+  await expect(formSheet.locator(".sheet-brand > small")).toHaveText(
+    "EXPERIENCE CENTRE",
+  );
+  const modalBranding = await formSheet.evaluate((panel) => ({
+    background: getComputedStyle(panel).backgroundColor,
+    headingFont: getComputedStyle(panel.querySelector("h1")!).fontFamily,
+    headingColor: getComputedStyle(panel.querySelector("h1")!).color,
+    action: getComputedStyle(panel.querySelector(".primary")!).backgroundColor,
+  }));
+  expect(modalBranding.background).toBe("rgb(255, 255, 255)");
+  expect(modalBranding.headingFont).toContain("Lora");
+  expect(modalBranding.headingColor).toBe("rgb(23, 118, 178)");
+  expect(modalBranding.action).toBe("rgb(255, 215, 102)");
+  await page.screenshot({ path: "test-results/gmcx-branded-form.png" });
   await page.getByLabel("Username", { exact: true }).fill(name);
   await page
     .getByLabel("Your wish", { exact: true })
@@ -34,6 +50,9 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
   await expect(
     page.getByRole("heading", { name: "Your wish has taken root." }),
   ).toBeVisible();
+  await expect(page.locator(".acceptance .sheet-brand > small")).toHaveText(
+    "EXPERIENCE CENTRE",
+  );
   await expect(page.locator("canvas")).toHaveCount(1);
   await page.getByRole("button", { name: /Undo ·/ }).click();
   await expect(

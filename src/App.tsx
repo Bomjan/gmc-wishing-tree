@@ -429,6 +429,15 @@ export default function App() {
         {view !== "form" && view !== "accepted" && heightHandle}
         {view === "form" ? (
           <>
+            <div
+              className="sheet-brand"
+              role="group"
+              aria-label="GMC Experience Centre"
+            >
+              <span>GMC</span>
+              <i aria-hidden="true" />
+              <small>EXPERIENCE CENTRE</small>
+            </div>
             <div className="sheet-header">
               <h1>Make a wish</h1>
               {heightHandle}
@@ -516,6 +525,15 @@ export default function App() {
           </>
         ) : view === "accepted" ? (
           <div className="acceptance">
+            <div
+              className="sheet-brand"
+              role="group"
+              aria-label="GMC Experience Centre"
+            >
+              <span>GMC</span>
+              <i aria-hidden="true" />
+              <small>EXPERIENCE CENTRE</small>
+            </div>
             <div className="receipt-header">
               <h1>Your wish has taken root.</h1>
               {heightHandle}

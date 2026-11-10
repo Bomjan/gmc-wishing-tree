@@ -118,4 +118,8 @@ The shared-app extension folders are prepared for the next contributor. **The me
 
 The current kiosk uses [GMCX](https://gmcx.bt/) typography and blue/gold palette, with locally bundled Lora/Roboto fonts and no website header/footer. The default scene isolates one contribution tree against a quiet warm backdrop, with a restrained spotlight and contact shadow; the wider view shows actual contribution trees only. Trunk and branches thicken as the tree grows, and the full tree scales continuously from sapling to mature size with the contribution count. An accepted leaf approaches, unfurls and settles over 3.2 seconds; reduced-motion skips directly to the resting pose. Counts, logical leaf slots, server confirmation, Undo and private wish behaviour are unchanged. See [visual direction, credits and review captures](docs/gmcx-visual-direction.md). These changes do not implement or mount the Handprint Wall scaffold.
 
+Wish entry and confirmation sheets use white surfaces, a compact GMC Experience Centre wordmark, blue Lora headings, blue/gold accent rules, Roboto form controls and the GMCX yellow-gold primary action.
+
+Current sheet captures: [wish form](docs/screenshots/gmcx-branded-form.png) · [accepted wish](docs/screenshots/gmcx-branded-receipt.png).
+
 Latest scene comparison: [4-leaf sapling](docs/screenshots/tree-sapling-4.png) · [108-leaf mature tree](docs/screenshots/tree-mature-108.png). Playwright runs its demo on dedicated ports 5187/3017 by default; override `PLAYWRIGHT_PORT` and `PLAYWRIGHT_API_PORT` if those ports are occupied.
