@@ -1,0 +1,45 @@
+# Wishing Tree implementation report
+
+Implemented for touchscreen two in the initially empty workspace. Existing `.idea` files were preserved and excluded from Git. There was no `AGENTS.md`. No reference image was attached to this conversation, so visual review used the written Morning Sanctuary brief.
+
+## Delivered
+
+- React / TypeScript / Vite with React Three Fiber, drei, Tailwind and Zustand; an actual 3D landscape behind a persistent HTML interface.
+- Procedural terrain, layered mountain meshes, mist, morning lighting, textured bark, instanced grass, rocks and scenery foliage. Each contribution has exactly one instanced wish leaf. Background scenery is separate and noninteractive.
+- Continuous sapling-to-mature growth, stable tree/slot coordinates, persistent procedural seeds, near/far leaf detail, merged branch geometry, capped DPR, quality controls and reduced-motion support. Camera exploration bounds grow with the forest.
+- Two-field touchscreen submission, optional on-screen keyboard, server-side safety/English moderation, respectful revision/retry errors, idempotency and opaque receipt recovery.
+- PostgreSQL migrations and constraints; transactionally allocated 108-slot trees; cancellation hole reuse; case-insensitive usernames; server-controlled 10-second Undo and durable finalisation. Pending wish text is encrypted and erased when cancelled/finalised.
+- Exact and conservative unambiguous fuzzy lookup across trees, smooth leaf focus and temporary highlight with no labels or message cards. No public wish retrieval or username directory.
+- Mountain orbit/pan/zoom, tree selection, return navigation, visitor idle cleanup, public scene cache, authoritative reconnect snapshots and queued leaf appearances. Remote contributions and highlight expiry do not restart the visitor's camera movement.
+- Express / TypeScript and `ws`, isolated labelled deterministic demo mode, `.env.example`, lockfile, development / production / kiosk instructions in [README.md](README.md).
+
+## Validation on 10 November 2026
+
+| Check | Result |
+| --- | --- |
+| TypeScript + Vite + backend compilation | Passed |
+| PostgreSQL / production HTTP / WebSocket tests | 18 passed |
+| Chromium touchscreen browser tests | 5 passed |
+| Documented migration command, disposable PostgreSQL 16 | Passed |
+| Prettier source check | Passed |
+| Runtime dependency audit | 0 known vulnerabilities reported |
+
+Backend checks include concurrent normalised usernames, 120 simultaneous submissions at the 108-leaf boundary, duplicate retries, cancelled slot reuse, token authentication, exact deadline rejection, real server restart **inside** the Undo window followed by successful Undo, overdue recovery after another restart, cross-tree search, ambiguous fuzzy matching, stable seeds/coordinates, encrypted pending text and exclusion of private content from public HTTP responses, events and captured server logs. The provider adapter is exercised through a local fake provider with accepted, rejected, non-English and unavailable responses; production has no test bypass.
+
+Browser checks cover submission → Undo → username reuse → permanent finalisation → search → mountain navigation; rejection preserving input; keyboard availability; pending receipt recovery after reload; offline/reconnect snapshots; and a remote burst that creates a new tree while the visitor types without moving their camera. The canvas remains mounted through the interaction. There were no page errors in the full submission flow.
+
+Screenshots: [home](docs/screenshots/morning-sanctuary.png), [form](docs/screenshots/submission-form.png), [accepted](docs/screenshots/accepted-wish.png), [mountain](docs/screenshots/mountain-view.png). Reviewed for cream/forest-green colours, left panel layout, serif headings, landscape dominance and absence of leaf labels. A pixel comparison to the absent mockup was not possible.
+
+## Measured rendering performance
+
+[Raw timing sample](docs/performance.json): headless Chromium 158 with **SwiftShader software rendering**, 1440 × 1000, low detail, 36 animation-frame callbacks over 4006.5 ms. Median interval 16.7 ms; 95th percentile 466.7 ms. Average callback delivery was about 9 per second, with substantial stalls. These are browser scheduling measurements during the rendered scene, not GPU timing or a verified kiosk frame rate. This environment does **not** establish smooth kiosk performance.
+
+The production JS bundle is approximately 1.13 MB / 316 KB gzip. Assets and system fonts load locally. Hardware acceleration, native screen resolution, touch latency, long-running sessions, both quality settings and large contribution forests must be profiled on the actual kiosk before launch.
+
+## Remaining limitations and setup
+
+The art is a **functional procedural prototype, not finished photorealism**. Replace the simplified scenery canopy and grass geometry with optimised natural assets, add regional terrain/height data and production PBR terrain/rock/bark textures, and art-direct lighting on the installed display. Preserve one physical wish leaf per occupied slot when improving assets. No external production GLB/PBR assets were supplied, and none are represented as completed realism.
+
+Production requires the database connection, independent encryption/token secrets and a live AI provider key in server configuration. No paid provider credentials were available, so real-model moderation quality, English tolerance and provider latency remain unmeasured. The adapter uses strict JSON Schema and GPT-4.1 Mini by default, consistent with [Structured Outputs documentation](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=chat) and the [model capabilities](https://developers.openai.com/api/docs/models/gpt-4.1-mini). Refusals receive revision feedback; malformed/unavailable moderation fails closed.
+
+The supported deployment uses one API process; horizontal WebSocket fan-out needs an additional shared transport. Very large forests have not been load-tested. The local cache supports temporary API outages; a first-ever browser load still requires the application server. Edge bot protection and deployment monitoring should be configured for an internet-facing installation. OS keyboard behaviour and real multi-touch hardware remain device checks. QR submission and the separate AI walkthrough screen are outside this implementation.
