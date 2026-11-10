@@ -6,7 +6,7 @@ Fonts are bundled locally with their open-font licences under `public/fonts/gmcx
 
 ## Minimal, reachable interaction
 
-Make a wish and More options are the only persistent actions, with a small contribution caption. The default scene supports drag, two-finger zoom/pan and direct wish-leaf selection. Search and mountain navigation are revealed on demand. Controls default to 32% from the top on the floor-level 55-inch portrait display, approximately 83 cm above its bottom edge. Visitors drag the up/down handle or use Higher/Lower in More options; form, contextual keyboard and receipt controls follow the position. Panel bounds are measured to keep controls on-screen. Keyboard arrows offer an accessible adjustment alternative. Physical reach and mounting clearances still need installation checks; this is not a claim of universal ergonomic compliance.
+Make a wish and More options form a narrow vertical rail at the right edge, using circular icons with short labels and a small contribution caption. The tree centre stays clear; expanded options open to the left of the rail. The default scene supports drag, two-finger zoom/pan and direct wish-leaf selection. Search and mountain navigation are revealed on demand. Controls default to 32% from the top on the floor-level 55-inch portrait display, approximately 83 cm above its bottom edge. Visitors drag the up/down handle or use Higher/Lower in More options; form, contextual keyboard and receipt controls follow the position. Panel bounds are measured to keep controls on-screen. Keyboard arrows offer an accessible adjustment alternative. Physical reach and mounting clearances still need installation checks; this is not a claim of universal ergonomic compliance.
 
 ## 3D scene
 
@@ -24,8 +24,8 @@ Undo remains server-authorised for the original ten-second deadline and removes 
 
 ## Review captures
 
-- [Current native portrait UHD](screenshots/minimal-tree-4k.png)
-- [Current minimal portrait scene](screenshots/minimal-tree.png)
+- [Current right-edge controls](screenshots/right-edge-controls.png)
+- [Earlier native portrait UHD, before right-edge controls](screenshots/minimal-tree-4k.png)
 - [Adjustable form and keyboard](screenshots/reachable-form-keyboard.png)
 - [Leaf arrival](screenshots/gmcx-leaf-arrival.png)
 - [Settled leaf](screenshots/gmcx-leaf-settled.png)

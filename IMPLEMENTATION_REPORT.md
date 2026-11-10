@@ -80,3 +80,12 @@ For the floor-level 55-inch portrait installation, controls default to 32% from 
 Validation: production TypeScript/frontend/backend build, Prettier and Git whitespace checks passed. Ten targeted browser checks passed across two runs: four portrait/desktop preview sizes including native 2160 × 3840; complete submission/Undo/finalise/search; actual mouse drag, wheel, CDP two-finger zoom and leaf raycast; rejection/keyboard/pending reload; authoritative reconnect; remote-camera stability; and movable keyboard/form bounds with cancelled adjustment and cleared drafts. The earlier 22 database/HTTP/geometry/animation results remain applicable; this revision changes no backend or schema. No hardware frame-rate or universal physical reach claim is made. Check touch latency, OS keyboard behaviour, mounting clearance and seated/standing reach on the actual installation.
 
 Current captures: [minimal portrait scene](docs/screenshots/minimal-tree.png), [native UHD scene](docs/screenshots/minimal-tree-4k.png), [UHD form](docs/screenshots/reachable-form-4k.png), [adjusted form and keyboard](docs/screenshots/reachable-form-keyboard.png). Earlier captures document previous iterations. Handprint Wall remains the prepared contributor scaffold.
+
+
+## Right-edge controls revision
+
+The default controls now form a narrow vertical rail on the right edge, with circular Make a wish and More actions, short labels and a small leaf count. The centre of the tree stays clear. Options open to the left, within measured screen bounds. The existing drag handle, Higher/Lower controls, operator default height, contextual keyboard and Undo flow are preserved. Yellow leaf highlights remain unchanged.
+
+Validation: production build, Prettier and whitespace checks passed. Five browser checks passed across desktop preview and 1080 × 1920 portrait layout, submission → Undo/finalise → search, mouse drag/wheel/two-finger zoom/direct leaf selection, and movable form/keyboard bounds with pointer cancellation. The initial batch ended early after its two layout checks passed; the remaining three checks passed when rerun. The rail occupies under 2% of the stage area in both checked layouts. No backend, database or contribution records changed. Physical Samsung touch and reach checks remain installation work.
+
+Current screenshot: [right-edge controls](docs/screenshots/right-edge-controls.png). Previous centre-dock images are historical.

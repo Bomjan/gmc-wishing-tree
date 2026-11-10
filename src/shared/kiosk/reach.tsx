@@ -30,6 +30,14 @@ export function useReachablePanel(mode: string) {
       );
       panel.style.top = `${top}px`;
       panel.style.setProperty(
+        "--side-space-above",
+        `${Math.max(0, top + panelHeight - height * 0.03)}px`,
+      );
+      panel.style.setProperty(
+        "--side-space-below",
+        `${Math.max(0, height * 0.97 - top)}px`,
+      );
+      panel.style.setProperty(
         "--space-above",
         `${Math.max(0, top - height * 0.03 - 16)}px`,
       );

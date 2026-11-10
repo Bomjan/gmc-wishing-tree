@@ -28,7 +28,7 @@ test("natural world loads local materials and animates a confirmed contribution 
   const brand = await page.evaluate(() => ({
     font: getComputedStyle(document.querySelector(".primary")!).fontFamily,
     body: getComputedStyle(document.body).fontFamily,
-    action: getComputedStyle(document.querySelector(".primary")!)
+    action: getComputedStyle(document.querySelector(".primary svg")!)
       .backgroundColor,
     headers: document.querySelectorAll("header,footer").length,
   }));

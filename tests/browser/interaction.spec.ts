@@ -21,7 +21,8 @@ test("default scene supports drag, wheel, two-finger zoom and direct leaf select
     .toBe(3);
   await page.waitForTimeout(1500);
   const dock = await page.locator(".panel-welcome").boundingBox();
-  expect(dock!.height).toBeLessThan(192);
+  expect(dock!.width).toBeLessThan(130);
+  expect(dock!.x).toBeGreaterThan(900);
   await expect(page.locator(".panel-welcome h1")).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "View the mountain", exact: true }),

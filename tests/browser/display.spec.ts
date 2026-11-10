@@ -31,8 +31,15 @@ for (const viewport of [
           .getByRole("button", { name: "Make a wish", exact: true })
           .boundingBox();
       const stageWidth = Math.min(viewport.width, (viewport.height * 9) / 16);
-      expect(panel!.width).toBeLessThan(stageWidth * 0.7);
-      expect(panel!.height).toBeLessThan(viewport.height * 0.12);
+      expect(panel!.width).toBeLessThan(stageWidth * 0.12);
+      expect(panel!.width * panel!.height).toBeLessThan(
+        stageWidth * viewport.height * 0.02,
+      );
+      const right = (viewport.width + stageWidth) / 2;
+      expect(panel!.x).toBeGreaterThan(right - stageWidth * 0.16);
+      expect(panel!.x + panel!.width).toBeLessThanOrEqual(
+        right - stageWidth * 0.02,
+      );
       await expect(
         page.locator(".panel-welcome h1,.panel-welcome .intro,.progress-block"),
       ).toHaveCount(0);

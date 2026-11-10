@@ -552,7 +552,7 @@ export default function App() {
                 }}
               >
                 <LeafIcon />
-                Make a wish
+                <span>Make a wish</span>
               </button>
               <button
                 className="dock-options"
@@ -577,11 +577,12 @@ export default function App() {
                   <circle cx="12" cy="12" r="1.5" />
                   <circle cx="19" cy="12" r="1.5" />
                 </svg>
+                <span>More</span>
               </button>
             </div>
             <p className="dock-caption">
-              {forest.demo ? "Demo · " : ""}
-              {count} / 108 leaves
+              {forest.demo && <span>Demo</span>}
+              <span>{count} / 108 leaves</span>
             </p>
             <div
               id="tree-tools"
