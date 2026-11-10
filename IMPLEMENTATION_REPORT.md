@@ -110,6 +110,6 @@ Verification: production frontend and backend TypeScript build passed. Three tar
 
 ## GMCX-branded interaction sheets · 11 November 2026
 
-The wish form and accepted-wish sheet now carry the GMCX identity directly: white surfaces, a compact GMC Experience Centre wordmark, blue Lora headings, a blue-to-gold edge rule, Roboto fields and the yellow-gold primary action. Focused inputs and navigation use GMCX blue. The changes keep the existing content-sized, right-aligned layout and preserve the Wishing Tree flow.
+The wish form and accepted-wish sheet now carry the GMCX identity directly: translucent glass surfaces, a compact GMC Experience Centre wordmark, blue Lora headings, a blue-to-gold edge rule, Roboto fields and the yellow-gold primary action. Focused inputs and navigation use GMCX blue. The changes keep the existing content-sized, right-aligned layout and preserve the Wishing Tree flow. A light seven-pixel backdrop blur and 72% white tint keep the tree visible behind the sheets while preserving legibility.
 
 Verification: production build passed. The targeted browser flow passed submission → Undo → finalisation → search and checks the form and receipt wordmark, white sheet surface, Lora/blue heading and yellow-gold CTA. [Wish form capture](docs/screenshots/gmcx-branded-form.png) and [receipt capture](docs/screenshots/gmcx-branded-receipt.png). No visitor-entered text is included in either committed image.

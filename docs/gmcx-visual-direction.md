@@ -1,6 +1,6 @@
 # GMCX visual direction
 
-Reference: https://gmcx.bt/, inspected 10 November 2026. The public site uses Lora display typography, Roboto body typography, blue `#1776B2`, gold `#B69A5A`, yellow-gold action buttons `#FFD766` with `#745C00` text, neutral body text `#535961`, and white surfaces. Visitor sheets carry that identity directly: white branded surfaces, a compact GMC Experience Centre wordmark, blue Lora headings, restrained blue/gold rules, Roboto form controls and the yellow-gold primary action. The tree stage remains warm and visually quiet. The portrait museum interface does not import website navigation, headers, footers, analytics or cookie UI.
+Reference: https://gmcx.bt/, inspected 10 November 2026. The public site uses Lora display typography, Roboto body typography, blue `#1776B2`, gold `#B69A5A`, yellow-gold action buttons `#FFD766` with `#745C00` text, neutral body text `#535961`, and white surfaces. Visitor sheets carry that identity directly: translucent glass surfaces, a compact GMC Experience Centre wordmark, blue Lora headings, restrained blue/gold rules, Roboto form controls and the yellow-gold primary action. Light blur preserves the tree beneath the sheet. The tree stage remains warm and visually quiet. The portrait museum interface does not import website navigation, headers, footers, analytics or cookie UI.
 
 Fonts are bundled locally with their open-font licences under `public/fonts/gmcx/`. Reusable token metadata is in `src/shared/branding.ts`.
 

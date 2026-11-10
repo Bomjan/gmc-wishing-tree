@@ -1332,10 +1332,12 @@ textarea:focus {
 .panel:has(.wish-form),
 .panel:has(.acceptance) {
   position: absolute;
-  background: #fff;
+  background: rgb(255 255 255 / 72%);
+  -webkit-backdrop-filter: blur(7px) saturate(1.12);
+  backdrop-filter: blur(7px) saturate(1.12);
   border: 1px solid #1776b238;
   border-radius: 0.4rem;
-  box-shadow: 0 0.75rem 2.5rem #102b3d35;
+  box-shadow: 0 0.75rem 2.5rem #102b3d1c;
 }
 .panel:has(.wish-form)::before,
 .panel:has(.acceptance)::before {
@@ -1393,7 +1395,7 @@ textarea:focus {
 }
 .wish-form input,
 .wish-form textarea {
-  background: #fff;
+  background: rgb(255 255 255 / 62%);
   border-color: #b69a5a80;
 }
 .wish-form input:focus,

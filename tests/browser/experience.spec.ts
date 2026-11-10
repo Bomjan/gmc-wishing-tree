@@ -32,11 +32,13 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
   );
   const modalBranding = await formSheet.evaluate((panel) => ({
     background: getComputedStyle(panel).backgroundColor,
+    blur: getComputedStyle(panel).backdropFilter,
     headingFont: getComputedStyle(panel.querySelector("h1")!).fontFamily,
     headingColor: getComputedStyle(panel.querySelector("h1")!).color,
     action: getComputedStyle(panel.querySelector(".primary")!).backgroundColor,
   }));
-  expect(modalBranding.background).toBe("rgb(255, 255, 255)");
+  expect(modalBranding.background).toContain("0.72");
+  expect(modalBranding.blur).toContain("blur(7px)");
   expect(modalBranding.headingFont).toContain("Lora");
   expect(modalBranding.headingColor).toBe("rgb(23, 118, 178)");
   expect(modalBranding.action).toBe("rgb(255, 215, 102)");
