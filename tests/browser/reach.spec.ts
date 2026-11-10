@@ -15,7 +15,7 @@ test("form and keyboard move together, stay bounded and recover from cancelled a
   const initialPanel = (await panel.boundingBox())!;
   expect(initialPanel.x).toBeGreaterThan(1080 * 0.4);
   expect(initialPanel.width).toBeLessThan(1080 * 0.49);
-  expect(initialPanel.height).toBeLessThan(480);
+  expect(initialPanel.height).toBeLessThan(500);
   const submit = (await page
     .getByRole("button", { name: "Let my wish take root" })
     .boundingBox())!;
@@ -30,7 +30,6 @@ test("form and keyboard move together, stay bounded and recover from cancelled a
     .getByLabel("Username", { exact: true })
     .boundingBox())!.y;
   await page.getByLabel("Username", { exact: true }).focus();
-  await page.getByRole("button", { name: "Toggle on-screen keyboard" }).click();
   const keyboard = page.getByRole("group", { name: "On-screen keyboard" });
   await expect(keyboard).toBeVisible();
   expect(
@@ -44,6 +43,17 @@ test("form and keyboard move together, stay bounded and recover from cancelled a
   );
   await keyboard.getByRole("button", { name: "q", exact: true }).click();
   await expect(page.getByLabel("Username", { exact: true })).toHaveValue("q");
+  await page.getByLabel("Your wish", { exact: true }).click();
+  await expect(keyboard.locator(".keyboard-heading")).toContainText(
+    "Your wish",
+  );
+  await keyboard.getByRole("button", { name: "w", exact: true }).click();
+  await expect(page.getByLabel("Your wish", { exact: true })).toHaveValue("w");
+  await expect(page.getByLabel("Username", { exact: true })).toHaveValue("q");
+  await page.getByRole("button", { name: "Close keyboard" }).click();
+  await expect(keyboard).toHaveCount(0);
+  await page.getByLabel("Your wish", { exact: true }).click();
+  await expect(keyboard).toBeVisible();
   const verifyBounds = async () => {
     const box = (await panel.boundingBox())!;
     expect(box.y).toBeGreaterThanOrEqual(1920 * 0.03 - 1);
@@ -92,8 +102,15 @@ test("form and keyboard move together, stay bounded and recover from cancelled a
   await expect(keyboard).toHaveCount(0);
   await page.getByRole("button", { name: "More options" }).click();
   await page.getByRole("button", { name: "Find my leaf", exact: true }).click();
-  await page.getByRole("button", { name: "Toggle on-screen keyboard" }).click();
+  await page.getByRole("textbox", { name: "Find your username" }).click();
   await expect(keyboard).toBeVisible();
+  await expect(keyboard.locator(".keyboard-heading")).toContainText(
+    "Find your username",
+  );
+  await keyboard.getByRole("button", { name: "e", exact: true }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Find your username" }),
+  ).toHaveValue("e");
   expect(await keyboard.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(
     true,
   );

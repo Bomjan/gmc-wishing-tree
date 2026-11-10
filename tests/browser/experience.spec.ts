@@ -165,7 +165,6 @@ test("rejection preserves form, optional keyboard works, pending survives reload
     "reject this demo wish",
   );
   await page.getByLabel("Your wish", { exact: true }).fill("Peace for all.");
-  await page.getByRole("button", { name: "Toggle on-screen keyboard" }).click();
   await expect(
     page.getByRole("group", { name: "On-screen keyboard" }),
   ).toBeVisible();

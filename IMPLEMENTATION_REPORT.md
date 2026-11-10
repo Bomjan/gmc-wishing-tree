@@ -131,3 +131,9 @@ Verification: production build passed. Three browser checks passed with a shorte
 The orbit target starts at the tree's centre. Camera transitions finish only when both camera position and viewing target have settled. Form entry and contribution highlighting use the same whole-tree framing, preventing the vertical jump after submission.
 
 Verification: production build and the full submission → Undo/finalise → search browser flow passed, including an assertion that camera position and target remain stable through submission. [Corrected initial framing](docs/screenshots/centered-tree.png).
+
+## Keyboard follows focused input
+
+Focusing Username, Your wish or leaf search opens the on-screen keyboard and targets that field. Closing it remains available, and tapping an already-focused field reopens it. The inputs suppress an additional operating-system touch keyboard while retaining physical keyboard support.
+
+Verification: production build passed. Three browser checks passed across submission/Undo/search, rejection and reload recovery, and portrait keyboard reach. The portrait check verifies focus-driven opening, keys writing to the correct field, field switching, close/reopen and search focus, plus panel bounds and height adjustment.

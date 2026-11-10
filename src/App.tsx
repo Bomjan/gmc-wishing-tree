@@ -361,6 +361,10 @@ export default function App() {
     key.current = null;
     sessionStorage.removeItem("gmc-attempt");
   }
+  function activateInput(field: "username" | "wish" | "search") {
+    setActive(field);
+    setKeyboard(true);
+  }
   function type(value: string) {
     const el =
       active === "wish"
@@ -508,8 +512,9 @@ export default function App() {
                     username: undefined,
                   }));
                 }}
-                onFocus={() => setActive("username")}
-                inputMode={keyboard ? "none" : "text"}
+                onFocus={() => activateInput("username")}
+                onClick={() => activateInput("username")}
+                inputMode="none"
                 autoComplete="off"
                 autoCapitalize="none"
                 spellCheck={false}
@@ -539,8 +544,9 @@ export default function App() {
                   edit("wish", e.target.value);
                   setFieldErrors((errors) => ({ ...errors, wish: undefined }));
                 }}
-                onFocus={() => setActive("wish")}
-                inputMode={keyboard ? "none" : "text"}
+                onFocus={() => activateInput("wish")}
+                onClick={() => activateInput("wish")}
+                inputMode="none"
                 maxLength={config.wishMax}
                 placeholder="What do you hope for?"
                 rows={3}
@@ -708,8 +714,9 @@ export default function App() {
                     ref={searchRef}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    onFocus={() => setActive("search")}
-                    inputMode={keyboard ? "none" : "text"}
+                    onFocus={() => activateInput("search")}
+                    onClick={() => activateInput("search")}
+                    inputMode="none"
                     maxLength={24}
                     autoCapitalize="none"
                     autoComplete="off"
