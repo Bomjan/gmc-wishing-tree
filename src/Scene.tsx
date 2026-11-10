@@ -462,8 +462,8 @@ function Vegetation() {
 function CameraRig() {
   const controls = useRef<OrbitImpl>(null),
     moving = useRef(true),
-    desired = useRef(new THREE.Vector3(12, 8, 19)),
-    target = useRef(new THREE.Vector3(-3, 3, 0));
+    desired = useRef(new THREE.Vector3(7.5, 6.8, 16)),
+    target = useRef(new THREE.Vector3(0, 1.2, 0));
   const { camera } = useThree();
   const revision = useSanctuary((s) => s.cameraRevision),
     view = useSanctuary((s) => s.view),
@@ -494,19 +494,19 @@ function CameraRig() {
       y = ridge(x, z);
     if (view === "mountain" && !focus && !selection) {
       desired.current.set(
-        12,
-        Math.max(32, bounds * 0.45),
-        Math.max(52, bounds * 0.75),
+        0,
+        Math.max(40, bounds * 0.65),
+        Math.max(64, bounds * 0.95),
       );
-      target.current.set(-2, 3, -14);
+      target.current.set(0, 2, -8);
     } else if (selection && tree) {
       const p = leafPoint(selection.slot, tree.seed),
         s = treeScale(tree.leaves.length);
       target.current.set(x + p[0] * s, y + p[1] * s, z + p[2] * s);
       desired.current.copy(target.current).add(new THREE.Vector3(4, 2, 7));
     } else {
-      desired.current.set(x + 11, y + 7, z + 18);
-      target.current.set(x - 3, y + 2.8, z);
+      desired.current.set(x + 7.5, y + 6.8, z + 16);
+      target.current.set(x, y + 1.2, z);
     }
     moving.current = true;
   }, [revision, view, focus]);
@@ -677,7 +677,7 @@ export function Scene() {
           <Canvas
             shadows
             dpr={quality === "high" ? [1, 1.5] : 1}
-            camera={{ position: [12, 8, 19], fov: 44, near: 0.2, far: 300 }}
+            camera={{ position: [7.5, 6.8, 16], fov: 44, near: 0.2, far: 300 }}
             gl={{
               antialias: quality === "high",
               powerPreference: "high-performance",

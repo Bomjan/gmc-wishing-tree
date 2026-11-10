@@ -50,7 +50,7 @@ Run the server under your OS service manager with automatic restart, then launch
 chromium --kiosk --no-first-run --disable-pinch http://localhost:3001
 ```
 
-Use the window manager / display settings to place the kiosk on touchscreen two. `--disable-pinch` prevents browser page zoom; the 3D mountain's two-finger dolly/pan controls still work. Configure OS screen blanking and OS touch keyboard on the kiosk. The optional Keyboard control supplies an HTML keyboard if necessary. Never pass `--disable-web-security` or disable WebGL. “Low detail” lowers DPR, shadow resolution and grass instances. Test both quality settings on the actual display resolution before launch.
+Use the window manager / display settings to place the kiosk on touchscreen two. `--disable-pinch` prevents browser page zoom; the 3D mountain's two-finger dolly/pan controls still work. Configure OS screen blanking and OS touch keyboard on the kiosk. The Keyboard control inside the form or expanded leaf search supplies an HTML keyboard if necessary. Never pass `--disable-web-security` or disable WebGL. For operator setup, append `?quality=low` or `?quality=high` to the kiosk URL; the setting persists locally and controls DPR, shadow resolution and grass instances. Test both quality settings on the actual display resolution before launch.
 
 ## Visitor behaviour
 
@@ -72,17 +72,17 @@ No wish retrieval endpoint exists. Wishes are AES-256-GCM encrypted while pendin
 
 Public data includes only positions, seeds, tree IDs, occupied slot numbers and pending/finalised states. There are no leaf labels, tooltips, username metadata, messages or cards.
 
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /api/config` | Public field constraints |
-| `GET /api/forest` | Authoritative public tree/leaf snapshot |
-| `POST /api/submissions` | `{username,wish}`, UUID `Idempotency-Key` header |
-| `POST /api/recovery` | Recover confirmed attempt using bearer idempotency key |
-| `GET /api/submissions/:id` | Minimal receipt status; bearer temporary token required |
-| `POST /api/submissions/:id/undo` | Cancel before deadline; same bearer token |
-| `POST /api/locate` | `{username}` → only `{treeId,slot}` |
-| `GET /api/health` | Process health and demo flag |
-| `WS /ws` | Minimal leaf reserved/cancelled/finalised and tree created/removed events |
+| Endpoint                         | Purpose                                                                   |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| `GET /api/config`                | Public field constraints                                                  |
+| `GET /api/forest`                | Authoritative public tree/leaf snapshot                                   |
+| `POST /api/submissions`          | `{username,wish}`, UUID `Idempotency-Key` header                          |
+| `POST /api/recovery`             | Recover confirmed attempt using bearer idempotency key                    |
+| `GET /api/submissions/:id`       | Minimal receipt status; bearer temporary token required                   |
+| `POST /api/submissions/:id/undo` | Cancel before deadline; same bearer token                                 |
+| `POST /api/locate`               | `{username}` → only `{treeId,slot}`                                       |
+| `GET /api/health`                | Process health and demo flag                                              |
+| `WS /ws`                         | Minimal leaf reserved/cancelled/finalised and tree created/removed events |
 
 Size limits, same-origin mutation checks, per-session request budgets, WebSocket connection/payload caps and moderation timeouts provide baseline abuse controls without a low shared-IP quota. Internet-facing deployment needs additional bot controls at the edge; this unauthenticated kiosk does not provide proof of one human or strong adversarial bot prevention.
 
@@ -101,3 +101,11 @@ npm run test:browser
 Playwright starts and stops its own labelled demo server. Browser tests exercise touchscreen submission → Undo → username reuse → finalisation → search → mountain navigation, rejection preservation, keyboard availability, pending reload and reconnect snapshots. PostgreSQL tests use real transactions for duplicate names, concurrent 108-slot boundaries, deadline checks, restart recovery, idempotency, hole reuse, token authorisation, private response contracts, multi-tree search, fuzzy ambiguity and stable rendering coordinates. See `IMPLEMENTATION_REPORT.md` for actual results and visual/performance limitations.
 
 Compatibility references: [React Three Fiber installation and React major versions](https://r3f.docs.pmnd.rs/getting-started/installation), [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=chat). Installed versions are resolved in `package-lock.json`; use `npm ci` for reproducible installation.
+
+## Display composition
+
+The installation is a **55-inch Samsung UHD touchscreen mounted in portrait**, with a native viewport of **2160 × 3840 (9:16)**. Use fullscreen/kiosk mode at 100% browser zoom, and set the operating system display orientation to portrait. The tree is centred in the upper portion; the welcome title, wish/mountain actions, progress and optional Find my leaf control sit below it. Forms use a cream overlay in the lower part of the screen.
+
+UI dimensions use a 1080 × 1920 portrait design basis, scaling to 2× at native UHD. Smaller development windows fit the complete portrait stage; landscape desktop windows show unused space at the sides rather than changing the layout or cropping the tree. This is a portrait kiosk interface, not a landscape installation. OS display scaling follows the actual CSS viewport. Software-rendered screenshots verify composition and layout only; installed Samsung hardware performance still needs measurement.
+
+The museum wall display has no website header, footer, utility bar or navigation branding. Only the tree and its interaction area appear. Demo mode is identified in the tree progress label. Keyboard controls appear only during text entry, and rendering quality is configured by the operator URL rather than visitor-facing chrome.

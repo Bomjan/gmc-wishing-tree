@@ -26,6 +26,7 @@ function cached(): Forest {
   } catch {}
   return { trees: [], demo, serverTime: new Date().toISOString() };
 }
+const requestedQuality = new URLSearchParams(location.search).get("quality");
 export const useSanctuary = create<State>((set) => ({
   forest: cached(),
   online: false,
@@ -34,7 +35,12 @@ export const useSanctuary = create<State>((set) => ({
   focus: null,
   receipt: null,
   cameraRevision: 0,
-  quality: localStorage.getItem("gmc-quality") === "low" ? "low" : "high",
+  quality:
+    requestedQuality === "low" || requestedQuality === "high"
+      ? requestedQuality
+      : localStorage.getItem("gmc-quality") === "low"
+        ? "low"
+        : "high",
   animations: [],
   set: (patch) => set(patch),
   go: (view, focus) =>

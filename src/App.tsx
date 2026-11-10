@@ -66,13 +66,14 @@ function MountainIcon() {
 const idleSeconds = Number(import.meta.env.VITE_IDLE_SECONDS || 90),
   highlightSeconds = Number(import.meta.env.VITE_HIGHLIGHT_SECONDS || 12);
 export default function App() {
-  const { forest, online, view, selection, receipt, quality } = useSanctuary();
+  const { forest, online, view, receipt } = useSanctuary();
   const [username, setUsername] = useState(""),
     [wish, setWish] = useState(""),
     [search, setSearch] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
     [keyboard, setKeyboard] = useState(false),
+    [searchOpen, setSearchOpen] = useState(false),
     [active, setActive] = useState<"username" | "wish" | "search">("username"),
     [remaining, setRemaining] = useState(10),
     [config, setConfig] = useState({
@@ -99,6 +100,7 @@ export default function App() {
     if (value.state !== "pending") sessionStorage.removeItem("gmc-pending");
   }
   function clearPrivate() {
+    setSearchOpen(false);
     setUsername("");
     setWish("");
     setSearch("");
@@ -342,33 +344,18 @@ export default function App() {
   return (
     <main
       className="sanctuary"
+      data-online={online}
       onPointerDown={() => {
         lastInput.current = Date.now();
       }}
     >
       <Scene />
       <div className="sun-wash" />
-      <header className="masthead">
-        <a className="brand" href="/" aria-label="Wishing Tree home">
-          <span className="brand-symbol">
-            <LeafIcon />
-          </span>
-          <span>
-            GMC <span className="brand-small">EXPERIENCE CENTRE</span>
-          </span>
-        </a>
-        <div className="morning">
-          <span className="sun-icon">☼</span> A morning of possibility
-        </div>
-      </header>
+
       <section
-        className={`panel ${view === "mountain" ? "panel-mountain" : ""}`}
+        className={`panel ${view === "mountain" ? "panel-mountain" : ""} ${view === "home" || view === "mountain" ? "panel-welcome" : ""}`}
         aria-label="Wishing Tree interaction"
       >
-        <div className="panel-top">
-          <span className="small-label">A SHARED HOPE. A GROWING FOREST.</span>
-          <LeafIcon className="panel-leaf" />
-        </div>
         {view === "form" ? (
           <>
             <button
@@ -427,6 +414,15 @@ export default function App() {
               />
               <div className="field-meta">
                 <span>In English, with kindness.</span>
+                <button
+                  type="button"
+                  className="inline-keyboard"
+                  aria-label="Toggle on-screen keyboard"
+                  aria-pressed={keyboard}
+                  onClick={() => setKeyboard(!keyboard)}
+                >
+                  Keyboard
+                </button>
                 <span>
                   {wish.length} / {config.wishMax}
                 </span>
@@ -494,66 +490,54 @@ export default function App() {
             <p className="intro">
               {view === "mountain"
                 ? "Every tree begins with a wish. Touch a wish tree to look a little closer."
-                : "Leave a wish for the future.\nWatch it become part of something\nbeautiful."}
+                : "A wish for tomorrow.\nA leaf that grows with us."}
             </p>
-            <form className="search-form" onSubmit={locate}>
-              <SearchIcon />
-              <input
-                ref={searchRef}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onFocus={() => setActive("search")}
-                inputMode={keyboard ? "none" : "text"}
-                maxLength={24}
-                autoCapitalize="none"
-                autoComplete="off"
-                aria-label="Find your username"
-                placeholder="Find your username"
-                required
-              />
+
+            <div className="welcome-actions">
               <button
-                type="submit"
-                aria-label="Find leaf"
-                disabled={busy || !online}
+                className="primary"
+                onClick={() => {
+                  setMessage("");
+                  setSearch("");
+                  setSearchOpen(false);
+                  setKeyboard(false);
+                  key.current = null;
+                  useSanctuary.getState().set({ selection: null });
+                  useSanctuary.getState().go("form");
+                }}
               >
-                ↗
+                <LeafIcon />
+                Make a wish
               </button>
-            </form>
-            <button
-              className="primary"
-              onClick={() => {
-                setMessage("");
-                setSearch("");
-                key.current = null;
-                useSanctuary.getState().set({ selection: null });
-                useSanctuary.getState().go("form");
-              }}
-            >
-              <LeafIcon />
-              Make a wish
-            </button>
-            <button
-              className="secondary"
-              onClick={() => {
-                setMessage("");
-                setSearch("");
-                useSanctuary.getState().set({ selection: null });
-                useSanctuary
-                  .getState()
-                  .go(view === "mountain" ? "home" : "mountain", null);
-              }}
-            >
-              <MountainIcon />
-              {view === "mountain"
-                ? "Back to current tree"
-                : "View the mountain"}
-            </button>
+              <button
+                className="secondary"
+                onClick={() => {
+                  setMessage("");
+                  setSearch("");
+                  setSearchOpen(false);
+                  setKeyboard(false);
+                  useSanctuary.getState().set({ selection: null });
+                  useSanctuary
+                    .getState()
+                    .go(view === "mountain" ? "home" : "mountain", null);
+                }}
+              >
+                <MountainIcon />
+                {view === "mountain"
+                  ? "Back to current tree"
+                  : "View the mountain"}
+              </button>
+            </div>
             <div className="progress-block">
               <div className="progress-heading">
                 <span>
                   {view === "mountain"
-                    ? "Across the mountain"
-                    : "This tree, growing with us"}
+                    ? forest.demo
+                      ? "Demonstration forest"
+                      : "Across the mountain"
+                    : forest.demo
+                      ? "Demonstration tree"
+                      : "This tree, growing with us"}
                 </span>
                 <span>
                   {view === "mountain"
@@ -570,6 +554,59 @@ export default function App() {
                   : "108 wishes. One tree. Countless possibilities."}
               </p>
             </div>
+            <div className="leaf-locator">
+              <button
+                className="locator-toggle"
+                aria-expanded={searchOpen}
+                aria-controls="leaf-search"
+                onClick={() => {
+                  setSearchOpen(!searchOpen);
+                  setSearch("");
+                  setMessage("");
+                  setKeyboard(false);
+                }}
+              >
+                <SearchIcon />
+                <span>{searchOpen ? "Close leaf search" : "Find my leaf"}</span>
+              </button>
+              <div id="leaf-search" hidden={!searchOpen}>
+                <button
+                  type="button"
+                  className="inline-keyboard"
+                  aria-label="Toggle on-screen keyboard"
+                  aria-pressed={keyboard}
+                  onClick={() => {
+                    setActive("search");
+                    setKeyboard(!keyboard);
+                  }}
+                >
+                  Keyboard
+                </button>
+                <form className="search-form" onSubmit={locate}>
+                  <SearchIcon />
+                  <input
+                    ref={searchRef}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onFocus={() => setActive("search")}
+                    inputMode={keyboard ? "none" : "text"}
+                    maxLength={24}
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    aria-label="Find your username"
+                    placeholder="Find your username"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    aria-label="Find leaf"
+                    disabled={busy || !online}
+                  >
+                    ↗
+                  </button>
+                </form>
+              </div>
+            </div>
           </>
         )}
         {message && (
@@ -583,51 +620,7 @@ export default function App() {
             resume when connected.
           </p>
         )}
-        <div className="panel-footer">
-          <span className="tiny-leaf">❧</span>
-          <span>Rooted in hope. Growing together.</span>
-        </div>
       </section>
-      <div className="scene-caption">
-        <span className="caption-line" />
-        <p>
-          {selection
-            ? "A wish, quietly growing."
-            : view === "mountain"
-              ? "A forest of shared hopes."
-              : "Small wishes. Deep roots."}
-        </p>
-        <span>Gelephu Mindfulness City</span>
-      </div>
-      <footer className="bottom-bar">
-        <span>
-          {forest.demo
-            ? "Demonstration forest · sample leaves"
-            : "A living expression of our shared future"}
-        </span>
-        <div className="utility-controls">
-          <button
-            onClick={() => setKeyboard(!keyboard)}
-            aria-pressed={keyboard}
-            aria-label="Toggle on-screen keyboard"
-          >
-            ⌨ <span>Keyboard</span>
-          </button>
-          <button
-            onClick={() =>
-              useSanctuary
-                .getState()
-                .set({ quality: quality === "high" ? "low" : "high" })
-            }
-          >
-            ◌ <span>{quality === "high" ? "High detail" : "Low detail"}</span>
-          </button>
-          <span
-            className={`connection ${online ? "connected" : ""}`}
-            title={online ? "Connected" : "Offline"}
-          />
-        </div>
-      </footer>
       {keyboard && (
         <div
           className="touch-keyboard"

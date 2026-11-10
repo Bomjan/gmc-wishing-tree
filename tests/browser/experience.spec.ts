@@ -12,7 +12,10 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
   await expect(
     page.getByRole("button", { name: "Make a wish", exact: true }),
   ).toBeVisible();
-  await expect(page.locator(".connection")).toHaveClass(/connected/);
+  await expect(page.locator(".sanctuary")).toHaveAttribute(
+    "data-online",
+    "true",
+  );
   await page.waitForTimeout(2000);
   await page.screenshot({
     path: "test-results/morning-sanctuary.png",
@@ -47,6 +50,7 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
   });
   await page.screenshot({ path: "test-results/accepted-wish.png" });
   await page.getByRole("button", { name: "Return to the tree" }).click();
+  await page.getByRole("button", { name: "Find my leaf", exact: true }).click();
   await page
     .getByRole("textbox", { name: "Find your username" })
     .fill(name.toUpperCase());
@@ -69,7 +73,10 @@ test("rejection preserves form, optional keyboard works, pending survives reload
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator(".connection")).toHaveClass(/connected/);
+  await expect(page.locator(".sanctuary")).toHaveAttribute(
+    "data-online",
+    "true",
+  );
   await page.getByRole("button", { name: "Make a wish", exact: true }).click();
   await page
     .getByLabel("Username", { exact: true })
@@ -106,7 +113,11 @@ test("reconnection reloads authoritative state and ambiguous search exposes no d
   request,
 }) => {
   await page.goto("/");
-  await expect(page.locator(".connection")).toHaveClass(/connected/);
+  await expect(page.locator(".sanctuary")).toHaveAttribute(
+    "data-online",
+    "true",
+  );
+  await page.getByRole("button", { name: "Find my leaf", exact: true }).click();
   await page
     .getByRole("textbox", { name: "Find your username" })
     .fill("mountain_hore");
@@ -117,7 +128,10 @@ test("reconnection reloads authoritative state and ambiguous search exposes no d
   await page.context().setOffline(true);
   await page.context().setOffline(false);
   await page.reload();
-  await expect(page.locator(".connection")).toHaveClass(/connected/);
+  await expect(page.locator(".sanctuary")).toHaveAttribute(
+    "data-online",
+    "true",
+  );
   const response = await request.get("/api/forest");
   const data = await response.json();
   expect(JSON.stringify(data)).not.toContain("username");
@@ -129,7 +143,10 @@ test("incoming wishes do not hijack the camera while a visitor is typing", async
   request,
 }) => {
   await page.goto("/");
-  await expect(page.locator(".connection")).toHaveClass(/connected/);
+  await expect(page.locator(".sanctuary")).toHaveAttribute(
+    "data-online",
+    "true",
+  );
   await page.getByRole("button", { name: "Make a wish", exact: true }).click();
   await page.getByLabel("Username", { exact: true }).fill("still_typing");
   await page.waitForTimeout(2500);
@@ -138,6 +155,9 @@ test("incoming wishes do not hijack the camera while a visitor is typing", async
       const path = "/src/Scene.tsx";
       return (await import(path)).getCameraPosition() as number[];
     });
+  await expect
+    .poll(async () => (await snapshot())?.length, { timeout: 15000 })
+    .toBe(3);
   const before = await snapshot();
   const forest = await (await request.get("/api/forest")).json();
   const current = forest.trees.find((t: any) => t.leaves.length < 108);
@@ -178,7 +198,10 @@ test("measure software-rendered frame delivery without asserting kiosk performan
 }) => {
   await page.goto("/");
   await expect(page.locator("canvas")).toHaveCount(1);
-  await expect(page.locator(".connection")).toHaveClass(/connected/);
+  await expect(page.locator(".sanctuary")).toHaveAttribute(
+    "data-online",
+    "true",
+  );
   await page.waitForTimeout(1500);
   const metrics = await page.evaluate(
     () =>
