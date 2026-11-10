@@ -1206,3 +1206,109 @@ textarea:focus {
   width: 1.2rem;
   height: 1.2rem;
 }
+
+/* Content-sized sheets: retain generous hit targets without a large empty card. */
+.panel:has(.wish-form) {
+  width: min(32rem, 88%);
+  padding: 1rem;
+}
+.panel:has(.acceptance) {
+  width: min(22rem, 88%);
+  padding: 1rem;
+}
+.sheet-header {
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.panel:has(.wish-form) .sheet-header h1 {
+  flex: 1;
+  font-size: 1.5rem;
+}
+.sheet-header .reach-handle,
+.receipt-header .reach-handle {
+  width: 2.75rem;
+  min-height: 3.25rem;
+  margin: 0;
+  flex: none;
+  color: var(--gmc-text);
+}
+.sheet-back {
+  min-width: 4.5rem;
+  padding: 0.5rem;
+}
+.wish-form label {
+  margin: 0.5rem 0 0.25rem;
+}
+.wish-form input,
+.wish-form textarea {
+  padding: 0.65rem 0.8rem;
+  font-size: 1rem;
+}
+.wish-form input {
+  min-height: 3.25rem;
+}
+.wish-form textarea {
+  height: 5.5rem;
+  line-height: 1.5;
+}
+.wish-form .field-help {
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+.wish-form .field-meta {
+  margin-top: 0.25rem;
+}
+.wish-form .inline-keyboard {
+  min-height: 2.75rem;
+}
+.wish-form .privacy {
+  margin: 0.4rem 0;
+  line-height: 1.4;
+}
+.wish-form .primary {
+  min-height: 3.5rem;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+.receipt-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.receipt-header h1 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.25rem;
+  text-align: left;
+}
+.receipt-actions .primary,
+.receipt-actions .secondary {
+  min-height: 3.25rem;
+}
+.touch-keyboard {
+  padding: 0.4rem;
+  margin-top: 0.5rem;
+}
+.key-row {
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+.keyboard-heading {
+  padding-bottom: 0.25rem;
+}
+.dock-tools {
+  width: 22rem;
+  padding: 0.4rem;
+}
+.tool-action {
+  min-height: 3rem;
+  padding: 0.5rem 0.75rem;
+}
+.tools-hint {
+  padding: 0.5rem 0.75rem 0.25rem;
+}
+/* Only expand the search panel when the full touch keyboard is requested. */
+.dock-tools:has(.touch-keyboard) {
+  width: 32rem;
+}

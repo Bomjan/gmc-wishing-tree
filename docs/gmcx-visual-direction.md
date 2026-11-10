@@ -6,7 +6,7 @@ Fonts are bundled locally with their open-font licences under `public/fonts/gmcx
 
 ## Minimal, reachable interaction
 
-Make a wish and More options form a narrow vertical rail at the right edge, using circular icons with short labels and a small contribution caption. The tree centre stays clear; expanded options open to the left of the rail. The default scene supports drag, two-finger zoom/pan and direct wish-leaf selection. Search and mountain navigation are revealed on demand. Controls default to 32% from the top on the floor-level 55-inch portrait display, approximately 83 cm above its bottom edge. Visitors drag the up/down handle or use Higher/Lower in More options; the wish form and receipt use narrower right-aligned sheets at that position. A clear Back control closes the form. The contextual keyboard expands below the form without recentering the fields, except when screen bounds require adjustment. Panel bounds are measured to keep controls on-screen. Keyboard arrows offer an accessible adjustment alternative. Physical reach and mounting clearances still need installation checks; this is not a claim of universal ergonomic compliance.
+Make a wish and More options form a narrow vertical rail at the right edge, using circular icons with short labels and a small contribution caption. The tree centre stays clear; expanded options open to the left of the rail. The default scene supports drag, two-finger zoom/pan and direct wish-leaf selection. Search and mountain navigation are revealed on demand. Controls default to 32% from the top on the floor-level 55-inch portrait display, approximately 83 cm above its bottom edge. Visitors drag the up/down handle or use Higher/Lower in More options; the wish form and receipt use narrower right-aligned sheets at that position. Panels use compact padding and concise help. The form width is capped at 32rem, its height handle shares the title row, and a clear Back control closes it. Confirmation and options panels are smaller as well. The contextual keyboard expands below the form without recentering the fields, except when screen bounds require adjustment. Panel bounds are measured to keep controls on-screen. Keyboard arrows offer an accessible adjustment alternative. Physical reach and mounting clearances still need installation checks; this is not a claim of universal ergonomic compliance.
 
 ## 3D scene
 
@@ -26,7 +26,7 @@ Undo remains server-authorised for the original ten-second deadline and removes 
 
 - [Current right-edge controls](screenshots/right-edge-controls.png)
 - [Earlier native portrait UHD, before right-edge controls](screenshots/minimal-tree-4k.png)
-- [Current right-aligned form and keyboard](screenshots/right-sheet-keyboard.png)
+- [Current compact form and keyboard](screenshots/compact-sheet-keyboard.png)
 - [Leaf arrival](screenshots/gmcx-leaf-arrival.png)
 - [Settled leaf](screenshots/gmcx-leaf-settled.png)
 

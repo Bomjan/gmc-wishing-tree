@@ -96,3 +96,10 @@ Current screenshot: [right-edge controls](docs/screenshots/right-edge-controls.p
 Wish entry now opens as a narrower sheet aligned with the right edge, rather than a wide panel across the middle. The confirmation/Undo sheet is also smaller and right aligned. The chosen interaction height is preserved, with a larger, clearly labelled Back control. Expanding the optional keyboard anchors the fields in place instead of recentering the entire panel; screen bounds still take priority at extreme height settings.
 
 Validation: production build, formatting and whitespace checks passed. Three browser checks passed: desktop portrait preview; complete submission → Undo/finalise → search/mountain flow; and 1080 × 1920 form/keyboard placement, stable field position on keyboard expansion, both height limits, cancelled adjustment and draft cleanup. [Current form with keyboard](docs/screenshots/right-sheet-keyboard.png). No backend or contribution data changed. Installed reach and OS-keyboard behaviour remain hardware checks.
+
+
+## Compact panels revision
+
+The wish form is capped at 32rem rather than 38rem, with its move handle in the title row, tighter padding and field spacing, a three-line wish area and concise helper/privacy copy. Confirmation and options panels are smaller too. The optional search keyboard expands its panel only while needed; full keyboard keys retain their previous height. Exactly two wish fields and all server behaviour remain unchanged.
+
+Validation: production build, Prettier and whitespace checks passed. Two browser checks passed: the complete submission/Undo/finalise/search flow and the portrait reach/keyboard flow. At 1080 × 1920, the form is under 480px high without a keyboard and under 800px with it, with a submit target at least 55px high and Back at least 51px. Checks verify no keyboard overflow in either the form or search, stable fields during expansion, adjustment bounds/cancellation and draft cleanup. [Current compact panel](docs/screenshots/compact-sheet-keyboard.png). Physical touch behaviour remains an installation check.

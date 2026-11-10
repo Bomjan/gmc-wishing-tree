@@ -358,6 +358,14 @@ export default function App() {
       );
     });
   }
+  const heightHandle = (
+    <ReachHandle
+      position={reach.position}
+      onChange={reach.setPosition}
+      stageRef={reach.stageRef}
+      panelRef={reach.panelRef}
+    />
+  );
   const touchKeyboard = keyboard && (
     <div
       className="touch-keyboard"
@@ -420,16 +428,12 @@ export default function App() {
         aria-label="Wishing Tree interaction"
         ref={reach.panelRef}
       >
-        <ReachHandle
-          position={reach.position}
-          onChange={reach.setPosition}
-          stageRef={reach.stageRef}
-          panelRef={reach.panelRef}
-        />
+        {view !== "form" && view !== "accepted" && heightHandle}
         {view === "form" ? (
           <>
             <div className="sheet-header">
               <h1>Make a wish</h1>
+              {heightHandle}
               <button
                 className="sheet-back"
                 aria-label="Back to the tree"
@@ -465,13 +469,13 @@ export default function App() {
                 minLength={config.usernameMin}
                 maxLength={config.usernameMax}
                 pattern="[a-zA-Z0-9_]+"
-                placeholder="Choose your unique username"
+                placeholder="Your unique username"
+                aria-describedby="username-help"
                 required
                 disabled={busy}
               />
-              <p className="field-help">
-                {config.usernameMin}–{config.usernameMax} letters, numbers or
-                underscores. Keep it to find your leaf.
+              <p className="field-help" id="username-help">
+                {config.usernameMin}–{config.usernameMax} letters, numbers or _.
               </p>
               <label htmlFor="wish">Your wish</label>
               <textarea
@@ -483,12 +487,12 @@ export default function App() {
                 inputMode={keyboard ? "none" : "text"}
                 maxLength={config.wishMax}
                 placeholder="What do you hope for?"
-                rows={4}
+                rows={3}
                 required
                 disabled={busy}
               />
               <div className="field-meta">
-                <span>In English, with kindness.</span>
+                <span>English</span>
                 <button
                   type="button"
                   className="inline-keyboard"
@@ -503,8 +507,7 @@ export default function App() {
                 </span>
               </div>
               <p className="privacy">
-                Your wish is private. Only your leaf will be visible. One wish
-                per username.
+                Only your leaf is public. One wish per username.
               </p>
               <button className="primary" disabled={busy || !online}>
                 <LeafIcon />
@@ -515,7 +518,10 @@ export default function App() {
           </>
         ) : view === "accepted" ? (
           <div className="acceptance">
-            <h1>Your wish has taken root.</h1>
+            <div className="receipt-header">
+              <h1>Your wish has taken root.</h1>
+              {heightHandle}
+            </div>
             <div className="receipt-actions">
               {receipt?.state === "pending" ? (
                 <>
