@@ -44,81 +44,14 @@ function leafTexture() {
       }
   });
 }
-function sceneryTexture() {
-  return canvasTexture(256, (c) => {
-    const r = random(799);
-    c.clearRect(0, 0, 256, 256);
-    c.strokeStyle = "#524c33";
-    c.lineWidth = 2;
-    for (let twig = 0; twig < 8; twig++) {
-      const angle = twig * 2.4,
-        len = 38 + r() * 58,
-        ex = 128 + Math.cos(angle) * len,
-        ey = 150 + Math.sin(angle) * len;
-      c.beginPath();
-      c.moveTo(128, 252);
-      c.quadraticCurveTo(128, 170, ex, ey);
-      c.stroke();
-      for (let leaf = 0; leaf < 13; leaf++) {
-        const t = leaf / 13,
-          x = 128 + (ex - 128) * t + (r() - 0.5) * 42,
-          y = 245 + (ey - 245) * t + (r() - 0.5) * 26;
-        c.fillStyle = `hsl(${83 + r() * 18} ${17 + r() * 15}% ${27 + r() * 19}%)`;
-        c.beginPath();
-        c.ellipse(
-          x,
-          y,
-          5 + r() * 6,
-          2.5 + r() * 4,
-          angle + r(),
-          0,
-          Math.PI * 2,
-        );
-        c.fill();
-      }
-    }
-  });
-}
+/** Only the tree's materials are loaded; landscape assets remain available for future work. */
 export function createNatureMaterials() {
   const owned: THREE.Texture[] = [];
-  const leafMap = leafTexture(),
-    spray = sceneryTexture();
-  owned.push(leafMap, spray);
+  const leafMap = leafTexture();
+  owned.push(leafMap);
   const bark = new THREE.MeshStandardMaterial({
     color: "#b3aaa0",
     roughness: 0.95,
-  });
-  const ground = new THREE.MeshStandardMaterial({
-    color: "#d1d1b5",
-    roughness: 1,
-    vertexColors: true,
-  });
-  // Art-direct the dry photographed ground toward a living meadow while
-  // retaining its real microdetail and physical normal/roughness response.
-  ground.onBeforeCompile = (shader) => {
-    shader.vertexShader =
-      "varying float vSanctuaryHeight;\n" +
-      shader.vertexShader.replace(
-        "#include <begin_vertex>",
-        "#include <begin_vertex>\n vSanctuaryHeight=position.y;",
-      );
-    shader.fragmentShader =
-      "varying float vSanctuaryHeight;\n" +
-      shader.fragmentShader.replace(
-        "#include <color_fragment>",
-        `#include <color_fragment>
-      float luminance=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722));
-      vec3 meadow=vec3(luminance*.85,luminance*1.36,luminance*.63)*1.65;
-      vec3 rockTone=vec3(luminance*1.13,luminance*1.18,luminance*1.12);
-      vec3 grade=mix(meadow,rockTone,smoothstep(16.,38.,vSanctuaryHeight));
-      diffuseColor.rgb=mix(diffuseColor.rgb,grade,.78);
-    `,
-      );
-  };
-  ground.customProgramCacheKey = () => "sanctuary-meadow-grade-v1";
-  const rock = new THREE.MeshStandardMaterial({
-    color: "#b1b3a3",
-    roughness: 0.98,
   });
   const leaf = new THREE.MeshStandardMaterial({
     map: leafMap,
@@ -128,54 +61,14 @@ export function createNatureMaterials() {
     emissive: "#30411c",
     emissiveIntensity: 0.055,
   });
-  const scenery = new THREE.MeshStandardMaterial({
-    map: spray,
-    alphaTest: 0.42,
-    side: THREE.DoubleSide,
-    color: "#b8c5a2",
-    roughness: 1,
-  });
-  const grass = new THREE.MeshStandardMaterial({
-    color: "#a8b28a",
-    roughness: 1,
-    side: THREE.DoubleSide,
-  });
-  const stem = new THREE.MeshStandardMaterial({
-    color: "#3b3427",
-    roughness: 1,
-  });
-  const wind = { value: 0 };
-  grass.onBeforeCompile = (shader) => {
-    shader.uniforms.uWindTime = wind;
-    shader.vertexShader =
-      "uniform float uWindTime;\n" +
-      shader.vertexShader.replace(
-        "#include <begin_vertex>",
-        `#include <begin_vertex>
- vec3 anchor = position;
- #ifdef USE_INSTANCING
- anchor = instanceMatrix[3].xyz;
- #endif
- transformed.x += sin(uWindTime*.9 + anchor.x*.4 + anchor.z*.3)*position.y*position.y*.075;
- transformed.z += cos(uWindTime*.7+anchor.x*.3)*position.y*position.y*.04;
- `,
-      );
-  };
-  grass.customProgramCacheKey = () => "sanctuary-grass-wind-v1";
   let closed = false;
   const loader = new THREE.TextureLoader();
-  const entries = [
-    ["bark", bark],
-    ["ground", ground],
-    ["rock", rock],
-  ] as const;
-  const pending: Promise<void>[] = [];
-  for (const [name, material] of entries)
-    for (const kind of ["color", "normal", "roughness"] as const) {
-      pending.push(
-        new Promise((resolve) => {
+  const ready = Promise.all(
+    (["color", "normal", "roughness"] as const).map(
+      (kind) =>
+        new Promise<void>((resolve) => {
           loader.load(
-            `/textures/sanctuary/${name}-${kind}.jpg`,
+            `/textures/sanctuary/bark-${kind}.jpg`,
             (texture) => {
               if (closed) {
                 texture.dispose();
@@ -187,35 +80,28 @@ export function createNatureMaterials() {
               texture.anisotropy = 4;
               if (kind === "color") {
                 texture.colorSpace = THREE.SRGBColorSpace;
-                material.map = texture;
+                bark.map = texture;
               } else if (kind === "normal") {
-                material.normalMap = texture;
-                material.normalScale.setScalar(name === "ground" ? 0.45 : 0.7);
-              } else material.roughnessMap = texture;
-              material.needsUpdate = true;
+                bark.normalMap = texture;
+                bark.normalScale.setScalar(0.7);
+              } else bark.roughnessMap = texture;
+              bark.needsUpdate = true;
               resolve();
             },
             undefined,
             () => resolve(),
-          ); // Keep the surface rendering if a local texture is unavailable.
+          );
         }),
-      );
-    }
+    ),
+  );
   return {
     bark,
-    ground,
-    rock,
     leaf,
-    scenery,
-    grass,
-    stem,
-    wind,
-    ready: Promise.all(pending),
+    ready,
     dispose() {
       closed = true;
-      [bark, ground, rock, leaf, scenery, grass, stem].forEach((m) =>
-        m.dispose(),
-      );
+      bark.dispose();
+      leaf.dispose();
       owned.forEach((t) => t.dispose());
     },
   };

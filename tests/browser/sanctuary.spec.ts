@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 test.use({ viewport: { width: 1080, height: 1920 } });
-test("natural world loads local materials and animates a confirmed contribution without adding extra leaves", async ({
+test("tree showcase loads local materials and animates a confirmed contribution without adding extra leaves", async ({
   page,
   request,
 }) => {
@@ -71,10 +71,87 @@ test("natural world loads local materials and animates a confirmed contribution 
   expect(count(after)).toBe(count(before) + 1);
   await page.screenshot({ path: "test-results/leaf-settled.png" });
   const stats = await metrics();
-  expect(stats.drawCalls).toBeLessThan(90);
+  expect(stats.drawCalls).toBeLessThan(16);
+  expect(stats.trees).toHaveLength(1);
+  expect(stats.backgroundMeshes).toBe(0);
+  expect(stats.backdrop).toBe("f1eee5");
   expect(errors).toEqual([]);
   // Keep the scene fixture reusable without leaving a test visitor behind.
   await request.post(`/api/submissions/${receipt.id}/undo`, {
     headers: { Authorization: `Bearer ${receipt.token}` },
   });
+});
+
+test("actual tree size grows from four to 108 leaves without zooming to hide the difference", async ({
+  page,
+}) => {
+  let count = 4;
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() => localStorage.setItem("gmc-quality", "low"));
+  const assets: string[] = [];
+  page.on("request", (r) => {
+    if (r.url().includes("/textures/")) assets.push(r.url());
+  });
+  await page.route("**/api/forest", (route) =>
+    route.fulfill({
+      json: {
+        demo: true,
+        serverTime: new Date().toISOString(),
+        trees: [
+          {
+            id: "growth-demo",
+            seed: 412,
+            x: 32,
+            z: -10,
+            leaves: Array.from({ length: count }, (_, slot) => ({
+              slot,
+              state: "finalised",
+            })),
+          },
+        ],
+      },
+    }),
+  );
+  await page.goto("/");
+  const metrics = () =>
+    page.evaluate(async () => {
+      const path = "/src/Scene.tsx";
+      return (await import(path)).getSceneMetrics();
+    });
+  await expect.poll(async () => (await metrics()).trees?.[0]?.leaves).toBe(4);
+  await page.waitForTimeout(500);
+  const before = await metrics();
+  const camera = () =>
+    page.evaluate(async () => {
+      const path = "/src/Scene.tsx";
+      return (await import(path)).getCameraPosition();
+    });
+  const initialCamera = await camera();
+  await page.screenshot({ path: "test-results/tree-sapling-4.png" });
+  let height = before.trees![0].woodHeight;
+  let vertices = before.trees![0].woodVertices;
+  for (const n of [8, 27, 54, 81, 108]) {
+    count = n;
+    await page.evaluate(async () => {
+      const path = "/src/state.ts";
+      await (await import(path)).loadForest();
+    });
+    await expect.poll(async () => (await metrics()).trees?.[0]?.leaves).toBe(n);
+    const tree = (await metrics()).trees![0];
+    expect(tree.woodHeight).toBeGreaterThan(height);
+    height = tree.woodHeight;
+    expect(tree.woodVertices).toBeGreaterThan(vertices);
+    vertices = tree.woodVertices;
+    expect(await camera()).toEqual(initialCamera);
+    await expect(page.locator(".dock-caption")).toContainText(
+      `${n} / 108 leaves`,
+    );
+  }
+  const mature = (await metrics()).trees![0];
+  expect(mature.scale).toBe(1);
+  expect(before.trees![0].woodHeight).toBeLessThan(mature.woodHeight / 3);
+  expect(mature.woodVertices).toBeGreaterThan(before.trees![0].woodVertices);
+  expect(assets.some((url) => /ground-|rock-/.test(url))).toBe(false);
+  await expect(page.locator(".sun-wash")).toHaveCount(0);
+  await page.screenshot({ path: "test-results/tree-mature-108.png" });
 });

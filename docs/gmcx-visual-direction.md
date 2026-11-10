@@ -10,11 +10,9 @@ Make a wish and More options form a narrow vertical rail at the right edge, usin
 
 ## 3D scene
 
-Continuous fractal terrain replaces the old repetitive wave surface. Photographic bark, grass-ground and stone colour/normal/roughness maps are bundled locally under `public/textures/sanctuary/`; provenance/checksums and CC0 credits accompany them. Grass ground is colour graded toward living meadow tones while preserving photographic surface variation. Broad, layered ridgelines use the same height function as tree roots and camera collision, so scenery does not float above a separate mountain mesh.
+The current default scene is a focused tree portrait: a quiet warm cream background, soft hemisphere fill, one warm spotlight and a subtle contact shadow. There is no landscape, terrain, scenery vegetation or decorative foliage. Only actual visitor-contribution trees can be seen; the wider view arranges those trees at their persistent world positions. This keeps the tree as the sole visual subject and leaves interface actions along the edge unobtrusive.
 
-Wish trees use tapered UV-mapped wood, buttress roots, hierarchical limbs, a layered crown, curved leaves with vein texture and gentle movement. Background foliage uses instanced alpha-masked sprays instead of solid spherical canopies. Instanced curved grass clusters and irregular textured stones replace cones and smooth primitive rocks. One shared set of materials serves the scene; leaf/wood LOD and bounded instancing keep draw calls controlled. Textures, materials and owned geometry are disposed on scene removal.
-
-Exactly one wish-leaf instance is rendered per occupied contribution slot. The new deterministic layout changes the visual leaf positions of older tree models, while preserving every tree ID, stored position, seed and logical slot. All lookup/highlight positioning uses the same new layout, and remains deterministic on reload. Background foliage is scenery only.
+Wish trees use tapered textured wood, hierarchical branches and a layered crown with curved, vein-textured leaves and restrained movement. Trunk thickness and overall tree scale progress with the occupied contribution count; a small number of wishes reads as a sapling, while 108 leaves reach the mature model. Exactly one wish-leaf instance is rendered per occupied slot. Positions remain deterministic from the persisted tree seed, and the same slot mapping drives search and highlighting. Leaf/wood LOD, shared materials and bounded instancing keep draw calls controlled. Textures, materials and owned geometry are disposed on scene removal.
 
 ## Leaf arrival
 
@@ -24,10 +22,12 @@ Undo remains server-authorised for the original ten-second deadline and removes 
 
 ## Review captures
 
+- [Four-leaf sapling](screenshots/tree-sapling-4.png)
+- [108-leaf mature tree](screenshots/tree-mature-108.png)
 - [Current right-edge controls](screenshots/right-edge-controls.png)
 - [Earlier native portrait UHD, before right-edge controls](screenshots/minimal-tree-4k.png)
 - [Current compact form and keyboard](screenshots/compact-sheet-keyboard.png)
 - [Leaf arrival](screenshots/gmcx-leaf-arrival.png)
 - [Settled leaf](screenshots/gmcx-leaf-settled.png)
 
-The world remains a procedural real-time scene, not a scanned landscape or a claim of finished photorealism. The photographs are material maps on actual 3D surfaces, not a flat landscape background. Physical Samsung touch behaviour and installed GPU performance still need on-device profiling.
+The tree remains a procedural real-time model, not a claim of finished photorealism. Bark uses locally bundled material maps; production bark assets and on-device lighting review can further improve realism without adding a competing landscape. Physical Samsung touch behaviour and installed GPU performance still need on-device profiling.

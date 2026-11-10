@@ -9,7 +9,7 @@ import {
   leafGeometry,
   woodTube,
 } from "../src/experiences/wishing-tree/graphics/nature";
-import { leafPoint } from "../src/shared";
+import { leafPoint, treeScale, activeTree } from "../src/shared";
 import * as THREE from "three";
 test("arrival starts folded, visibly approaches and finishes exactly on its logical slot", () => {
   const begin = leafArrival(0),
@@ -61,4 +61,38 @@ test("leaf and tapered wood geometry have finite attributes and normals", () => 
     assert(Array.from(g.attributes.normal.array).every(Number.isFinite));
     g.dispose();
   }
+});
+
+test("tree size increases with every occupied slot, from a small sapling to 108-leaf maturity", () => {
+  for (let n = 1; n <= 108; n++) assert(treeScale(n) > treeScale(n - 1));
+  assert(treeScale(4) < treeScale(108) / 3);
+  assert.equal(treeScale(108), 1);
+  assert.equal(treeScale(-1), treeScale(0));
+  assert.equal(treeScale(109), treeScale(108));
+  assert.equal(treeScale(NaN), treeScale(0));
+});
+test("tree focus and count resolve to the same tree with a safe current-tree fallback", () => {
+  const trees = [
+    {
+      id: "full",
+      seed: 1,
+      x: 0,
+      z: 0,
+      leaves: Array.from({ length: 108 }, (_, slot) => ({
+        slot,
+        state: "finalised" as const,
+      })),
+    },
+    {
+      id: "new",
+      seed: 2,
+      x: 10,
+      z: 0,
+      leaves: [{ slot: 0, state: "finalised" as const }],
+    },
+  ];
+  assert.equal(activeTree(trees)?.id, "new");
+  assert.equal(activeTree(trees, "full")?.leaves.length, 108);
+  assert.equal(activeTree(trees, "missing")?.id, "new");
+  assert.equal(activeTree([]), undefined);
 });

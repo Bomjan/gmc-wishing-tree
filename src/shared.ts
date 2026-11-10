@@ -49,7 +49,16 @@ export function leafPoint(
   ];
 }
 export function treeScale(n: number) {
-  return n === 0 ? 0.25 : 0.22 + 0.78 * Math.pow(n / 108, 0.62);
+  const count = Math.min(108, Math.max(0, Number.isFinite(n) ? n : 0));
+  return 0.22 + 0.78 * Math.pow(count / 108, 0.62);
+}
+/** Same active tree for the renderer, camera and public progress caption. */
+export function activeTree(trees: Tree[], id?: string | null) {
+  return (
+    trees.find((t) => t.id === id) ||
+    trees.find((t) => t.leaves.length < 108) ||
+    trees.at(-1)
+  );
 }
 export function near(a: string, b: string) {
   if (Math.abs(a.length - b.length) > 1) return false;

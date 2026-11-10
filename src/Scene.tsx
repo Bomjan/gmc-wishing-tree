@@ -11,16 +11,16 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
-import { leafPoint, treeScale, forestBounds, type Tree } from "./shared";
+import {
+  leafPoint,
+  treeScale,
+  forestBounds,
+  activeTree,
+  type Tree,
+} from "./shared";
 import { useSanctuary } from "./state";
 import { gmcxBrand } from "./shared/branding";
 import {
-  terrainHeight as ridge,
-  fractal,
-  random,
-  bladeGeometry,
-  foliageSprayGeometry,
-  rockGeometry,
   leafGeometry,
   leafEdgeGeometry,
   woodTube,
@@ -97,68 +97,50 @@ export function getProjectedLeaves() {
 export function getSceneMetrics() {
   return {
     assetsReady,
+    trees: developmentWorld?.children
+      .filter((o) => o.name.startsWith("wish-tree:"))
+      .map((o) => {
+        const leaf = o.children.find(
+          (c) => c instanceof THREE.InstancedMesh,
+        ) as THREE.InstancedMesh | undefined;
+        const wood = o.children.find(
+          (c) => c instanceof THREE.Mesh && !(c instanceof THREE.InstancedMesh),
+        ) as THREE.Mesh | undefined;
+        wood?.geometry.computeBoundingBox();
+        return {
+          id: o.name.slice(10),
+          leaves: leaf?.count || 0,
+          scale: o.scale.x,
+          woodVertices: wood?.geometry.attributes.position.count || 0,
+          woodHeight: wood?.geometry.boundingBox
+            ? (wood.geometry.boundingBox.max.y -
+                wood.geometry.boundingBox.min.y) *
+              o.scale.y
+            : 0,
+          woodWidth: wood?.geometry.boundingBox
+            ? wood.geometry.boundingBox.max.x - wood.geometry.boundingBox.min.x
+            : 0,
+        };
+      }),
+    backdrop: (
+      developmentWorld?.background as THREE.Color | null
+    )?.getHexString?.(),
+    backgroundMeshes:
+      developmentWorld?.children.filter(
+        (o) =>
+          o instanceof THREE.Mesh &&
+          o.name !== "tree-contact-shadow" &&
+          !o.name.startsWith("wish-tree:"),
+      ).length ?? 0,
     drawCalls: developmentRenderer?.info.render.calls,
     triangles: developmentRenderer?.info.render.triangles,
     arrivals: [...arrivals.entries()].map(([id, state]) => ({ id, ...state })),
   };
 }
 
-function Terrain({
-  bounds,
-  material,
-}: {
-  bounds: number;
-  material: THREE.Material;
-}) {
-  const geometry = useMemo(() => {
-    const size = Math.max(420, bounds * 2 + 220),
-      g = new THREE.PlaneGeometry(size, size, 210, 210);
-    g.rotateX(-Math.PI / 2);
-    const p = g.attributes.position,
-      uv = g.attributes.uv,
-      colors: number[] = [];
-    for (let i = 0; i < p.count; i++) {
-      const x = p.getX(i),
-        z = p.getZ(i) - 100;
-      p.setXYZ(i, x, ridge(x, z), z);
-      uv.setXY(i, x * 0.24, z * 0.24);
-    }
-    g.computeVertexNormals();
-    const normal = g.attributes.normal,
-      color = new THREE.Color(),
-      soil = new THREE.Color("#c9c8b4"),
-      green = new THREE.Color("#c0c9a0"),
-      stone = new THREE.Color("#a4aca8");
-    for (let i = 0; i < p.count; i++) {
-      const x = p.getX(i),
-        z = p.getZ(i),
-        height = p.getY(i),
-        slope = 1 - normal.getY(i);
-      color
-        .copy(green)
-        .lerp(soil, fractal(x * 0.2, z * 0.2) * 0.7)
-        .lerp(
-          stone,
-          Math.min(0.85, slope * 2.2 + Math.max(0, height - 12) * 0.025),
-        );
-      color.multiplyScalar(0.85 + fractal(x * 0.34 + 18, z * 0.34) * 0.25);
-      colors.push(color.r, color.g, color.b);
-    }
-    g.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-    return g;
-  }, [bounds]);
-  useEffect(() => () => geometry.dispose(), [geometry]);
-  return (
-    <mesh
-      geometry={geometry}
-      material={material}
-      receiveShadow
-      dispose={null}
-    />
-  );
-}
 function branchGeometry(seed: number, slots: number[], detailed: boolean) {
   const parts: THREE.BufferGeometry[] = [];
+  const thickness = 0.3 + 0.7 * Math.sqrt(Math.min(108, slots.length) / 108);
   const trunk = new THREE.CatmullRomCurve3([
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(0.08, 1.3, 0.03),
@@ -166,9 +148,14 @@ function branchGeometry(seed: number, slots: number[], detailed: boolean) {
     new THREE.Vector3(0.13, 4.1, 0.05),
     new THREE.Vector3(0.02, 4.85, 0.05),
   ]);
-  parts.push(woodTube(trunk, 0.27, detailed ? 22 : 8, detailed ? 9 : 5));
+  const branchCount = Math.ceil(
+    5 * Math.sqrt(Math.min(108, slots.length) / 108),
+  );
+  parts.push(
+    woodTube(trunk, 0.27 * thickness, detailed ? 22 : 8, detailed ? 9 : 5),
+  );
   if (detailed) {
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < branchCount; i++) {
       const a = i * 2.4 + seed * 0.001;
       parts.push(
         woodTube(
@@ -177,7 +164,7 @@ function branchGeometry(seed: number, slots: number[], detailed: boolean) {
             new THREE.Vector3(Math.cos(a) * 0.27, 0.17, Math.sin(a) * 0.27),
             new THREE.Vector3(0, 0.8, 0),
           ]),
-          0.09,
+          0.09 * thickness,
           7,
           6,
         ),
@@ -197,7 +184,11 @@ function branchGeometry(seed: number, slots: number[], detailed: boolean) {
         Math.sin(angle) * 0.83,
       );
     };
-    for (const limb of new Set(groups.map(limbFor))) {
+    const emergingLimbs = Array.from(
+      { length: branchCount },
+      (_, limb) => limb,
+    );
+    for (const limb of new Set([...groups.map(limbFor), ...emergingLimbs])) {
       const end = limbEnd(limb);
       parts.push(
         woodTube(
@@ -206,7 +197,7 @@ function branchGeometry(seed: number, slots: number[], detailed: boolean) {
             end.clone().multiply(new THREE.Vector3(0.4, 0.76, 0.4)),
             end,
           ]),
-          0.12,
+          0.12 * thickness,
           14,
           8,
         ),
@@ -224,7 +215,7 @@ function branchGeometry(seed: number, slots: number[], detailed: boolean) {
       parts.push(
         woodTube(
           new THREE.CatmullRomCurve3([start, middle, endpoint]),
-          0.046 + (group % 3) * 0.006,
+          (0.046 + (group % 3) * 0.006) * thickness,
           10,
           6,
         ),
@@ -245,7 +236,7 @@ function branchGeometry(seed: number, slots: number[], detailed: boolean) {
               .add(new THREE.Vector3(0, 0.08, 0)),
             end,
           ]),
-          0.014,
+          0.014 * thickness,
           5,
           4,
         ),
@@ -259,9 +250,11 @@ function branchGeometry(seed: number, slots: number[], detailed: boolean) {
 function WishTree({
   tree,
   materials,
+  isolated,
 }: {
   tree: Tree;
   materials: NatureMaterials;
+  isolated: boolean;
 }) {
   const group = useRef<THREE.Group>(null),
     mesh = useRef<THREE.InstancedMesh>(null),
@@ -425,7 +418,7 @@ function WishTree({
     <group
       ref={group}
       name={"wish-tree:" + tree.id}
-      position={[tree.x, ridge(tree.x, tree.z), tree.z]}
+      position={[isolated ? 0 : tree.x, 0, isolated ? 0 : tree.z]}
       scale={treeScale(tree.leaves.length)}
       onClick={(event) => {
         event.stopPropagation();
@@ -473,178 +466,24 @@ function WishTree({
     </group>
   );
 }
-function Vegetation({
-  materials,
-  trees,
-}: {
-  materials: NatureMaterials;
-  trees: Tree[];
-}) {
-  const grass = useRef<THREE.InstancedMesh>(null),
-    trunks = useRef<THREE.InstancedMesh>(null),
-    crowns = useRef<THREE.InstancedMesh>(null),
-    rocks = useRef<THREE.InstancedMesh>(null);
-  const quality = useSanctuary((s) => s.quality),
-    count = quality === "high" ? 11000 : 4200,
-    treeCount = 180;
-  const blade = useMemo(bladeGeometry, []),
-    spray = useMemo(foliageSprayGeometry, []),
-    stone = useMemo(rockGeometry, []),
-    trunk = useMemo(() => new THREE.CylinderGeometry(0.035, 0.1, 1, 6), []);
-  useEffect(
-    () => () => {
-      blade.dispose();
-      spray.dispose();
-      stone.dispose();
-      trunk.dispose();
-    },
-    [blade, spray, stone, trunk],
-  );
-  const positions = trees.map((t) => `${t.id}:${t.x}:${t.z}`).join(",");
-  useEffect(() => {
-    const rand = random(9625),
-      d = new THREE.Object3D(),
-      c = new THREE.Color();
-    for (let i = 0; i < count; i++) {
-      const x = (rand() - 0.5) * 48,
-        z = (rand() - 0.5) * 36;
-      const density = fractal(x * 0.22, z * 0.22),
-        nearRoot = trees.some((t) => Math.hypot(t.x - x, t.z - z) < 0.8);
-      d.position.set(x, ridge(x, z) - 0.025, z);
-      d.rotation.set(0, rand() * Math.PI * 2, (rand() - 0.5) * 0.1);
-      const size = nearRoot || density < 0.28 ? 0 : 0.3 + rand() * 0.35;
-      d.scale.set(size, size * (0.7 + rand() * 0.6), size);
-      d.updateMatrix();
-      grass.current?.setMatrixAt(i, d.matrix);
-      c.setHSL(0.2 + rand() * 0.045, 0.15 + rand() * 0.1, 0.32 + rand() * 0.14);
-      grass.current?.setColorAt(i, c);
-    }
-    for (let i = 0; i < treeCount; i++) {
-      const x = (rand() - 0.5) * 220,
-        z = -55 - rand() * 145,
-        base = ridge(x, z),
-        height = 2.4 + rand() * 3.8,
-        blocked = trees.some((t) => Math.hypot(t.x - x, t.z - z) < 4);
-      d.position.set(x, base + height * 0.5, z);
-      d.rotation.set(0, rand() * 6.28, (rand() - 0.5) * 0.1);
-      d.scale.set(height * 0.22, height, height * 0.22);
-      if (blocked) d.scale.setScalar(0);
-      d.updateMatrix();
-      trunks.current?.setMatrixAt(i, d.matrix);
-      for (let j = 0; j < 10; j++) {
-        const a = j * 2.399963,
-          rad = height * (0.1 + rand() * 0.2),
-          level = 0.58 + (j % 4) * 0.105;
-        d.position.set(
-          x + Math.cos(a) * rad,
-          base + height * level,
-          z + Math.sin(a) * rad,
-        );
-        const s = height * (0.35 + rand() * 0.16);
-        d.scale.set(s, s * (0.8 + rand() * 0.4), s);
-        if (blocked) d.scale.setScalar(0);
-        d.rotation.set(
-          (rand() - 0.5) * 0.25,
-          rand() * 6.28,
-          (rand() - 0.5) * 0.2,
-        );
-        d.updateMatrix();
-        crowns.current?.setMatrixAt(i * 10 + j, d.matrix);
-        c.setHSL(0.22 + rand() * 0.025, 0.1, 0.38 + rand() * 0.16);
-        crowns.current?.setColorAt(i * 10 + j, c);
-      }
-    }
-    for (let i = 0; i < 55; i++) {
-      let x = (rand() - 0.5) * 64,
-        z = (rand() - 0.5) * 48;
-      if (z > 0 && Math.abs(x) < 5) x += x >= 0 ? 7 : -7;
-      const size = 0.12 + rand() * 0.48;
-      d.position.set(x, ridge(x, z) - size * 0.18, z);
-      d.rotation.set(rand() * 0.4, rand() * 6.28, rand() * 0.3);
-      d.scale.set(size * (1 + rand()), size, size);
-      d.updateMatrix();
-      rocks.current?.setMatrixAt(i, d.matrix);
-    }
-    for (const ref of [grass, trunks, crowns, rocks])
-      if (ref.current) {
-        ref.current.instanceMatrix.needsUpdate = true;
-        if (ref.current.instanceColor)
-          ref.current.instanceColor.needsUpdate = true;
-      }
-  }, [count, positions]);
-  return (
-    <group>
-      <instancedMesh
-        ref={grass}
-        args={[blade, materials.grass, count]}
-        receiveShadow
-        dispose={null}
-      />
-      <instancedMesh
-        ref={trunks}
-        args={[trunk, materials.stem, treeCount]}
-        dispose={null}
-      />
-      <instancedMesh
-        ref={crowns}
-        args={[spray, materials.scenery, treeCount * 10]}
-        dispose={null}
-      />
-      <instancedMesh
-        ref={rocks}
-        args={[stone, materials.rock, 55]}
-        receiveShadow
-        castShadow
-        dispose={null}
-      />
-    </group>
-  );
-}
-function MorningSky() {
-  const sky = useRef<THREE.Mesh>(null);
-  const dome = useMemo(() => new THREE.SphereGeometry(650, 32, 20), []);
-  useFrame(({ camera }) => sky.current?.position.copy(camera.position));
-  const material = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        side: THREE.BackSide,
-        depthWrite: false,
-        uniforms: {
-          horizon: { value: new THREE.Color("#e8e2cc") },
-          zenith: { value: new THREE.Color("#9eb8bc") },
-          sun: { value: new THREE.Vector3(-0.45, 0.35, 0.7).normalize() },
-        },
-        vertexShader:
-          "varying vec3 vDirection; void main(){vDirection=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);gl_Position.z=gl_Position.w*.9999;}",
-        fragmentShader:
-          `varying vec3 vDirection;uniform vec3 horizon;uniform vec3 zenith;uniform vec3 sun;void main(){vec3 d=normalize(vDirection);float altitude=pow(max(0.,d.y),.5);vec3 color=mix(horizon,zenith,altitude);float glow=pow(max(0.,dot(d,sun)),24.);color+=vec3(1.,.72,.38)*glow*.15;gl_FragColor=vec4(color,1.);#include <tonemapping_fragment>\n#include <colorspace_fragment>}`.replace(
-            ";#include",
-            ";\n#include",
-          ),
-      }),
-    [],
-  );
-  useEffect(
-    () => () => {
-      material.dispose();
-      dome.dispose();
-    },
-    [material, dome],
-  );
-  return (
-    <mesh
-      ref={sky}
-      geometry={dome}
-      material={material}
-      frustumCulled={false}
-      dispose={null}
-    />
-  );
-}
 function World() {
-  const trees = useSanctuary((s) => s.forest.trees),
-    quality = useSanctuary((s) => s.quality);
+  const { forest, view, focus, selection, quality } = useSanctuary();
+  const current = activeTree(forest.trees, selection?.treeId || focus);
+  // Only visitor-contributed trees appear. The overview preserves stored x/z positions.
+  const visibleTrees =
+    view === "mountain" && !focus && !selection
+      ? forest.trees
+      : current
+        ? [current]
+        : [];
   const materials = useMemo(createNatureMaterials, []);
+  const lightTarget = useMemo(() => new THREE.Object3D(), []);
+  const overview = view === "mountain" && !focus && !selection;
+  const x = overview ? current?.x || 0 : 0,
+    z = overview ? current?.z || 0 : 0;
+  useEffect(() => {
+    lightTarget.position.set(x, 2.4, z);
+  }, [lightTarget, x, z]);
   useEffect(() => {
     let active = true;
     assetsReady = false;
@@ -657,38 +496,49 @@ function World() {
       materials.dispose();
     };
   }, [materials]);
-  useFrame(({ clock }) => {
-    materials.wind.value = reduced() ? 0 : clock.elapsedTime;
-  });
   return (
     <>
-      <color attach="background" args={["#dedfcd"]} />
-      <fog attach="fog" args={["#dce4db", 38, 275]} />
-      <MorningSky />
-      <hemisphereLight args={["#f1efde", "#53604b", 1.45]} />
-      <directionalLight
-        position={[-24, 32, 18]}
-        color="#fff0ce"
-        intensity={2.3}
+      <color attach="background" args={["#f1eee5"]} />
+      <hemisphereLight args={["#fffaf0", "#8e927f", 1.65]} />
+      <primitive object={lightTarget} />
+      <spotLight
+        position={[x - 4, 11, z + 7]}
+        target={lightTarget}
+        color="#fff3d7"
+        intensity={180}
+        angle={0.65}
+        penumbra={0.85}
+        distance={65}
         castShadow
         shadow-mapSize={[
           quality === "high" ? 2048 : 1024,
           quality === "high" ? 2048 : 1024,
         ]}
-        shadow-camera-left={-12}
-        shadow-camera-right={12}
-        shadow-camera-top={12}
-        shadow-camera-bottom={-12}
-        shadow-camera-near={1}
-        shadow-camera-far={90}
-        shadow-bias={-0.0003}
+        shadow-bias={-0.0002}
         shadow-normalBias={0.025}
-        shadow-radius={3}
+        shadow-radius={4}
       />
-      <Terrain bounds={forestBounds(trees)} material={materials.ground} />
-      <Vegetation trees={trees} materials={materials} />
-      {trees.map((t) => (
-        <WishTree key={t.id} tree={t} materials={materials} />
+      <mesh
+        name="tree-contact-shadow"
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[x, -0.045, z]}
+        receiveShadow
+      >
+        <planeGeometry
+          args={[
+            Math.max(200, forestBounds(forest.trees) * 3),
+            Math.max(200, forestBounds(forest.trees) * 3),
+          ]}
+        />
+        <shadowMaterial transparent opacity={0.16} depthWrite={false} />
+      </mesh>
+      {visibleTrees.map((t) => (
+        <WishTree
+          key={t.id}
+          tree={t}
+          materials={materials}
+          isolated={!overview}
+        />
       ))}
       <CameraRig />
     </>
@@ -698,8 +548,8 @@ function World() {
 function CameraRig() {
   const controls = useRef<OrbitImpl>(null),
     moving = useRef(true),
-    desired = useRef(new THREE.Vector3(7.5, 4.5, 16)),
-    target = useRef(new THREE.Vector3(0, 1.9, 0));
+    desired = useRef(new THREE.Vector3(6, 3.7, 13)),
+    target = useRef(new THREE.Vector3(0, 2.4, 0));
   const { camera } = useThree();
   const revision = useSanctuary((s) => s.cameraRevision),
     view = useSanctuary((s) => s.view),
@@ -723,13 +573,10 @@ function CameraRig() {
     }
   }, [forest.trees.length]);
   useEffect(() => {
-    const tree =
-      forest.trees.find((t) => t.id === (selection?.treeId || focus)) ||
-      forest.trees.find((t) => t.leaves.length < 108) ||
-      forest.trees.at(-1);
-    const x = tree?.x || 0,
-      z = tree?.z || 0,
-      y = ridge(x, z);
+    const tree = activeTree(forest.trees, selection?.treeId || focus);
+    const x = 0,
+      z = 0,
+      y = 0;
     if (view === "mountain" && !focus && !selection) {
       desired.current.set(
         0,
@@ -746,8 +593,8 @@ function CameraRig() {
       desired.current.set(x + 6, y + 4.1, z + 11);
       target.current.set(x, y + 2.1, z);
     } else {
-      desired.current.set(x + 7.5, y + 4.5, z + 16);
-      target.current.set(x, y + 1.9, z);
+      desired.current.set(x + 6, y + 3.7, z + 13);
+      target.current.set(x, y + 2.4, z);
     }
     moving.current = true;
   }, [revision, view, focus]);
@@ -771,18 +618,12 @@ function CameraRig() {
       -bounds,
       bounds,
     );
-    camera.position.y = Math.max(
-      camera.position.y,
-      ridge(camera.position.x, camera.position.z) + 2,
-    );
+    camera.position.y = Math.max(camera.position.y, 0.6);
     c.target.x = THREE.MathUtils.clamp(c.target.x, -bounds + 12, bounds - 12);
     c.target.z = THREE.MathUtils.clamp(c.target.z, -bounds + 12, bounds - 12);
-    c.target.y = Math.max(c.target.y, ridge(c.target.x, c.target.z) + 0.6);
+    c.target.y = Math.max(c.target.y, 0.2);
     c.update();
-    camera.position.y = Math.max(
-      camera.position.y,
-      ridge(camera.position.x, camera.position.z) + 2,
-    );
+    camera.position.y = Math.max(camera.position.y, 0.6);
   });
   return (
     <OrbitControls
@@ -811,7 +652,7 @@ class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   render() {
     return this.state.failed ? (
       <div className="webgl-fallback">
-        <h2>The mountain needs a moment.</h2>
+        <h2>The tree needs a moment.</h2>
         <p>
           3D rendering is unavailable. Please enable WebGL or restart the kiosk
           browser.
@@ -832,7 +673,7 @@ export function Scene() {
   return (
     <div
       className="scene"
-      aria-label="Interactive three dimensional wishing tree mountain"
+      aria-label="Interactive three dimensional wishing tree"
     >
       <Boundary>
         {lost ? (
@@ -844,7 +685,7 @@ export function Scene() {
           <Canvas
             shadows
             dpr={quality === "high" ? [1, 1.5] : 1}
-            camera={{ position: [7.5, 4.5, 16], fov: 44, near: 0.2, far: 300 }}
+            camera={{ position: [6, 3.7, 13], fov: 38, near: 0.2, far: 300 }}
             gl={{
               antialias: quality === "high",
               powerPreference: "high-performance",

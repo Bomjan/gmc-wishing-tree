@@ -15,14 +15,14 @@ Implemented for touchscreen two in the initially empty workspace. Existing `.ide
 
 ## Validation on 10 November 2026
 
-| Check | Result |
-| --- | --- |
-| TypeScript + Vite + backend compilation | Passed |
-| PostgreSQL / production HTTP / WebSocket tests | 18 passed |
-| Chromium touchscreen browser tests | 5 passed |
-| Documented migration command, disposable PostgreSQL 16 | Passed |
-| Prettier source check | Passed |
-| Runtime dependency audit | 0 known vulnerabilities reported |
+| Check                                                  | Result                           |
+| ------------------------------------------------------ | -------------------------------- |
+| TypeScript + Vite + backend compilation                | Passed                           |
+| PostgreSQL / production HTTP / WebSocket tests         | 18 passed                        |
+| Chromium touchscreen browser tests                     | 5 passed                         |
+| Documented migration command, disposable PostgreSQL 16 | Passed                           |
+| Prettier source check                                  | Passed                           |
+| Runtime dependency audit                               | 0 known vulnerabilities reported |
 
 Backend checks include concurrent normalised usernames, 120 simultaneous submissions at the 108-leaf boundary, duplicate retries, cancelled slot reuse, token authentication, exact deadline rejection, real server restart **inside** the Undo window followed by successful Undo, overdue recovery after another restart, cross-tree search, ambiguous fuzzy matching, stable seeds/coordinates, encrypted pending text and exclusion of private content from public HTTP responses, events and captured server logs. The provider adapter is exercised through a local fake provider with accepted, rejected, non-English and unavailable responses; production has no test bypass.
 
@@ -70,7 +70,6 @@ Current captures: [portrait UHD scene](docs/screenshots/gmcx-sanctuary-4k.png), 
 
 Latest [software-rendered timing sample](docs/performance-gmcx.json): 47 animation-frame callbacks over 4030.7 ms; median interval 16.7 ms, 95th percentile 183.3 ms. This is Chromium SwiftShader, low detail, in a 1440 × 1000 development window (with the portrait scene fitted inside it). It is not a native-kiosk GPU benchmark or a smooth-frame-rate claim. Hardware profiling and further art/asset refinement remain necessary for finished photorealism. The Handprint Wall remains a scaffold for the other contributor.
 
-
 ## Minimal interaction and adjustable reach revision
 
 This revision supersedes the earlier lower-panel placement. The default scene has one compact Make a wish action, More options and a small actual/demo leaf count. Search and mountain controls appear only on request. The default scene now accepts mouse/touch orbit, scroll/two-finger zoom and direct leaf taps, with a restrained temporary highlight. Dragging does not accidentally select a tree. Canvas gestures dismiss temporary menus; remote contributions still do not move the camera.
@@ -81,7 +80,6 @@ Validation: production TypeScript/frontend/backend build, Prettier and Git white
 
 Current captures: [minimal portrait scene](docs/screenshots/minimal-tree.png), [native UHD scene](docs/screenshots/minimal-tree-4k.png), [UHD form](docs/screenshots/reachable-form-4k.png), [adjusted form and keyboard](docs/screenshots/reachable-form-keyboard.png). Earlier captures document previous iterations. Handprint Wall remains the prepared contributor scaffold.
 
-
 ## Right-edge controls revision
 
 The default controls now form a narrow vertical rail on the right edge, with circular Make a wish and More actions, short labels and a small leaf count. The centre of the tree stays clear. Options open to the left, within measured screen bounds. The existing drag handle, Higher/Lower controls, operator default height, contextual keyboard and Undo flow are preserved. Yellow leaf highlights remain unchanged.
@@ -90,16 +88,22 @@ Validation: production build, Prettier and whitespace checks passed. Five browse
 
 Current screenshot: [right-edge controls](docs/screenshots/right-edge-controls.png). Previous centre-dock images are historical.
 
-
 ## Contextual form placement revision
 
 Wish entry now opens as a narrower sheet aligned with the right edge, rather than a wide panel across the middle. The confirmation/Undo sheet is also smaller and right aligned. The chosen interaction height is preserved, with a larger, clearly labelled Back control. Expanding the optional keyboard anchors the fields in place instead of recentering the entire panel; screen bounds still take priority at extreme height settings.
 
 Validation: production build, formatting and whitespace checks passed. Three browser checks passed: desktop portrait preview; complete submission → Undo/finalise → search/mountain flow; and 1080 × 1920 form/keyboard placement, stable field position on keyboard expansion, both height limits, cancelled adjustment and draft cleanup. [Current form with keyboard](docs/screenshots/right-sheet-keyboard.png). No backend or contribution data changed. Installed reach and OS-keyboard behaviour remain hardware checks.
 
-
 ## Compact panels revision
 
 The wish form is capped at 32rem rather than 38rem, with its move handle in the title row, tighter padding and field spacing, a three-line wish area and concise helper/privacy copy. Confirmation and options panels are smaller too. The optional search keyboard expands its panel only while needed; full keyboard keys retain their previous height. Exactly two wish fields and all server behaviour remain unchanged.
 
 Validation: production build, Prettier and whitespace checks passed. Two browser checks passed: the complete submission/Undo/finalise/search flow and the portrait reach/keyboard flow. At 1080 × 1920, the form is under 480px high without a keyboard and under 800px with it, with a submit target at least 55px high and Back at least 51px. Checks verify no keyboard overflow in either the form or search, stable fields during expansion, adjustment bounds/cancellation and draft cleanup. [Current compact panel](docs/screenshots/compact-sheet-keyboard.png). Physical touch behaviour remains an installation check.
+
+## Tree-only showcase and contribution-linked growth · 11 November 2026
+
+The default scene now presents a single real wish tree on a quiet warm neutral stage. Landscape terrain, scenery trees, grass, rocks, fog and sky have been removed from the rendered world. A soft spotlight and contact shadow keep attention on the tree. The wider view still lets visitors browse actual contribution trees at their stored positions. It does not introduce decorative or demo scenery trees.
+
+Tree height scales continuously with its actual leaf count. Trunk thickness, structural limbs and crown growth develop with the contribution count; four contributions render as a small sapling and 108 reach the mature size. Leaf slots, seeds, lookup positions, yellow selection highlight, confirmed arrival animation, submission flow, privacy and server behaviour remain intact. The right-edge kiosk controls and compact forms remain in place.
+
+Verification: production frontend and backend TypeScript build passed. Three targeted browser checks passed on a fresh isolated demo: tree-only composition and confirmed leaf arrival, submission → Undo/finalise → search, and growth from 4 through 8, 27, 54, 81 and 108 leaves with a fixed camera. The growth check verifies tree height and branch geometry increase at each step. A second run of the strengthened growth check also passed. Current browser captures: [sapling](docs/screenshots/tree-sapling-4.png) and [mature tree](docs/screenshots/tree-mature-108.png). Tests use dedicated ports 5187/3017 to avoid colliding with a separately running kiosk preview. No kiosk hardware performance claim is made.

@@ -25,7 +25,7 @@ test("default scene supports drag, wheel, two-finger zoom and direct leaf select
   expect(dock!.x).toBeGreaterThan(900);
   await expect(page.locator(".panel-welcome h1")).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "View the mountain", exact: true }),
+    page.getByRole("button", { name: "View all trees", exact: true }),
   ).toBeHidden();
   const grip = page.getByRole("slider", { name: "Controls height" }),
     gripBox = (await grip.boundingBox())!;

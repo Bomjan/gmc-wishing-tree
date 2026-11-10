@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Scene } from "./Scene";
 import { api, connectForest, loadForest, useSanctuary } from "./state";
-import type { Locator, Receipt } from "./shared";
+import { activeTree, type Locator, type Receipt } from "./shared";
 import { ReachHandle, useReachablePanel } from "./shared/kiosk/reach";
 function LeafIcon({ className = "" }: { className?: string }) {
   return (
@@ -67,7 +67,7 @@ function MountainIcon() {
 const idleSeconds = Number(import.meta.env.VITE_IDLE_SECONDS || 90),
   highlightSeconds = Number(import.meta.env.VITE_HIGHLIGHT_SECONDS || 12);
 export default function App() {
-  const { forest, online, view, receipt, selection } = useSanctuary();
+  const { forest, online, view, receipt, selection, focus } = useSanctuary();
   const reach = useReachablePanel(view);
   const [username, setUsername] = useState(""),
     [wish, setWish] = useState(""),
@@ -92,8 +92,7 @@ export default function App() {
   const inputRef = useRef<HTMLInputElement>(null),
     wishRef = useRef<HTMLTextAreaElement>(null),
     searchRef = useRef<HTMLInputElement>(null);
-  const current =
-      forest.trees.find((t) => t.leaves.length < 108) || forest.trees.at(-1),
+  const current = activeTree(forest.trees, selection?.treeId || focus),
     count = current?.leaves.length || 0;
   function remember(value: Receipt) {
     offset.current = Date.parse(value.serverTime) - Date.now();
@@ -421,7 +420,6 @@ export default function App() {
       }}
     >
       <Scene />
-      <div className="sun-wash" />
 
       <section
         className={`panel ${view === "mountain" ? "panel-mountain" : ""} ${view === "home" || view === "mountain" ? "panel-welcome" : ""}`}
@@ -566,7 +564,7 @@ export default function App() {
                   setKeyboard(false);
                   key.current = null;
                   useSanctuary.getState().set({ selection: null });
-                  useSanctuary.getState().go("form");
+                  useSanctuary.getState().go("form", current?.id || null);
                 }}
               >
                 <LeafIcon />
@@ -678,7 +676,7 @@ export default function App() {
                 <MountainIcon />
                 {view === "mountain"
                   ? "Back to current tree"
-                  : "View the mountain"}
+                  : "View all trees"}
               </button>
               <button
                 className="tool-action"
@@ -720,7 +718,7 @@ export default function App() {
         )}
         {!online && (
           <p className="offline" role="status">
-            Connection interrupted. The mountain is still here; submissions will
+            Connection interrupted. The tree is still here; submissions will
             resume when connected.
           </p>
         )}

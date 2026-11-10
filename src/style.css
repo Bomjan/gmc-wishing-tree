@@ -1312,3 +1312,18 @@ textarea:focus {
 .dock-tools:has(.touch-keyboard) {
   width: 32rem;
 }
+
+/* Neutral tree showcase: controls keep their contrast without a dark landscape. */
+.sanctuary {
+  background: #f1eee5;
+}
+.panel-welcome .minimal-dock .primary,
+.dock-options,
+.dock-caption,
+.panel-welcome > .reach-handle {
+  color: var(--gmc-text);
+  text-shadow: none;
+}
+.dock-options svg {
+  color: white;
+}

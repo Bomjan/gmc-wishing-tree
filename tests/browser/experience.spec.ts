@@ -63,7 +63,7 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
   ).toBeHidden();
   await page.getByRole("button", { name: "More options" }).click();
   await page
-    .getByRole("button", { name: "View the mountain", exact: true })
+    .getByRole("button", { name: "View all trees", exact: true })
     .click();
   await page.getByRole("button", { name: "More options" }).click();
   await expect(
