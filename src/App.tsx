@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Scene } from "./Scene";
 import { api, connectForest, loadForest, useSanctuary } from "./state";
 import type { Locator, Receipt } from "./shared";
+import { ReachHandle, useReachablePanel } from "./shared/kiosk/reach";
 function LeafIcon({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -66,7 +67,8 @@ function MountainIcon() {
 const idleSeconds = Number(import.meta.env.VITE_IDLE_SECONDS || 90),
   highlightSeconds = Number(import.meta.env.VITE_HIGHLIGHT_SECONDS || 12);
 export default function App() {
-  const { forest, online, view, receipt } = useSanctuary();
+  const { forest, online, view, receipt, selection } = useSanctuary();
+  const reach = useReachablePanel(view);
   const [username, setUsername] = useState(""),
     [wish, setWish] = useState(""),
     [search, setSearch] = useState(""),
@@ -74,6 +76,7 @@ export default function App() {
     [busy, setBusy] = useState(false),
     [keyboard, setKeyboard] = useState(false),
     [searchOpen, setSearchOpen] = useState(false),
+    [toolsOpen, setToolsOpen] = useState(false),
     [active, setActive] = useState<"username" | "wish" | "search">("username"),
     [remaining, setRemaining] = useState(10),
     [config, setConfig] = useState({
@@ -91,8 +94,7 @@ export default function App() {
     searchRef = useRef<HTMLInputElement>(null);
   const current =
       forest.trees.find((t) => t.leaves.length < 108) || forest.trees.at(-1),
-    count = current?.leaves.length || 0,
-    total = forest.trees.reduce((a, t) => a + t.leaves.length, 0);
+    count = current?.leaves.length || 0;
   function remember(value: Receipt) {
     offset.current = Date.parse(value.serverTime) - Date.now();
     useSanctuary.getState().set({ receipt: value });
@@ -100,6 +102,7 @@ export default function App() {
     if (value.state !== "pending") sessionStorage.removeItem("gmc-pending");
   }
   function clearPrivate() {
+    setToolsOpen(false);
     setSearchOpen(false);
     setUsername("");
     setWish("");
@@ -119,12 +122,18 @@ export default function App() {
       focus: locator.treeId,
       cameraRevision: state.cameraRevision + 1,
     });
-    if (highlightTimer.current) clearTimeout(highlightTimer.current);
-    highlightTimer.current = setTimeout(
-      () => useSanctuary.getState().set({ selection: null }),
-      highlightSeconds * 1000,
-    );
   }
+  useEffect(() => {
+    if (highlightTimer.current) clearTimeout(highlightTimer.current);
+    if (selection)
+      highlightTimer.current = setTimeout(
+        () => useSanctuary.getState().set({ selection: null }),
+        highlightSeconds * 1000,
+      );
+    return () => {
+      if (highlightTimer.current) clearTimeout(highlightTimer.current);
+    };
+  }, [selection]);
   useEffect(() => {
     const disconnect = connectForest();
     void api<typeof config>("/config")
@@ -172,12 +181,16 @@ export default function App() {
     };
     window.addEventListener("pointerdown", activity);
     window.addEventListener("keydown", activity);
+    window.addEventListener("pointermove", activity, { passive: true });
+    window.addEventListener("wheel", activity, { passive: true });
     const timer = setInterval(() => {
       if (
         Date.now() - lastInput.current > idleSeconds * 1000 &&
-        !requesting.current
+        !requesting.current &&
+        useSanctuary.getState().receipt?.state !== "pending"
       ) {
         clearPrivate();
+        reach.resetPosition();
         lastInput.current = Date.now();
       }
     }, 1000);
@@ -186,6 +199,8 @@ export default function App() {
       clearInterval(timer);
       window.removeEventListener("pointerdown", activity);
       window.removeEventListener("keydown", activity);
+      window.removeEventListener("pointermove", activity);
+      window.removeEventListener("wheel", activity);
       if (highlightTimer.current) clearTimeout(highlightTimer.current);
     };
   }, []);
@@ -300,6 +315,8 @@ export default function App() {
       setSearch("");
       setKeyboard(false);
       setMessage("Your leaf is here.");
+      setToolsOpen(false);
+      setSearchOpen(false);
     } catch (e) {
       useSanctuary.getState().set({ selection: null });
       setMessage((e as Error).message);
@@ -341,12 +358,58 @@ export default function App() {
       );
     });
   }
+  const touchKeyboard = keyboard && (
+    <div
+      className="touch-keyboard"
+      role="group"
+      aria-label="On-screen keyboard"
+      onPointerDown={(e) => e.preventDefault()}
+    >
+      <div className="keyboard-heading">
+        <span>
+          {active === "wish"
+            ? "Your wish"
+            : active === "search"
+              ? "Find your username"
+              : "Username"}
+        </span>
+        <button onClick={() => setKeyboard(false)} aria-label="Close keyboard">
+          ✕
+        </button>
+      </div>
+      {["1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm"].map((row) => (
+        <div className="key-row" key={row}>
+          {row.split("").map((letter) => (
+            <button type="button" key={letter} onClick={() => type(letter)}>
+              {letter}
+            </button>
+          ))}
+        </div>
+      ))}
+      <div className="key-row">
+        <button onClick={() => type("_")}>_</button>
+        <button onClick={() => type(".")}>.</button>
+        <button className="space-key" onClick={() => type(" ")}>
+          Space
+        </button>
+        <button onClick={() => type("⌫")} aria-label="Backspace">
+          ⌫
+        </button>
+      </div>
+    </div>
+  );
   return (
     <main
       className="sanctuary"
+      ref={reach.stageRef}
       data-online={online}
-      onPointerDown={() => {
+      onPointerDown={(event) => {
         lastInput.current = Date.now();
+        if (event.target instanceof HTMLCanvasElement) {
+          setToolsOpen(false);
+          setSearchOpen(false);
+          setKeyboard(false);
+        }
       }}
     >
       <Scene />
@@ -355,7 +418,14 @@ export default function App() {
       <section
         className={`panel ${view === "mountain" ? "panel-mountain" : ""} ${view === "home" || view === "mountain" ? "panel-welcome" : ""}`}
         aria-label="Wishing Tree interaction"
+        ref={reach.panelRef}
       >
+        <ReachHandle
+          position={reach.position}
+          onChange={reach.setPosition}
+          stageRef={reach.stageRef}
+          panelRef={reach.panelRef}
+        />
         {view === "form" ? (
           <>
             <button
@@ -367,14 +437,7 @@ export default function App() {
             >
               ← Back to the tree
             </button>
-            <h1>
-              Plant a little
-              <br />
-              possibility.
-            </h1>
-            <p className="intro">
-              One wish. One leaf. A future we grow together.
-            </p>
+            <h1>Make a wish</h1>
             <form onSubmit={submit} className="wish-form">
               <label htmlFor="username">Username</label>
               <input
@@ -436,70 +499,52 @@ export default function App() {
                 {busy ? "Tending your wish…" : "Let my wish take root"}
               </button>
             </form>
+            {touchKeyboard}
           </>
         ) : view === "accepted" ? (
           <div className="acceptance">
-            <span className="accepted-icon">
-              <LeafIcon />
-            </span>
-            <h1>
-              Your wish has
-              <br />
-              taken root.
-            </h1>
-            <p className="intro">
-              A small leaf.
-              <br />
-              Part of something extraordinary.
-            </p>
-            <div className="accept-line" />
-            <p className="privacy">Your leaf belongs to this mountain now.</p>
-            {receipt?.state === "pending" ? (
-              <>
-                <button
-                  className="secondary"
-                  onClick={undo}
-                  disabled={busy || remaining === 0}
-                >
-                  {busy
-                    ? "Undoing…"
-                    : remaining > 0
-                      ? `Undo · ${remaining}s`
-                      : "Confirming your leaf…"}
-                </button>
-                <p className="field-help">
-                  {remaining > 0
-                    ? "A moment to change your mind."
-                    : "Waiting for the server to confirm."}
-                </p>
-              </>
-            ) : (
-              <p className="rooted">Permanently rooted</p>
-            )}
-            <button className="primary" onClick={clearPrivate} disabled={busy}>
-              Return to the tree
-            </button>
+            <h1>Your wish has taken root.</h1>
+            <div className="receipt-actions">
+              {receipt?.state === "pending" ? (
+                <>
+                  <button
+                    className="secondary"
+                    onClick={undo}
+                    disabled={busy || remaining === 0}
+                  >
+                    {busy
+                      ? "Undoing…"
+                      : remaining > 0
+                        ? `Undo · ${remaining}s`
+                        : "Confirming your leaf…"}
+                  </button>
+                </>
+              ) : (
+                <p className="rooted">Permanently rooted</p>
+              )}
+              <button
+                className="primary"
+                aria-label="Return to the tree"
+                onClick={() => {
+                  clearPrivate();
+                  reach.resetPosition();
+                }}
+                disabled={busy}
+              >
+                Done
+              </button>
+            </div>
           </div>
         ) : (
           <>
-            <h1>
-              {view === "mountain"
-                ? "A mountain\nof possibility."
-                : "Wishing Tree"}
-            </h1>
-            <p className="intro">
-              {view === "mountain"
-                ? "Every tree begins with a wish. Touch a wish tree to look a little closer."
-                : "Leave a wish. Watch it grow."}
-            </p>
-
-            <div className="welcome-actions">
+            <div className="minimal-dock">
               <button
                 className="primary"
                 onClick={() => {
                   setMessage("");
                   setSearch("");
                   setSearchOpen(false);
+                  setToolsOpen(false);
                   setKeyboard(false);
                   key.current = null;
                   useSanctuary.getState().set({ selection: null });
@@ -510,53 +555,44 @@ export default function App() {
                 Make a wish
               </button>
               <button
-                className="secondary"
+                className="dock-options"
+                aria-label="More options"
+                aria-expanded={toolsOpen}
+                aria-controls="tree-tools"
                 onClick={() => {
-                  setMessage("");
-                  setSearch("");
+                  setToolsOpen(!toolsOpen);
                   setSearchOpen(false);
+                  setSearch("");
                   setKeyboard(false);
-                  useSanctuary.getState().set({ selection: null });
-                  useSanctuary
-                    .getState()
-                    .go(view === "mountain" ? "home" : "mountain", null);
                 }}
               >
-                <MountainIcon />
-                {view === "mountain"
-                  ? "Back to current tree"
-                  : "View the mountain"}
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <circle cx="5" cy="12" r="1.5" />
+                  <circle cx="12" cy="12" r="1.5" />
+                  <circle cx="19" cy="12" r="1.5" />
+                </svg>
               </button>
             </div>
-            <div className="progress-block">
-              <div className="progress-heading">
-                <span>
-                  {view === "mountain"
-                    ? forest.demo
-                      ? "Demonstration forest"
-                      : "Across the mountain"
-                    : forest.demo
-                      ? "Demonstration tree"
-                      : "This tree, growing with us"}
-                </span>
-                <span>
-                  {view === "mountain"
-                    ? `${forest.trees.length} trees`
-                    : `${count} / 108 leaves`}
-                </span>
-              </div>
-              <div className="progress-track">
-                <span style={{ width: `${(count / 108) * 100}%` }} />
-              </div>
-              <p>
-                {view === "mountain"
-                  ? `${total} ${forest.demo ? "demonstration" : "visitor"} leaves`
-                  : "108 wishes. One tree. Countless possibilities."}
-              </p>
-            </div>
-            <div className="leaf-locator">
+            <p className="dock-caption">
+              {forest.demo ? "Demo · " : ""}
+              {count} / 108 leaves
+            </p>
+            <div
+              id="tree-tools"
+              className="dock-tools"
+              data-side={reach.position < 0.5 ? "below" : "above"}
+              hidden={!toolsOpen}
+              role="group"
+              aria-label="Explore controls"
+            >
               <button
-                className="locator-toggle"
+                className="tool-action"
                 aria-expanded={searchOpen}
                 aria-controls="leaf-search"
                 onClick={() => {
@@ -567,23 +603,10 @@ export default function App() {
                 }}
               >
                 <SearchIcon />
-                <span>{searchOpen ? "Close leaf search" : "Find my leaf"}</span>
+                {searchOpen ? "Close leaf search" : "Find my leaf"}
               </button>
               <div id="leaf-search" hidden={!searchOpen}>
-                <button
-                  type="button"
-                  className="inline-keyboard"
-                  aria-label="Toggle on-screen keyboard"
-                  aria-pressed={keyboard}
-                  onClick={() => {
-                    setActive("search");
-                    setKeyboard(!keyboard);
-                  }}
-                >
-                  Keyboard
-                </button>
                 <form className="search-form" onSubmit={locate}>
-                  <SearchIcon />
                   <input
                     ref={searchRef}
                     value={search}
@@ -605,7 +628,69 @@ export default function App() {
                     ↗
                   </button>
                 </form>
+                <button
+                  type="button"
+                  className="inline-keyboard"
+                  aria-label="Toggle on-screen keyboard"
+                  aria-pressed={keyboard}
+                  onClick={() => {
+                    setActive("search");
+                    setKeyboard(!keyboard);
+                  }}
+                >
+                  Keyboard
+                </button>
+                {touchKeyboard}
               </div>
+              <button
+                className="tool-action"
+                onClick={() => {
+                  setMessage("");
+                  setSearch("");
+                  setSearchOpen(false);
+                  setToolsOpen(false);
+                  setKeyboard(false);
+                  useSanctuary.getState().set({ selection: null });
+                  useSanctuary
+                    .getState()
+                    .go(view === "mountain" ? "home" : "mountain", null);
+                }}
+              >
+                <MountainIcon />
+                {view === "mountain"
+                  ? "Back to current tree"
+                  : "View the mountain"}
+              </button>
+              <button
+                className="tool-action"
+                onClick={() => {
+                  setToolsOpen(false);
+                  useSanctuary.getState().set({ selection: null });
+                  useSanctuary.getState().go("home", null);
+                }}
+              >
+                Reset view
+              </button>
+              <div
+                className="reach-options"
+                role="group"
+                aria-label="Adjust controls height"
+              >
+                <button
+                  onClick={() => reach.setPosition(reach.position - 0.06)}
+                >
+                  Higher
+                </button>
+                <button
+                  onClick={() => reach.setPosition(reach.position + 0.06)}
+                >
+                  Lower
+                </button>
+                <button onClick={reach.resetPosition}>Default height</button>
+              </div>
+              <p className="tools-hint">
+                Drag to turn · Pinch or scroll to zoom
+              </p>
             </div>
           </>
         )}
@@ -621,49 +706,6 @@ export default function App() {
           </p>
         )}
       </section>
-      {keyboard && (
-        <div
-          className="touch-keyboard"
-          role="group"
-          aria-label="On-screen keyboard"
-          onPointerDown={(e) => e.preventDefault()}
-        >
-          <div className="keyboard-heading">
-            <span>
-              {active === "wish"
-                ? "Your wish"
-                : active === "search"
-                  ? "Find your username"
-                  : "Username"}
-            </span>
-            <button
-              onClick={() => setKeyboard(false)}
-              aria-label="Close keyboard"
-            >
-              ✕
-            </button>
-          </div>
-          {["1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm"].map((row) => (
-            <div className="key-row" key={row}>
-              {row.split("").map((letter) => (
-                <button type="button" key={letter} onClick={() => type(letter)}>
-                  {letter}
-                </button>
-              ))}
-            </div>
-          ))}
-          <div className="key-row">
-            <button onClick={() => type("_")}>_</button>
-            <button onClick={() => type(".")}>.</button>
-            <button className="space-key" onClick={() => type(" ")}>
-              Space
-            </button>
-            <button onClick={() => type("⌫")} aria-label="Backspace">
-              ⌫
-            </button>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

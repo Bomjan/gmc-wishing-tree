@@ -1,8 +1,12 @@
 # GMCX visual direction
 
-Reference: https://gmcx.bt/, inspected 10 November 2026. The public site uses Lora display typography, Roboto body typography, blue `#1776B2`, gold `#B69A5A`, yellow-gold action buttons `#FFD766` with `#745C00` text, neutral body text `#535961`, and white surfaces. The kiosk adapts these tokens with a dark lower scene gradient, bold white serif title, gold primary action and secondary outlined controls. It keeps the portrait museum format without importing website navigation, headers, footers, analytics or cookie UI.
+Reference: https://gmcx.bt/, inspected 10 November 2026. The public site uses Lora display typography, Roboto body typography, blue `#1776B2`, gold `#B69A5A`, yellow-gold action buttons `#FFD766` with `#745C00` text, neutral body text `#535961`, and white surfaces. The kiosk adapts these tokens with a restrained lower scene gradient, gold primary action, white input surfaces and serif form headings. The default scene has no oversized title or persistent welcome card. It keeps the portrait museum format without importing website navigation, headers, footers, analytics or cookie UI.
 
 Fonts are bundled locally with their open-font licences under `public/fonts/gmcx/`. Reusable token metadata is in `src/shared/branding.ts`.
+
+## Minimal, reachable interaction
+
+Make a wish and More options are the only persistent actions, with a small contribution caption. The default scene supports drag, two-finger zoom/pan and direct wish-leaf selection. Search and mountain navigation are revealed on demand. Controls default to 32% from the top on the floor-level 55-inch portrait display, approximately 83 cm above its bottom edge. Visitors drag the up/down handle or use Higher/Lower in More options; form, contextual keyboard and receipt controls follow the position. Panel bounds are measured to keep controls on-screen. Keyboard arrows offer an accessible adjustment alternative. Physical reach and mounting clearances still need installation checks; this is not a claim of universal ergonomic compliance.
 
 ## 3D scene
 
@@ -20,8 +24,9 @@ Undo remains server-authorised for the original ten-second deadline and removes 
 
 ## Review captures
 
-- [Native portrait UHD](screenshots/gmcx-sanctuary-4k.png)
-- [GMCX portrait scene](screenshots/gmcx-sanctuary.png)
+- [Current native portrait UHD](screenshots/minimal-tree-4k.png)
+- [Current minimal portrait scene](screenshots/minimal-tree.png)
+- [Adjustable form and keyboard](screenshots/reachable-form-keyboard.png)
 - [Leaf arrival](screenshots/gmcx-leaf-arrival.png)
 - [Settled leaf](screenshots/gmcx-leaf-settled.png)
 

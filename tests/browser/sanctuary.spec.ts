@@ -26,13 +26,13 @@ test("natural world loads local materials and animates a confirmed contribution 
     .toBe(true);
   await page.evaluate(() => document.fonts.ready);
   const brand = await page.evaluate(() => ({
-    font: getComputedStyle(document.querySelector("h1")!).fontFamily,
+    font: getComputedStyle(document.querySelector(".primary")!).fontFamily,
     body: getComputedStyle(document.body).fontFamily,
     action: getComputedStyle(document.querySelector(".primary")!)
       .backgroundColor,
     headers: document.querySelectorAll("header,footer").length,
   }));
-  expect(brand.font).toContain("Lora");
+  expect(brand.font).toContain("Roboto");
   expect(brand.body).toContain("Roboto");
   expect(brand.action).toBe("rgb(255, 215, 102)");
   expect(brand.headers).toBe(0);

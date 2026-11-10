@@ -31,12 +31,17 @@ for (const viewport of [
           .getByRole("button", { name: "Make a wish", exact: true })
           .boundingBox();
       const stageWidth = Math.min(viewport.width, (viewport.height * 9) / 16);
-      expect(panel!.width).toBeLessThan(stageWidth * 0.86);
-      expect(panel!.y).toBeGreaterThan(viewport.height * 0.5);
+      expect(panel!.width).toBeLessThan(stageWidth * 0.7);
+      expect(panel!.height).toBeLessThan(viewport.height * 0.12);
+      await expect(
+        page.locator(".panel-welcome h1,.panel-welcome .intro,.progress-block"),
+      ).toHaveCount(0);
+      expect(panel!.y).toBeGreaterThan(viewport.height * 0.1);
+      expect(panel!.y).toBeLessThan(viewport.height * 0.75);
       const stage = await page.locator(".sanctuary").boundingBox();
       expect(stage!.width / stage!.height).toBeCloseTo(9 / 16, 2);
       if (viewport.height >= 1920)
-        expect(primary!.height).toBeGreaterThanOrEqual(79.5);
+        expect(primary!.height).toBeGreaterThanOrEqual(63.5);
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBe(viewport.width);
@@ -44,6 +49,7 @@ for (const viewport of [
       await page.screenshot({
         path: `test-results/portrait-tree-${viewport.width}.png`,
       });
+      await page.getByRole("button", { name: "More options" }).click();
       await page
         .getByRole("button", { name: "Find my leaf", exact: true })
         .click();

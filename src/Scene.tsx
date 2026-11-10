@@ -36,6 +36,7 @@ const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
 const reduced = () => motionPreference.matches;
 let developmentCamera: THREE.Camera | null = null,
   developmentRenderer: THREE.WebGLRenderer | null = null,
+  developmentWorld: THREE.Scene | null = null,
   assetsReady = false;
 const arrivals = new Map<
   string,
@@ -43,6 +44,54 @@ const arrivals = new Map<
 >();
 export function getCameraPosition() {
   return developmentCamera?.position.toArray();
+}
+/** Read-only development probe for real pointer/raycast browser checks. */
+export function getProjectedLeaves() {
+  if (
+    !import.meta.env.DEV ||
+    !developmentWorld ||
+    !developmentCamera ||
+    !developmentRenderer
+  )
+    return [];
+  const rect = developmentRenderer.domElement.getBoundingClientRect(),
+    points: {
+      x: number;
+      y: number;
+      slot: number;
+      treeId: string;
+      depth: number;
+    }[] = [];
+  for (const tree of useSanctuary.getState().forest.trees) {
+    const group = developmentWorld.getObjectByName("wish-tree:" + tree.id);
+    const leaves = group?.children.find(
+      (o) => o instanceof THREE.InstancedMesh,
+    ) as THREE.InstancedMesh | undefined;
+    if (!group || !leaves) continue;
+    group.updateWorldMatrix(true, false);
+    tree.leaves.forEach((leaf, index) => {
+      const m = new THREE.Matrix4();
+      leaves.getMatrixAt(index, m);
+      const p = new THREE.Vector3(0, 0.5, 0).applyMatrix4(m);
+      group.localToWorld(p);
+      p.project(developmentCamera!);
+      if (
+        Math.abs(p.x) < 0.95 &&
+        p.y > -0.6 &&
+        p.y < 0.95 &&
+        p.z >= -1 &&
+        p.z <= 1
+      )
+        points.push({
+          x: rect.left + (p.x * 0.5 + 0.5) * rect.width,
+          y: rect.top + (-p.y * 0.5 + 0.5) * rect.height,
+          slot: leaf.slot,
+          treeId: tree.id,
+          depth: p.z,
+        });
+    });
+  }
+  return points.sort((a, b) => a.depth - b.depth);
 }
 export function getSceneMetrics() {
   return {
@@ -372,14 +421,25 @@ function WishTree({
   return (
     <group
       ref={group}
+      name={"wish-tree:" + tree.id}
       position={[tree.x, ridge(tree.x, tree.z), tree.z]}
       scale={treeScale(tree.leaves.length)}
       onClick={(event) => {
         event.stopPropagation();
         const s = useSanctuary.getState();
-        if (s.view === "mountain") {
-          s.set({ selection: null });
-          s.go("mountain", tree.id);
+        if (event.delta > 6) return;
+        if (s.view === "home" || s.view === "mountain") {
+          const leafSlot =
+            event.object === mesh.current && event.instanceId !== undefined
+              ? tree.leaves[event.instanceId]?.slot
+              : undefined;
+          s.set({
+            selection:
+              leafSlot === undefined
+                ? null
+                : { treeId: tree.id, slot: leafSlot },
+          });
+          s.go(s.view, tree.id);
         }
       }}
     >
@@ -644,7 +704,8 @@ function CameraRig() {
     focus = useSanctuary((s) => s.focus),
     selection = useSanctuary((s) => s.selection);
   const bounds = forestBounds(forest.trees),
-    initialized = useRef(false);
+    initialized = useRef(false),
+    manipulated = useRef(false);
   useEffect(() => {
     if (camera instanceof THREE.PerspectiveCamera) {
       camera.far = Math.max(300, bounds * 4);
@@ -654,7 +715,8 @@ function CameraRig() {
   useEffect(() => {
     if (!initialized.current && forest.trees.length) {
       initialized.current = true;
-      if (view === "home") useSanctuary.getState().go("home");
+      if (view === "home" && !manipulated.current)
+        useSanctuary.getState().go("home");
     }
   }, [forest.trees.length]);
   useEffect(() => {
@@ -677,6 +739,9 @@ function CameraRig() {
         s = treeScale(tree.leaves.length);
       target.current.set(x + p[0] * s, y + p[1] * s, z + p[2] * s);
       desired.current.copy(target.current).add(new THREE.Vector3(4, 2, 7));
+    } else if (focus) {
+      desired.current.set(x + 6, y + 4.1, z + 11);
+      target.current.set(x, y + 2.1, z);
     } else {
       desired.current.set(x + 7.5, y + 4.5, z + 16);
       target.current.set(x, y + 1.9, z);
@@ -711,11 +776,15 @@ function CameraRig() {
     c.target.z = THREE.MathUtils.clamp(c.target.z, -bounds + 12, bounds - 12);
     c.target.y = Math.max(c.target.y, ridge(c.target.x, c.target.z) + 0.6);
     c.update();
+    camera.position.y = Math.max(
+      camera.position.y,
+      ridge(camera.position.x, camera.position.z) + 2,
+    );
   });
   return (
     <OrbitControls
       ref={controls}
-      enabled={view === "mountain"}
+      enabled={view !== "form"}
       enableDamping
       dampingFactor={0.065}
       minDistance={4}
@@ -724,6 +793,7 @@ function CameraRig() {
       maxPolarAngle={Math.PI / 2 - 0.08}
       onStart={() => {
         moving.current = false;
+        manipulated.current = true;
       }}
       touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
     />
@@ -782,12 +852,13 @@ export function Scene() {
                 acceleration.
               </div>
             }
-            onCreated={({ gl, camera }) => {
+            onCreated={({ gl, camera, scene }) => {
               gl.toneMapping = THREE.ACESFilmicToneMapping;
               gl.toneMappingExposure = 1.05;
               if (import.meta.env.DEV) {
                 developmentCamera = camera;
                 developmentRenderer = gl;
+                developmentWorld = scene;
               }
               gl.domElement.addEventListener("webglcontextlost", (e) => {
                 e.preventDefault();

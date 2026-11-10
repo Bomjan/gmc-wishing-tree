@@ -104,11 +104,11 @@ Compatibility references: [React Three Fiber installation and React major versio
 
 ## Display composition
 
-The installation is a **55-inch Samsung UHD touchscreen mounted in portrait**, with a native viewport of **2160 × 3840 (9:16)**. Use fullscreen/kiosk mode at 100% browser zoom, and set the operating system display orientation to portrait. The tree is centred in the upper portion; the welcome title, wish/mountain actions, progress and optional Find my leaf control sit below it. Forms use a cream overlay in the lower part of the screen.
+The installation is a **55-inch Samsung UHD touchscreen mounted in portrait**, with a native viewport of **2160 × 3840 (9:16)**. Use fullscreen/kiosk mode at 100% browser zoom, and set the operating system display orientation to portrait. The tree dominates the screen. A compact Make a wish action and More options control default to 32% from the top (roughly 83 cm above a floor-level 55-inch 16:9 panel, excluding its bezel). There is no persistent title or large welcome panel. Search and mountain navigation are secondary actions inside More options. Drag the up/down handle to move the controls; Higher, Lower and Default height buttons provide an alternative. Forms and Undo follow the chosen position. Done and idle reset restore the operator default (`VITE_CONTROL_HEIGHT=0.32`, fraction from the top). Check the actual mounting height with visitors, including seated users, and adjust the default as needed.
 
 UI dimensions use a 1080 × 1920 portrait design basis, scaling to 2× at native UHD. Smaller development windows fit the complete portrait stage; landscape desktop windows show unused space at the sides rather than changing the layout or cropping the tree. This is a portrait kiosk interface, not a landscape installation. OS display scaling follows the actual CSS viewport. Software-rendered screenshots verify composition and layout only; installed Samsung hardware performance still needs measurement.
 
-The museum wall display has no website header, footer, utility bar or navigation branding. Only the tree and its interaction area appear. Demo mode is identified in the tree progress label. Keyboard controls appear only during text entry, and rendering quality is configured by the operator URL rather than visitor-facing chrome.
+The museum wall display has no website header, footer, utility bar or navigation branding. Only the tree and its interaction area appear. Demo mode is identified in the small leaf-count caption. Keyboard controls appear only during text entry and move with the interaction panel, and rendering quality is configured by the operator URL rather than visitor-facing chrome.
 
 ## Handprint Wall contributor scaffold
 

@@ -829,3 +829,311 @@ textarea:focus {
 .key-row button:active {
   background: var(--gmc-action);
 }
+
+/* Quiet museum interaction: the scene is the interface until an action needs input. */
+.panel-welcome {
+  width: auto;
+  max-width: 80%;
+  left: 50%;
+  bottom: 3%;
+  transform: translateX(-50%);
+  max-height: none;
+  padding: 0;
+  overflow: visible;
+  backdrop-filter: none;
+}
+.minimal-dock {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.panel-welcome .minimal-dock .primary {
+  width: auto;
+  min-height: 4rem;
+  padding: 0 2rem;
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+.dock-options {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  flex: none;
+  color: white;
+  background: #0b2029a6;
+  border: 1px solid #ffffff40;
+  border-radius: 0.2rem;
+}
+.dock-options svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.dock-caption {
+  margin-top: 0.55rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #ffffffad;
+  pointer-events: none;
+}
+.dock-tools {
+  position: absolute;
+  bottom: calc(100% + 1rem);
+  right: 0;
+  width: 24rem;
+  max-width: 80vw;
+  background: #ffffffed;
+  color: var(--gmc-text);
+  border: 1px solid #ffffff80;
+  border-radius: 0.4rem;
+  padding: 0.6rem;
+  box-shadow: 0 0.6rem 2rem #0003;
+  backdrop-filter: blur(14px);
+}
+.tool-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  text-align: left;
+  min-height: 3.5rem;
+  padding: 0.65rem 1rem;
+  border: 0;
+  background: none;
+  color: var(--gmc-ink);
+  font-size: 1rem;
+}
+.tool-action svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--gmc-blue);
+}
+.tool-action:hover,
+.tool-action:focus-visible {
+  background: #1776b209;
+}
+.tools-hint {
+  border-top: 1px solid #0001;
+  padding: 0.75rem 1rem 0.4rem;
+  color: var(--gmc-text);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.dock-tools .search-form {
+  margin: 0 0.4rem;
+  min-height: 3.5rem;
+  background: white;
+}
+.dock-tools .search-form input {
+  font-size: 1rem;
+}
+.dock-tools .inline-keyboard {
+  margin-left: 0.4rem;
+}
+.panel-welcome .notice,
+.panel-welcome .offline {
+  position: absolute;
+  bottom: calc(100% + 1rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26rem;
+  max-width: 80vw;
+  padding: 0.8rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.panel-welcome:has(.dock-tools:not([hidden])) .notice,
+.panel-welcome:has(.dock-tools:not([hidden])) .offline {
+  bottom: calc(100% + 21rem);
+}
+.sun-wash {
+  background: linear-gradient(
+    0deg,
+    #071b28b3 0%,
+    #071b2826 10%,
+    transparent 20%
+  );
+}
+.panel:has(.wish-form) {
+  padding: 1.5rem;
+  bottom: 3%;
+}
+.panel:has(.wish-form) h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+.panel:has(.wish-form) .back {
+  margin: 0 0 0.6rem;
+  min-height: 2.5rem;
+}
+.wish-form label {
+  font-size: 1rem;
+  margin: 0.75rem 0 0.4rem;
+}
+.wish-form input {
+  min-height: 3.5rem;
+}
+.wish-form textarea {
+  height: 7rem;
+}
+.wish-form input,
+.wish-form textarea {
+  font-size: 1.125rem;
+  padding: 0.8rem 1rem;
+}
+.wish-form .field-help,
+.wish-form .field-meta,
+.wish-form .privacy {
+  font-size: 0.75rem;
+}
+.wish-form .privacy {
+  margin: 0.75rem 0;
+  line-height: 1.6;
+}
+.wish-form .primary {
+  min-height: 4rem;
+  margin-top: 1rem;
+}
+.panel:has(.acceptance) {
+  width: 32rem;
+  max-width: 84%;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 3%;
+  padding: 1.25rem 1.5rem;
+}
+.acceptance h1 {
+  font-size: 1.65rem;
+  margin: 0 0 1rem;
+  letter-spacing: -0.04em;
+  line-height: 1.3;
+}
+.receipt-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+.receipt-actions .secondary,
+.receipt-actions .primary {
+  flex: 1;
+  width: auto;
+  min-height: 3.5rem;
+  margin: 0;
+  font-size: 1rem;
+}
+.receipt-actions .rooted {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8rem;
+  text-align: left;
+}
+.scene canvas {
+  cursor: grab;
+}
+.scene canvas:active {
+  cursor: grabbing;
+}
+.sanctuary:has(.wish-form) .scene canvas {
+  cursor: default;
+}
+
+/* Floor-level portrait installation: controls live in the reachable middle band.
+   Layout measurement keeps every form/toast inside the display as visitors move it. */
+.panel,
+.panel-welcome,
+.panel:has(.wish-form),
+.panel:has(.acceptance) {
+  bottom: auto;
+  top: 32%;
+}
+.panel-welcome {
+  transform: translateX(-50%);
+}
+.panel:has(.acceptance) {
+  transform: translateX(-50%);
+}
+.reach-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  min-height: 3rem;
+  margin: 0 auto 0.25rem;
+  color: #ffffffa6;
+  cursor: ns-resize;
+  touch-action: none;
+  user-select: none;
+  outline-offset: 0.15rem;
+}
+.reach-handle svg {
+  width: 1.1rem;
+  height: 1.6rem;
+}
+.reach-handle:focus-visible {
+  outline: 2px solid var(--gmc-action);
+}
+.panel:not(.panel-welcome) > .reach-handle {
+  color: var(--gmc-text);
+  min-height: 2.5rem;
+  margin-top: -0.7rem;
+  margin-bottom: 0.3rem;
+}
+.dock-tools[data-side="below"] {
+  bottom: auto;
+  top: calc(100% + 0.75rem);
+}
+.reach-options {
+  border-top: 1px solid #0001;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  padding: 0.5rem;
+}
+.reach-options button {
+  background: #1776b208;
+  border: 1px solid #1776b226;
+  color: var(--gmc-blue);
+  min-height: 3rem;
+  font-size: 0.85rem;
+}
+.reach-options button:last-child {
+  grid-column: 1/-1;
+  min-height: 2.5rem;
+  background: none;
+  border: 0;
+  color: var(--gmc-text);
+}
+.minimal-dock {
+  justify-content: center;
+}
+.panel-welcome .notice,
+.panel-welcome .offline,
+.panel-welcome:has(.dock-tools:not([hidden])) .notice,
+.panel-welcome:has(.dock-tools:not([hidden])) .offline {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  transform: none;
+  width: 100%;
+  max-width: 26rem;
+  margin: 0.5rem auto 0;
+}
+
+/* The fallback keyboard is part of the movable input surface, never floor-fixed. */
+.touch-keyboard {
+  position: relative;
+  inset: auto;
+  transform: none;
+  width: 100%;
+  margin: 1rem 0 0;
+  box-shadow: none;
+}
+.dock-tools {
+  max-height: var(--space-above, 50dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.dock-tools[data-side="below"] {
+  max-height: var(--space-below, 50dvh);
+}

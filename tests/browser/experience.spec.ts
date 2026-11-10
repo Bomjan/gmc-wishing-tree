@@ -50,18 +50,22 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
   });
   await page.screenshot({ path: "test-results/accepted-wish.png" });
   await page.getByRole("button", { name: "Return to the tree" }).click();
+  await page.getByRole("button", { name: "More options" }).click();
   await page.getByRole("button", { name: "Find my leaf", exact: true }).click();
   await page
     .getByRole("textbox", { name: "Find your username" })
     .fill(name.toUpperCase());
   await page.getByRole("button", { name: "Find leaf", exact: true }).click();
   await expect(page.getByText("Your leaf is here.")).toBeVisible();
+  await expect(page.locator("#leaf-search input")).toHaveValue("");
   await expect(
     page.getByRole("textbox", { name: "Find your username" }),
-  ).toHaveValue("");
+  ).toBeHidden();
+  await page.getByRole("button", { name: "More options" }).click();
   await page
     .getByRole("button", { name: "View the mountain", exact: true })
     .click();
+  await page.getByRole("button", { name: "More options" }).click();
   await expect(
     page.getByRole("button", { name: "Back to current tree" }),
   ).toBeVisible();
@@ -117,6 +121,7 @@ test("reconnection reloads authoritative state and ambiguous search exposes no d
     "data-online",
     "true",
   );
+  await page.getByRole("button", { name: "More options" }).click();
   await page.getByRole("button", { name: "Find my leaf", exact: true }).click();
   await page
     .getByRole("textbox", { name: "Find your username" })
