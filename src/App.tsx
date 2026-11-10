@@ -490,7 +490,7 @@ export default function App() {
             <p className="intro">
               {view === "mountain"
                 ? "Every tree begins with a wish. Touch a wish tree to look a little closer."
-                : "A wish for tomorrow.\nA leaf that grows with us."}
+                : "Leave a wish. Watch it grow."}
             </p>
 
             <div className="welcome-actions">

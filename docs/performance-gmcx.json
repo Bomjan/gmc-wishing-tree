@@ -1,0 +1,9 @@
+{
+  "renderer": "Chromium SwiftShader, software rendering",
+  "viewport": "1440x1000",
+  "quality": "low",
+  "samples": 47,
+  "medianMs": 16.700000000000273,
+  "p95Ms": 183.29999999999973,
+  "elapsedMs": 4030.7000000014905
+}

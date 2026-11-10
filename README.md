@@ -113,3 +113,7 @@ The museum wall display has no website header, footer, utility bar or navigation
 ## Handprint Wall contributor scaffold
 
 The shared-app extension folders are prepared for the next contributor. **The menu, new routes and Handprint Wall are not implemented or mounted yet**; the existing Wishing Tree continues to run unchanged. Start with [the handoff brief](docs/handprint-wall-handoff.md) and [AGENTS.md](AGENTS.md). Proposed menu metadata, handprint transport contracts, palette/defaults, tracked empty feature folders and an **inactive** migration template are included. The actual filesystem and implementation responsibilities are documented in the handoff. Do not start a separate application or backend.
+
+## GMCX visual identity and leaf arrival
+
+The current kiosk uses [GMCX](https://gmcx.bt/) typography and blue/gold palette, with locally bundled Lora/Roboto fonts and no website header/footer. The scene has photographic PBR surface maps, continuous mountain terrain, instanced vegetation and tapered procedural trees. An accepted leaf approaches, unfurls and settles over 3.2 seconds; reduced-motion skips directly to the resting pose. Counts, logical leaf slots, server confirmation, Undo and private wish behaviour are unchanged. See [visual direction, credits and review captures](docs/gmcx-visual-direction.md). These changes do not implement or mount the Handprint Wall scaffold.

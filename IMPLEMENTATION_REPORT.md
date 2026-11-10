@@ -55,3 +55,17 @@ Four display checks pass at 476 × 782, 1366 × 768 (desktop preview), 1080 × 1
 Current captures: [portrait preview](docs/screenshots/portrait-preview.png), [1080 × 1920 composition](docs/screenshots/portrait-display.png), [native portrait UHD](docs/screenshots/portrait-display-4k.png), [portrait UHD form](docs/screenshots/portrait-form-4k.png). Earlier landscape captures are historical and do not describe the corrected installation target.
 
 Revision interaction validation: all six targeted browser checks passed (four portrait/preview layouts, complete submission → Undo → finalisation → search → mountain navigation, and rejection preservation → contextual keyboard → pending recovery after reload). These checks also confirm the header, footer and utility bar are absent. No backend changes were required.
+
+## GMCX identity, materials and arrival-animation revision
+
+The current design follows the supplied https://gmcx.bt/ reference: locally bundled Lora/Roboto fonts, blue/gold accents, yellow-gold primary action, white serif display title and dark lower scene gradient. It retains the 2160 × 3840 museum portrait layout with no website header/footer. See [GMCX visual direction and material credits](docs/gmcx-visual-direction.md).
+
+The natural-world pass adds continuous fractal terrain, shared photographic PBR bark/grass/rock maps, hierarchical tapered branches and buttress roots, a layered crown, vein-textured curved wish leaves, instanced foliage sprays, curved grass and irregular rocks. Maps are bundled locally with CC0 source/checksum metadata; fonts carry their open-font licences. The renderer still uses actual contribution counts, no extra decorative wish leaves, and unchanged tree IDs, seeds and logical slots. Visual slot positions use the new deterministic layout consistently for rendering and lookup.
+
+Accepted leaves now approach their branch, unfold, warm briefly and settle over 3.2 seconds. Reduced-motion snaps to the final pose. The arrival begins only after server confirmation reaches authoritative forest state. Search selection takes highlighting priority, and incoming contributions do not move an active visitor's camera. Server moderation, privacy, idempotency, Undo and finalisation are unchanged.
+
+Validation: production build and formatting checks passed; **22 database/HTTP/geometry/animation tests passed**. **Six distinct browser checks passed** across the dedicated material/font/animation check and the targeted native portrait, complete visitor flow, keyboard/reload, remote-camera and timing run. The rendering check also verifies actual GMCX font families/action colour, no header/footer, no shader errors, one added instance per contribution and bounded draw calls for the demo forest.
+
+Current captures: [portrait UHD scene](docs/screenshots/gmcx-sanctuary-4k.png), [UHD form](docs/screenshots/gmcx-form-4k.png), [arrival](docs/screenshots/gmcx-leaf-arrival.png), [resting state](docs/screenshots/gmcx-leaf-settled.png).
+
+Latest [software-rendered timing sample](docs/performance-gmcx.json): 47 animation-frame callbacks over 4030.7 ms; median interval 16.7 ms, 95th percentile 183.3 ms. This is Chromium SwiftShader, low detail, in a 1440 × 1000 development window (with the portrait scene fitted inside it). It is not a native-kiosk GPU benchmark or a smooth-frame-rate claim. Hardware profiling and further art/asset refinement remain necessary for finished photorealism. The Handprint Wall remains a scaffold for the other contributor.

@@ -623,3 +623,209 @@ p {
   min-height: 3rem;
   padding: 0 0.75rem;
 }
+
+/* GMCX identity: Lora + Roboto; official blue, warm gold and yellow CTA.
+   Keep the museum surface free of website header/footer chrome. */
+@font-face {
+  font-family: "Lora";
+  src: url("/fonts/gmcx/Lora.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url("/fonts/gmcx/Roboto.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+:root {
+  --gmc-blue: #1776b2;
+  --gmc-gold: #b69a5a;
+  --gmc-action: #ffd766;
+  --gmc-action-ink: #745c00;
+  --gmc-text: #535961;
+  --gmc-ink: #151515;
+  font-family: "Roboto", Arial, sans-serif;
+  color: var(--gmc-text);
+  background: #111b22;
+}
+body {
+  background: #111b22;
+}
+h1,
+.acceptance h1,
+.panel:has(.wish-form) h1 {
+  font-family: "Lora", Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  color: var(--gmc-ink);
+}
+.panel-welcome h1 {
+  color: white;
+  font-size: 3.9rem;
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+}
+.panel-welcome .intro {
+  color: #ffffffcb;
+  font-weight: 400;
+  font-size: 1.2rem;
+}
+.panel {
+  background: linear-gradient(135deg, #fffffffa, #ffffffed);
+  border: 1px solid #ffffff70;
+  border-radius: 0.625rem;
+  box-shadow: 0 1rem 4rem #05101d30;
+}
+.panel-welcome {
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.sun-wash {
+  background: linear-gradient(
+    0deg,
+    #091923 0%,
+    #091923f5 23%,
+    #0d26309c 37%,
+    #102a340f 55%,
+    transparent 65%
+  );
+}
+.primary {
+  background: var(--gmc-action);
+  border-color: var(--gmc-action);
+  color: var(--gmc-action-ink);
+  font-weight: 700;
+  box-shadow: none;
+  border-radius: 0.2rem;
+}
+.primary:hover {
+  background: #ffe28a;
+  border-color: #ffe28a;
+}
+.primary:active {
+  background: #f4ca55;
+}
+.secondary {
+  color: var(--gmc-blue);
+  border-color: #1776b24d;
+  background: #1776b205;
+  border-radius: 0.2rem;
+}
+.secondary:hover {
+  background: #1776b20d;
+}
+.panel-welcome .secondary {
+  color: #fffffff0;
+  border-color: #ffffff59;
+  background: #ffffff08;
+  font-weight: 500;
+}
+.panel-welcome .secondary:hover {
+  background: #ffffff15;
+}
+.panel-welcome .progress-block {
+  border-color: #ffffff26;
+}
+.panel-welcome .progress-heading,
+.panel-welcome .progress-heading span:last-child {
+  color: #ffffffbd;
+}
+.progress-track {
+  background: #ffffff26;
+}
+.progress-track span {
+  background: var(--gmc-gold);
+}
+.locator-toggle {
+  color: #ffffffa6;
+}
+.locator-toggle:hover {
+  color: var(--gmc-action);
+}
+.locator-toggle svg {
+  color: var(--gmc-gold);
+}
+.leaf-locator .search-form {
+  background: #ffffffed;
+  border-color: #ffffff80;
+}
+.search-form input,
+.wish-form input,
+.wish-form textarea {
+  font-family: "Roboto", Arial, sans-serif;
+  color: var(--gmc-ink);
+}
+.search-form button,
+.search-form > svg {
+  color: var(--gmc-blue);
+}
+.wish-form input,
+.wish-form textarea {
+  border-color: #b69a5a66;
+  background: #f8f9fa;
+}
+.wish-form input::placeholder,
+.wish-form textarea::placeholder {
+  color: #8b9095;
+}
+.wish-form label {
+  color: var(--gmc-ink);
+  font-weight: 500;
+}
+.intro,
+.field-help,
+.field-meta,
+.privacy,
+.text-button,
+.inline-keyboard {
+  color: var(--gmc-text);
+}
+.accepted-icon {
+  color: var(--gmc-blue);
+  border-color: #b69a5a66;
+}
+.accept-line {
+  background: #b69a5a66;
+}
+.rooted {
+  color: var(--gmc-blue);
+}
+.notice {
+  color: var(--gmc-blue);
+}
+.offline {
+  color: #c04a3a;
+}
+.panel-welcome .notice,
+.panel-welcome .offline {
+  background: #0c2538d9;
+  color: #fff0bd;
+  border: 1px solid #b69a5a44;
+}
+button:focus-visible,
+a:focus-visible {
+  outline-color: var(--gmc-blue);
+}
+.panel-welcome button:focus-visible {
+  outline-color: var(--gmc-action);
+}
+input:focus,
+textarea:focus {
+  outline-color: var(--gmc-blue);
+}
+.touch-keyboard {
+  background: #fffffff5;
+  border-color: #b69a5a66;
+}
+.key-row button {
+  color: var(--gmc-text);
+  background: white;
+  border-color: #d9d9d9;
+}
+.key-row button:active {
+  background: var(--gmc-action);
+}

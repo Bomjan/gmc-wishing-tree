@@ -1,0 +1,83 @@
+[
+  {
+    "file": "bark-color.jpg",
+    "asset": "bark_brown_01",
+    "source": "https://polyhaven.com/a/bark_brown_01",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/bark_brown_01/bark_brown_01_diff_1k.jpg",
+    "license": "CC0-1.0",
+    "sha256": "4213441aebcb72b9911f5a860e9ce74a61a8f6ce3b9c23d1f204173e7e7f6066",
+    "bytes": 729893
+  },
+  {
+    "file": "bark-normal.jpg",
+    "asset": "bark_brown_01",
+    "source": "https://polyhaven.com/a/bark_brown_01",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/bark_brown_01/bark_brown_01_nor_gl_1k.jpg",
+    "license": "CC0-1.0",
+    "sha256": "9d1537b3429579436a62890bb7c5050a0172a15ce768787eacde81c5ccefc9cc",
+    "bytes": 1226534
+  },
+  {
+    "file": "bark-roughness.jpg",
+    "asset": "bark_brown_01",
+    "source": "https://polyhaven.com/a/bark_brown_01",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/bark_brown_01/bark_brown_01_rough_1k.jpg",
+    "license": "CC0-1.0",
+    "sha256": "4e7f62508cf77faebfeee15ffb571ff02c45c18d5174aa19fcb8b98506359c5c",
+    "bytes": 201307
+  },
+  {
+    "file": "rock-color.jpg",
+    "asset": "rock_boulder_dry",
+    "source": "https://polyhaven.com/a/rock_boulder_dry",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rock_boulder_dry/rock_boulder_dry_diff_1k.jpg",
+    "license": "CC0-1.0",
+    "sha256": "20f653a42fb24f42aa40641663070d578678da49af18cc1049dbdd4ed8679f3c",
+    "bytes": 859211
+  },
+  {
+    "file": "rock-normal.jpg",
+    "asset": "rock_boulder_dry",
+    "source": "https://polyhaven.com/a/rock_boulder_dry",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rock_boulder_dry/rock_boulder_dry_nor_gl_1k.jpg",
+    "license": "CC0-1.0",
+    "sha256": "5915fea28a97357c78a04fb31c2516f1f7ed1b3a9cef4ae25aa93e4655e6c595",
+    "bytes": 802497
+  },
+  {
+    "file": "rock-roughness.jpg",
+    "asset": "rock_boulder_dry",
+    "source": "https://polyhaven.com/a/rock_boulder_dry",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rock_boulder_dry/rock_boulder_dry_rough_1k.jpg",
+    "license": "CC0-1.0",
+    "sha256": "cc5229dd6bbdc4e817cb647e60242224b8e4f0237473ac018861ea243f2e8130",
+    "bytes": 668127
+  },
+  {
+    "file": "ground-color.jpg",
+    "asset": "grass_ground",
+    "source": "https://polyhaven.com/a/grass_ground",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grass_ground/grass_ground_diff_1k.jpg",
+    "license": "CC0-1.0",
+    "sha256": "a79cc5ed65af0f80261b39a383b64a8c5272c5144d724deb43dbc29f0e4cd19b",
+    "bytes": 876584
+  },
+  {
+    "file": "ground-normal.jpg",
+    "asset": "grass_ground",
+    "source": "https://polyhaven.com/a/grass_ground",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grass_ground/grass_ground_nor_gl_1k.jpg",
+    "license": "CC0-1.0",
+    "sha256": "7000e2ccd479bb7b66dcdf4faef7b47554324566886314ca620cbf03e274e826",
+    "bytes": 1310516
+  },
+  {
+    "file": "ground-roughness.jpg",
+    "asset": "grass_ground",
+    "source": "https://polyhaven.com/a/grass_ground",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grass_ground/grass_ground_rough_1k.jpg",
+    "license": "CC0-1.0",
+    "sha256": "111341f948b7e073edf7ac6add8777e1bf10df8959400df3863243e89bbc8c08",
+    "bytes": 328190
+  }
+]

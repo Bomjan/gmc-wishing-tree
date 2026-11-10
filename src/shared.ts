@@ -35,14 +35,17 @@ export function leafPoint(
   seed: number,
 ): [number, number, number] {
   const group = Math.floor(slot / 6),
-    a = group * 2.399963 + seed * 0.01,
-    r = 0.8 + Math.sqrt(group / 18) * 2.5;
+    a = group * 2.399963 + seed * 0.001,
+    radial = (group * 0.61803398875 + seed * 0.007) % 1,
+    r = 0.85 + 1.25 * Math.sqrt(radial);
   const b = slot * 2.399963,
-    spread = 0.35 + (slot % 3) * 0.15;
+    spread = 0.18 + (slot % 6) * 0.075;
   return [
     Math.cos(a) * r + Math.cos(b) * spread,
-    3.7 + (group % 4) * 0.65 + Math.sin(b) * 0.4,
-    Math.sin(a) * r * 0.8 + Math.sin(b) * spread,
+    3.25 +
+      ((group * 0.754877666 + seed * 0.0031) % 1) * 2.25 +
+      Math.sin(b) * 0.23,
+    Math.sin(a) * r * 0.87 + Math.sin(b) * spread,
   ];
 }
 export function treeScale(n: number) {
