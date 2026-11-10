@@ -60,7 +60,7 @@ A database transaction reserves the lowest free slot on the oldest incomplete tr
 
 Acceptance returns an opaque temporary bearer token and server deadline. Undo requires that token and checks the database clock. Expired reservations are finalised by a server worker and opportunistically on reads/writes; a restart or disconnection cannot reopen the deadline. A restart finalises overdue records on the next worker tick. Permanent leaves have no visitor editing/deletion endpoint.
 
-The browser holds only temporary receipt credentials in sessionStorage to recover a reload or lost acceptance response. A random idempotency key recovers a confirmed request even if its response was lost. Exact retries retain their key; editing the form creates a new attempt. Form contents are never persisted. Ending a visitor session or 90 seconds of inactivity clears the form, search, temporary credentials and highlight, then returns to the current tree. Client idempotency keys and temporary tokens must be treated as secrets until the interaction ends.
+The browser holds only temporary receipt credentials in sessionStorage to recover a reload or lost acceptance response. A random idempotency key recovers a confirmed request even if its response was lost. Exact retries retain their key; editing the form creates a new attempt. Form contents are never persisted. After 60 seconds without pointer, keyboard or text-input activity, the kiosk clears temporary visitor state and reloads to the current tree. It will not reload during an active request or server-owned Undo window. Configure the timeout with `VITE_IDLE_SECONDS`. Client idempotency keys and temporary tokens must be treated as secrets until the interaction ends.
 
 Search trims whitespace and normalises case. Exact matches take priority; only inputs of six or more characters permit one insertion, deletion or substitution, and only one candidate is accepted. No suggestions or usernames are returned. A successful search focuses and outlines only the leaf, then clears the highlight (12 seconds by default). Camera moves caused by remote submissions are suppressed; new leaves appear without disturbing typing or mountain exploration. Search and the visitor's own accepted leaf intentionally focus the camera.
 
@@ -98,7 +98,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-Playwright starts and stops its own labelled demo server. Browser tests exercise touchscreen submission → Undo → username reuse → finalisation → search → mountain navigation, rejection preservation, keyboard availability, pending reload and reconnect snapshots. PostgreSQL tests use real transactions for duplicate names, concurrent 108-slot boundaries, deadline checks, restart recovery, idempotency, hole reuse, token authorisation, private response contracts, multi-tree search, fuzzy ambiguity and stable rendering coordinates. See `IMPLEMENTATION_REPORT.md` for actual results and visual/performance limitations.
+Playwright starts and stops its own labelled demo server. Browser tests exercise touchscreen submission → Undo → username reuse → finalisation → search → mountain navigation, rejection preservation, keyboard availability, pending reload and reconnect snapshots, plus idle reload and Undo-window protection. PostgreSQL tests use real transactions for duplicate names, concurrent 108-slot boundaries, deadline checks, restart recovery, idempotency, hole reuse, token authorisation, private response contracts, multi-tree search, fuzzy ambiguity and stable rendering coordinates. See `IMPLEMENTATION_REPORT.md` for actual results and visual/performance limitations.
 
 Compatibility references: [React Three Fiber installation and React major versions](https://r3f.docs.pmnd.rs/getting-started/installation), [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=chat). Installed versions are resolved in `package-lock.json`; use `npm ci` for reproducible installation.
 
@@ -125,3 +125,5 @@ Current sheet captures: [wish form](docs/screenshots/gmcx-branded-form.png) · [
 Latest scene comparison: [4-leaf sapling](docs/screenshots/tree-sapling-4.png) · [108-leaf mature tree](docs/screenshots/tree-mature-108.png). Playwright runs its demo on dedicated ports 5187/3017 by default; override `PLAYWRIGHT_PORT` and `PLAYWRIGHT_API_PORT` if those ports are occupied.
 
 Form validation uses calm inline field errors and a compact moderation feedback strip instead of browser-native validation popups. See [validation feedback](docs/screenshots/form-validation-feedback.png).
+
+Run the isolated accelerated idle checks with `VITE_IDLE_SECONDS=4 npm run test:browser -- tests/browser/idle.spec.ts`; this test file is skipped during normal browser runs.

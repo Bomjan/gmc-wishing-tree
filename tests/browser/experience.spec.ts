@@ -21,6 +21,19 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
     path: "test-results/morning-sanctuary.png",
     fullPage: true,
   });
+  const cameraPosition = () =>
+    page.evaluate(async () => {
+      const path = "/src/Scene.tsx";
+      return (await import(path)).getCameraPosition() as number[] | undefined;
+    });
+  const cameraTarget = () =>
+    page.evaluate(async () => {
+      const path = "/src/Scene.tsx";
+      return (await import(path)).getCameraTarget() as number[] | undefined;
+    });
+  await expect.poll(async () => (await cameraPosition())?.length).toBe(3);
+  const initialCamera = await cameraPosition();
+  const initialTarget = await cameraTarget();
   const canvas = page.locator("canvas");
   await expect(canvas).toHaveCount(1);
   const name = `browser_${Date.now().toString().slice(-10)}`;
@@ -52,6 +65,26 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
   await expect(
     page.getByRole("heading", { name: "Your wish has taken root." }),
   ).toBeVisible();
+  await expect
+    .poll(async () => {
+      const [camera, target] = await Promise.all([
+        cameraPosition(),
+        cameraTarget(),
+      ]);
+      return (
+        camera &&
+        target &&
+        Math.max(
+          Math.hypot(
+            ...camera.map((position, i) => position - initialCamera![i]),
+          ),
+          Math.hypot(
+            ...target.map((position, i) => position - initialTarget![i]),
+          ),
+        )
+      );
+    })
+    .toBeLessThan(0.08);
   await expect(page.locator(".acceptance .sheet-brand > small")).toHaveText(
     "EXPERIENCE CENTRE",
   );

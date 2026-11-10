@@ -37,6 +37,7 @@ const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
 const reduced = () => motionPreference.matches;
 let developmentCamera: THREE.Camera | null = null,
   developmentRenderer: THREE.WebGLRenderer | null = null,
+  developmentTarget: THREE.Vector3 | null = null,
   developmentWorld: THREE.Scene | null = null,
   assetsReady = false;
 const arrivals = new Map<
@@ -45,6 +46,9 @@ const arrivals = new Map<
 >();
 export function getCameraPosition() {
   return developmentCamera?.position.toArray();
+}
+export function getCameraTarget() {
+  return developmentTarget?.toArray();
 }
 /** Read-only development probe for real pointer/raycast browser checks. */
 export function getProjectedLeaves() {
@@ -573,7 +577,6 @@ function CameraRig() {
     }
   }, [forest.trees.length]);
   useEffect(() => {
-    const tree = activeTree(forest.trees, selection?.treeId || focus);
     const x = 0,
       z = 0,
       y = 0;
@@ -584,14 +587,6 @@ function CameraRig() {
         Math.max(64, bounds * 0.95),
       );
       target.current.set(0, 2, -8);
-    } else if (selection && tree) {
-      const p = leafPoint(selection.slot, tree.seed),
-        s = treeScale(tree.leaves.length);
-      target.current.set(x + p[0] * s, y + p[1] * s, z + p[2] * s);
-      desired.current.copy(target.current).add(new THREE.Vector3(4, 2, 7));
-    } else if (focus) {
-      desired.current.set(x + 6, y + 4.1, z + 11);
-      target.current.set(x, y + 2.1, z);
     } else {
       desired.current.set(x + 6, y + 3.7, z + 13);
       target.current.set(x, y + 2.4, z);
@@ -601,12 +596,19 @@ function CameraRig() {
   useFrame((_, delta) => {
     const c = controls.current;
     if (!c) return;
+    if (import.meta.env.DEV) developmentTarget = c.target;
     if (moving.current) {
       const alpha = reduced() ? 1 : 1 - Math.exp(-delta * 2);
       camera.position.lerp(desired.current, alpha);
       c.target.lerp(target.current, alpha);
-      if (camera.position.distanceTo(desired.current) < 0.03)
+      if (
+        camera.position.distanceTo(desired.current) < 0.03 &&
+        c.target.distanceTo(target.current) < 0.03
+      ) {
+        camera.position.copy(desired.current);
+        c.target.copy(target.current);
         moving.current = false;
+      }
     }
     camera.position.x = THREE.MathUtils.clamp(
       camera.position.x,
@@ -628,6 +630,7 @@ function CameraRig() {
   return (
     <OrbitControls
       ref={controls}
+      target={[0, 2.4, 0]}
       enabled={view !== "form"}
       enableDamping
       dampingFactor={0.065}

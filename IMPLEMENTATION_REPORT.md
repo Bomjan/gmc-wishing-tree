@@ -119,3 +119,15 @@ Verification: production build passed. The targeted browser flow passed submissi
 Replaced browser-native validation popups with custom inline field feedback. Invalid fields receive concise guidance, accessible `aria-invalid` / `aria-describedby` state and a restrained outline. Server-side moderation and submission failures remain in the form as a compact branded alert strip; drafts stay available for revision.
 
 Verification: production build and the focused browser flow pass. Browser coverage checks empty fields, the inline errors, accessibility state, server rejection with preserved input, optional keyboard and receipt recovery. [Empty-form validation state](docs/screenshots/form-validation-feedback.png).
+
+## One-minute idle reload · 11 November 2026
+
+The kiosk now clears temporary visitor state and reloads to the current tree after 60 seconds without pointer, keyboard or text-input activity. The timeout is configurable through `VITE_IDLE_SECONDS`. In-flight requests reset the idle clock on completion; active requests and server-owned Undo windows block reload. Accepted contributions remain in the authoritative forest.
+
+Verification: production build passed. Three browser checks passed with a shortened four-second timeout: an idle draft is cleared by reload, an active Undo window prevents reload, and a delayed submission is protected until its response arrives. Run this isolated suite with `VITE_IDLE_SECONDS=4 npm run test:browser -- tests/browser/idle.spec.ts`.
+
+## Consistent initial tree framing
+
+The orbit target starts at the tree's centre. Camera transitions finish only when both camera position and viewing target have settled. Form entry and contribution highlighting use the same whole-tree framing, preventing the vertical jump after submission.
+
+Verification: production build and the full submission → Undo/finalise → search browser flow passed, including an assertion that camera position and target remain stable through submission. [Corrected initial framing](docs/screenshots/centered-tree.png).

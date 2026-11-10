@@ -64,7 +64,7 @@ function MountainIcon() {
     </svg>
   );
 }
-const idleSeconds = Number(import.meta.env.VITE_IDLE_SECONDS || 90),
+const idleSeconds = Number(import.meta.env.VITE_IDLE_SECONDS || 60),
   highlightSeconds = Number(import.meta.env.VITE_HIGHLIGHT_SECONDS || 12);
 export default function App() {
   const { forest, online, view, receipt, selection, focus } = useSanctuary();
@@ -90,6 +90,7 @@ export default function App() {
     });
   const key = useRef<string | null>(null),
     lastInput = useRef(Date.now()),
+    busyRef = useRef(false),
     offset = useRef(0),
     highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null),
     requesting = useRef(false);
@@ -103,6 +104,10 @@ export default function App() {
     useSanctuary.getState().set({ receipt: value });
     sessionStorage.setItem("gmc-pending", JSON.stringify(value));
     if (value.state !== "pending") sessionStorage.removeItem("gmc-pending");
+  }
+  function setBusyState(value: boolean) {
+    busyRef.current = value;
+    setBusy(value);
   }
   function clearPrivate() {
     setToolsOpen(false);
@@ -185,17 +190,19 @@ export default function App() {
     };
     window.addEventListener("pointerdown", activity);
     window.addEventListener("keydown", activity);
+    window.addEventListener("input", activity);
     window.addEventListener("pointermove", activity, { passive: true });
     window.addEventListener("wheel", activity, { passive: true });
     const timer = setInterval(() => {
       if (
         Date.now() - lastInput.current > idleSeconds * 1000 &&
-        !requesting.current &&
+        !busyRef.current &&
         useSanctuary.getState().receipt?.state !== "pending"
       ) {
         clearPrivate();
         reach.resetPosition();
         lastInput.current = Date.now();
+        window.location.reload();
       }
     }, 1000);
     return () => {
@@ -203,6 +210,7 @@ export default function App() {
       clearInterval(timer);
       window.removeEventListener("pointerdown", activity);
       window.removeEventListener("keydown", activity);
+      window.removeEventListener("input", activity);
       window.removeEventListener("pointermove", activity);
       window.removeEventListener("wheel", activity);
       if (highlightTimer.current) clearTimeout(highlightTimer.current);
@@ -269,7 +277,7 @@ export default function App() {
       return;
     }
     requesting.current = true;
-    setBusy(true);
+    setBusyState(true);
     setMessage("");
     key.current ??= crypto.randomUUID();
     sessionStorage.setItem("gmc-attempt", key.current);
@@ -297,12 +305,13 @@ export default function App() {
       setMessage((e as Error).message);
     } finally {
       requesting.current = false;
-      setBusy(false);
+      setBusyState(false);
+      lastInput.current = Date.now();
     }
   }
   async function undo() {
     if (!receipt || busy) return;
-    setBusy(true);
+    setBusyState(true);
     setMessage("");
     try {
       const value = await api<Receipt>(`/submissions/${receipt.id}/undo`, {
@@ -317,13 +326,14 @@ export default function App() {
     } catch (e) {
       setMessage((e as Error).message);
     } finally {
-      setBusy(false);
+      setBusyState(false);
+      lastInput.current = Date.now();
     }
   }
   async function locate(e: FormEvent) {
     e.preventDefault();
     if (busy) return;
-    setBusy(true);
+    setBusyState(true);
     setMessage("");
     try {
       const found = await api<Locator>("/locate", {
@@ -341,7 +351,8 @@ export default function App() {
       useSanctuary.getState().set({ selection: null });
       setMessage((e as Error).message);
     } finally {
-      setBusy(false);
+      setBusyState(false);
+      lastInput.current = Date.now();
     }
   }
   function edit(field: "username" | "wish", value: string) {
