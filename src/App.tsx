@@ -428,16 +428,28 @@ export default function App() {
         />
         {view === "form" ? (
           <>
-            <button
-              className="text-button back"
-              onClick={() => {
-                if (!busy) clearPrivate();
-              }}
-              disabled={busy}
-            >
-              ← Back to the tree
-            </button>
-            <h1>Make a wish</h1>
+            <div className="sheet-header">
+              <h1>Make a wish</h1>
+              <button
+                className="sheet-back"
+                aria-label="Back to the tree"
+                onClick={() => {
+                  if (!busy) clearPrivate();
+                }}
+                disabled={busy}
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="m14 6-6 6 6 6"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Back
+              </button>
+            </div>
             <form onSubmit={submit} className="wish-form">
               <label htmlFor="username">Username</label>
               <input

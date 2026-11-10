@@ -12,10 +12,21 @@ test("form and keyboard move together, stay bounded and recover from cancelled a
   await page.getByRole("button", { name: "Make a wish", exact: true }).click();
   const grip = page.getByRole("slider", { name: "Controls height" });
   const panel = page.locator(".panel");
+  const initialPanel = (await panel.boundingBox())!;
+  expect(initialPanel.x).toBeGreaterThan(1080 * 0.4);
+  expect(initialPanel.width).toBeLessThan(1080 * 0.6);
+  expect(initialPanel.x + initialPanel.width).toBeCloseTo(1080 * 0.97, 0);
+  const fieldY = (await page
+    .getByLabel("Username", { exact: true })
+    .boundingBox())!.y;
   await page.getByLabel("Username", { exact: true }).focus();
   await page.getByRole("button", { name: "Toggle on-screen keyboard" }).click();
   const keyboard = page.getByRole("group", { name: "On-screen keyboard" });
   await expect(keyboard).toBeVisible();
+  expect(
+    (await page.getByLabel("Username", { exact: true }).boundingBox())!.y,
+  ).toBeCloseTo(fieldY, 0);
+  await page.screenshot({ path: "test-results/right-sheet-keyboard.png" });
   await expect(panel.locator(".touch-keyboard")).toHaveCount(1);
   await keyboard.getByRole("button", { name: "q", exact: true }).click();
   await expect(page.getByLabel("Username", { exact: true })).toHaveValue("q");

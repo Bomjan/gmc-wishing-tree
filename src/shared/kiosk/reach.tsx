@@ -11,6 +11,19 @@ export const DEFAULT_CONTROL_HEIGHT = Number.isFinite(configured)
   : 0.32;
 const clamp = (n: number, min: number, max: number) =>
   Math.max(min, Math.min(max, n));
+// Keep the form's fields anchored when the optional keyboard is expanded.
+function anchorHeight(panel: HTMLElement) {
+  const keyboard = panel.querySelector<HTMLElement>(
+    ".wish-form ~ .touch-keyboard",
+  );
+  return (
+    panel.getBoundingClientRect().height -
+    (keyboard
+      ? keyboard.getBoundingClientRect().height +
+        parseFloat(getComputedStyle(keyboard).marginTop || "0")
+      : 0)
+  );
+}
 /** Visitor-adjustable reach position, independent of camera and contribution state. */
 export function useReachablePanel(mode: string) {
   const stageRef = useRef<HTMLElement>(null),
@@ -24,7 +37,7 @@ export function useReachablePanel(mode: string) {
       const height = stage.getBoundingClientRect().height,
         panelHeight = panel.getBoundingClientRect().height;
       const top = clamp(
-        position * height - panelHeight / 2,
+        position * height - anchorHeight(panel) / 2,
         height * 0.03,
         Math.max(height * 0.03, height * 0.97 - panelHeight),
       );
@@ -59,9 +72,10 @@ export function useReachablePanel(mode: string) {
       max = 0.82;
     if (stage && panel) {
       const height = stage.getBoundingClientRect().height,
-        half = panel.getBoundingClientRect().height / (height * 2);
+        half = anchorHeight(panel) / (height * 2),
+        full = panel.getBoundingClientRect().height / height;
       min = Math.max(min, 0.03 + half);
-      max = Math.min(max, 0.97 - half);
+      max = Math.min(max, 0.97 - full + half);
     }
     setPositionState(clamp(next, min, Math.max(min, max)));
   };
@@ -97,7 +111,8 @@ export function ReachHandle({
       y: event.clientY,
       position:
         stage && panel
-          ? (panel.top - stage.top + panel.height / 2) / stage.height
+          ? (panel.top - stage.top + anchorHeight(panelRef.current!) / 2) /
+            stage.height
           : position,
     };
   };

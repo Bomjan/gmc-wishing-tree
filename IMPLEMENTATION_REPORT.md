@@ -89,3 +89,10 @@ The default controls now form a narrow vertical rail on the right edge, with cir
 Validation: production build, Prettier and whitespace checks passed. Five browser checks passed across desktop preview and 1080 × 1920 portrait layout, submission → Undo/finalise → search, mouse drag/wheel/two-finger zoom/direct leaf selection, and movable form/keyboard bounds with pointer cancellation. The initial batch ended early after its two layout checks passed; the remaining three checks passed when rerun. The rail occupies under 2% of the stage area in both checked layouts. No backend, database or contribution records changed. Physical Samsung touch and reach checks remain installation work.
 
 Current screenshot: [right-edge controls](docs/screenshots/right-edge-controls.png). Previous centre-dock images are historical.
+
+
+## Contextual form placement revision
+
+Wish entry now opens as a narrower sheet aligned with the right edge, rather than a wide panel across the middle. The confirmation/Undo sheet is also smaller and right aligned. The chosen interaction height is preserved, with a larger, clearly labelled Back control. Expanding the optional keyboard anchors the fields in place instead of recentering the entire panel; screen bounds still take priority at extreme height settings.
+
+Validation: production build, formatting and whitespace checks passed. Three browser checks passed: desktop portrait preview; complete submission → Undo/finalise → search/mountain flow; and 1080 × 1920 form/keyboard placement, stable field position on keyboard expansion, both height limits, cancelled adjustment and draft cleanup. [Current form with keyboard](docs/screenshots/right-sheet-keyboard.png). No backend or contribution data changed. Installed reach and OS-keyboard behaviour remain hardware checks.

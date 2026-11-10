@@ -1163,3 +1163,46 @@ textarea:focus {
   bottom: auto;
   max-height: var(--side-space-below, 50dvh);
 }
+
+/* Contextual input sheets stay beside the right-edge actions, leaving scenery visible. */
+.panel:has(.wish-form),
+.panel:has(.acceptance) {
+  left: auto;
+  right: 3%;
+  width: min(38rem, 88%);
+  max-width: 88%;
+  max-height: 90%;
+  transform: none;
+}
+.panel:has(.acceptance) {
+  width: min(26rem, 88%);
+}
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.panel:has(.wish-form) .sheet-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+.sheet-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-height: 3.25rem;
+  min-width: 5.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #1776b22b;
+  border-radius: 0.3rem;
+  background: #1776b208;
+  color: var(--gmc-blue);
+  font-size: 0.9rem;
+}
+.sheet-back svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
