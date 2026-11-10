@@ -61,7 +61,7 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
     .getByLabel("Your wish", { exact: true })
     .fill("May our mountain grow in kindness.");
   await page.screenshot({ path: "test-results/submission-form.png" });
-  await page.getByRole("button", { name: "Let my wish take root" }).click();
+  await page.getByRole("button", { name: "Add my leaf" }).click();
   await expect(
     page.getByRole("heading", { name: "Your wish has taken root." }),
   ).toBeVisible();
@@ -98,13 +98,13 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
   await page
     .getByLabel("Your wish", { exact: true })
     .fill("May every visitor feel welcome.");
-  await page.getByRole("button", { name: "Let my wish take root" }).click();
+  await page.getByRole("button", { name: "Add my leaf" }).click();
   await expect(page.getByText("Permanently rooted")).toBeVisible({
     timeout: 18000,
   });
   await page.screenshot({ path: "test-results/accepted-wish.png" });
   await page.getByRole("button", { name: "Return to the tree" }).click();
-  await page.getByRole("button", { name: "More options" }).click();
+  await page.getByRole("button", { name: "Explore options" }).click();
   await page.getByRole("button", { name: "Find my leaf", exact: true }).click();
   await page
     .getByRole("textbox", { name: "Find your username" })
@@ -115,11 +115,11 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
   await expect(
     page.getByRole("textbox", { name: "Find your username" }),
   ).toBeHidden();
-  await page.getByRole("button", { name: "More options" }).click();
+  await page.getByRole("button", { name: "Explore options" }).click();
   await page
     .getByRole("button", { name: "View all trees", exact: true })
     .click();
-  await page.getByRole("button", { name: "More options" }).click();
+  await page.getByRole("button", { name: "Explore options" }).click();
   await expect(
     page.getByRole("button", { name: "Back to current tree" }),
   ).toBeVisible();
@@ -136,7 +136,7 @@ test("rejection preserves form, optional keyboard works, pending survives reload
     "true",
   );
   await page.getByRole("button", { name: "Make a wish", exact: true }).click();
-  await page.getByRole("button", { name: "Let my wish take root" }).click();
+  await page.getByRole("button", { name: "Add my leaf" }).click();
   await expect(
     page.getByText("Use 3–24 letters, numbers or underscores."),
   ).toBeVisible();
@@ -154,7 +154,7 @@ test("rejection preserves form, optional keyboard works, pending survives reload
   await page
     .getByLabel("Your wish", { exact: true })
     .fill("reject this demo wish");
-  await page.getByRole("button", { name: "Let my wish take root" }).click();
+  await page.getByRole("button", { name: "Add my leaf" }).click();
   await expect(
     page.getByText(
       "Please revise your wish to keep this space welcoming for everyone.",
@@ -169,7 +169,7 @@ test("rejection preserves form, optional keyboard works, pending survives reload
     page.getByRole("group", { name: "On-screen keyboard" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Close keyboard" }).click();
-  await page.getByRole("button", { name: "Let my wish take root" }).click();
+  await page.getByRole("button", { name: "Add my leaf" }).click();
   await expect(page.getByRole("button", { name: /Undo ·/ })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("button", { name: /Undo ·/ })).toBeVisible();
@@ -187,7 +187,7 @@ test("reconnection reloads authoritative state and ambiguous search exposes no d
     "data-online",
     "true",
   );
-  await page.getByRole("button", { name: "More options" }).click();
+  await page.getByRole("button", { name: "Explore options" }).click();
   await page.getByRole("button", { name: "Find my leaf", exact: true }).click();
   await page
     .getByRole("textbox", { name: "Find your username" })

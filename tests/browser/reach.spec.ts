@@ -15,9 +15,9 @@ test("form and keyboard move together, stay bounded and recover from cancelled a
   const initialPanel = (await panel.boundingBox())!;
   expect(initialPanel.x).toBeGreaterThan(1080 * 0.4);
   expect(initialPanel.width).toBeLessThan(1080 * 0.49);
-  expect(initialPanel.height).toBeLessThan(500);
+  expect(initialPanel.height).toBeLessThan(530);
   const submit = (await page
-    .getByRole("button", { name: "Let my wish take root" })
+    .getByRole("button", { name: "Add my leaf" })
     .boundingBox())!;
   expect(submit.height).toBeGreaterThanOrEqual(55);
   expect(
@@ -43,7 +43,7 @@ test("form and keyboard move together, stay bounded and recover from cancelled a
   );
   await keyboard.getByRole("button", { name: "q", exact: true }).click();
   await expect(page.getByLabel("Username", { exact: true })).toHaveValue("q");
-  await page.getByLabel("Your wish", { exact: true }).click();
+  await keyboard.getByRole("button", { name: "Next: your wish" }).click();
   await expect(keyboard.locator(".keyboard-heading")).toContainText(
     "Your wish",
   );
@@ -59,7 +59,7 @@ test("form and keyboard move together, stay bounded and recover from cancelled a
     expect(box.y).toBeGreaterThanOrEqual(1920 * 0.03 - 1);
     expect(box.y + box.height).toBeLessThanOrEqual(1920 * 0.97 + 1);
     await expect(
-      page.getByRole("button", { name: "Let my wish take root" }),
+      page.getByRole("button", { name: "Add my leaf" }),
     ).toBeInViewport();
     await expect(
       keyboard.getByRole("button", { name: "Space", exact: true }),
@@ -100,7 +100,7 @@ test("form and keyboard move together, stay bounded and recover from cancelled a
   await page.getByRole("button", { name: "Close keyboard" }).click();
   await page.getByRole("button", { name: "Back to the tree" }).click();
   await expect(keyboard).toHaveCount(0);
-  await page.getByRole("button", { name: "More options" }).click();
+  await page.getByRole("button", { name: "Explore options" }).click();
   await page.getByRole("button", { name: "Find my leaf", exact: true }).click();
   await page.getByRole("textbox", { name: "Find your username" }).click();
   await expect(keyboard).toBeVisible();

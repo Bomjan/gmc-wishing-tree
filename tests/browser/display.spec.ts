@@ -56,7 +56,7 @@ for (const viewport of [
       await page.screenshot({
         path: `test-results/portrait-tree-${viewport.width}.png`,
       });
-      await page.getByRole("button", { name: "More options" }).click();
+      await page.getByRole("button", { name: "Explore options" }).click();
       await page
         .getByRole("button", { name: "Find my leaf", exact: true })
         .click();
@@ -71,7 +71,7 @@ for (const viewport of [
         page.locator(".wish-form input,.wish-form textarea"),
       ).toHaveCount(2);
       await expect(
-        page.getByRole("button", { name: "Let my wish take root" }),
+        page.getByRole("button", { name: "Add my leaf" }),
       ).toBeInViewport();
       await expect(canvas).toHaveCount(1);
       if (viewport.width === 2160) {

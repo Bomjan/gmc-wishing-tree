@@ -35,9 +35,9 @@ test("default scene supports drag, wheel, two-finger zoom and direct leaf select
   await expect
     .poll(async () => Number(await grip.getAttribute("aria-valuenow")))
     .toBeGreaterThan(value);
-  await page.getByRole("button", { name: "More options" }).click();
+  await page.getByRole("button", { name: "Explore options" }).click();
   await page.getByRole("button", { name: "Default height" }).click();
-  await page.getByRole("button", { name: "More options" }).click();
+  await page.getByRole("button", { name: "Explore options" }).click();
   await page.mouse.move(
     gripBox.x + gripBox.width / 2,
     gripBox.y + gripBox.height / 2,
@@ -52,10 +52,12 @@ test("default scene supports drag, wheel, two-finger zoom and direct leaf select
   await expect
     .poll(async () => (await page.locator(".panel-welcome").boundingBox())!.y)
     .toBeGreaterThan(original.y + 150);
-  await page.getByRole("button", { name: "More options" }).click();
-  await page.getByRole("button", { name: "Higher", exact: true }).click();
+  await page.getByRole("button", { name: "Explore options" }).click();
+  await page
+    .getByRole("button", { name: "Move controls higher", exact: true })
+    .click();
   await page.getByRole("button", { name: "Default height" }).click();
-  await page.getByRole("button", { name: "More options" }).click();
+  await page.getByRole("button", { name: "Explore options" }).click();
   await page.screenshot({ path: "test-results/minimal-interactive.png" });
   const canvas = page.locator("canvas"),
     box = (await canvas.boundingBox())!,
@@ -107,7 +109,7 @@ test("default scene supports drag, wheel, two-finger zoom and direct leaf select
     )
     .toBeGreaterThan(0.5);
   await cdp.detach();
-  await page.getByRole("button", { name: "More options" }).click();
+  await page.getByRole("button", { name: "Explore options" }).click();
   await page.getByRole("button", { name: "Reset view", exact: true }).click();
   await page.waitForTimeout(2500);
   const points = await page.evaluate(async () => {

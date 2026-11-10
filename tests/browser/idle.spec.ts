@@ -65,7 +65,7 @@ test("does not reload during a server-owned Undo window", async ({ page }) => {
   await page
     .getByLabel("Your wish", { exact: true })
     .fill("A wish to test Undo.");
-  await page.getByRole("button", { name: "Let my wish take root" }).click();
+  await page.getByRole("button", { name: "Add my leaf" }).click();
   await expect(page.getByRole("button", { name: /Undo ·/ })).toBeVisible();
   await page.waitForTimeout(5000);
   await expect(page.getByRole("button", { name: /Undo ·/ })).toBeVisible();
@@ -118,7 +118,7 @@ test("does not reload while a submission request is in flight", async ({
     .getByLabel("Username", { exact: true })
     .fill(`idle_request_${Date.now().toString().slice(-6)}`);
   await page.getByLabel("Your wish", { exact: true }).fill("A held request.");
-  await page.getByRole("button", { name: "Let my wish take root" }).click();
+  await page.getByRole("button", { name: "Add my leaf" }).click();
   await routeStarted;
   await page.waitForTimeout(5000);
   await expect

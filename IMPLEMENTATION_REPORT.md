@@ -137,3 +137,11 @@ Verification: production build and the full submission → Undo/finalise → sea
 Focusing Username, Your wish or leaf search opens the on-screen keyboard and targets that field. Closing it remains available, and tapping an already-focused field reopens it. The inputs suppress an additional operating-system touch keyboard while retaining physical keyboard support.
 
 Verification: production build passed. Three browser checks passed across submission/Undo/search, rejection and reload recovery, and portrait keyboard reach. The portrait check verifies focus-driven opening, keys writing to the correct field, field switching, close/reopen and search focus, plus panel bounds and height adjustment.
+
+## Clearer visitor guidance and arrow height controls
+
+The primary action explains that each wish adds a leaf. Explore replaces the ambiguous More label. The form gives one short instruction, uses Add my leaf as its submit action, and explains the Undo countdown. The keyboard provides Next: your wish and Done typing, while duplicate keyboard toggles are removed. Height adjustments use large up/down arrows with accessible labels under Controls height; the drag handle also identifies its purpose.
+
+Verification: production build, submission/Undo/search and direct scene interaction checks passed. Portrait browser coverage verifies keyboard Next, focus changes, reopen, field anchoring and bounded controls. These checks verify behaviour and layout; first-time visitor learnability still needs observation on the installed touchscreen.
+
+[Guided keyboard capture](docs/screenshots/visitor-keyboard-guide.png), recorded with empty fields.

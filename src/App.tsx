@@ -416,8 +416,16 @@ export default function App() {
               ? "Find your username"
               : "Username"}
         </span>
+        {active === "username" && (
+          <button
+            className="keyboard-next"
+            onClick={() => wishRef.current?.focus()}
+          >
+            Next: your wish
+          </button>
+        )}
         <button onClick={() => setKeyboard(false)} aria-label="Close keyboard">
-          ✕
+          {active === "username" ? "Hide" : "Done typing"}
         </button>
       </div>
       {["1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm"].map((row) => (
@@ -497,6 +505,9 @@ export default function App() {
                 Back
               </button>
             </div>
+            <p className="form-guidance">
+              Choose a username, then write one wish to add a leaf.
+            </p>
             <form onSubmit={submit} className="wish-form" noValidate>
               <label htmlFor="username">Username</label>
               <input
@@ -560,15 +571,6 @@ export default function App() {
               )}
               <div className="field-meta">
                 <span>English</span>
-                <button
-                  type="button"
-                  className="inline-keyboard"
-                  aria-label="Toggle on-screen keyboard"
-                  aria-pressed={keyboard}
-                  onClick={() => setKeyboard(!keyboard)}
-                >
-                  Keyboard
-                </button>
                 <span>
                   {wish.length} / {config.wishMax}
                 </span>
@@ -586,7 +588,7 @@ export default function App() {
               )}
               <button className="primary" disabled={busy || !online}>
                 <LeafIcon />
-                {busy ? "Tending your wish…" : "Let my wish take root"}
+                {busy ? "Checking your wish…" : "Add my leaf"}
               </button>
             </form>
             {touchKeyboard}
@@ -606,6 +608,11 @@ export default function App() {
               <h1>Your wish has taken root.</h1>
               {heightHandle}
             </div>
+            {receipt?.state === "pending" && (
+              <p className="receipt-guidance">
+                You can undo until the countdown ends.
+              </p>
+            )}
             <div className="receipt-actions">
               {receipt?.state === "pending" ? (
                 <>
@@ -642,6 +649,8 @@ export default function App() {
             <div className="minimal-dock">
               <button
                 className="primary"
+                aria-label="Make a wish"
+                aria-describedby="wish-action-hint"
                 onClick={() => {
                   setMessage("");
                   setSearch("");
@@ -655,10 +664,13 @@ export default function App() {
               >
                 <LeafIcon />
                 <span>Make a wish</span>
+                <small className="action-hint" id="wish-action-hint">
+                  Each wish adds a leaf
+                </small>
               </button>
               <button
                 className="dock-options"
-                aria-label="More options"
+                aria-label="Explore options"
                 aria-expanded={toolsOpen}
                 aria-controls="tree-tools"
                 onClick={() => {
@@ -668,18 +680,8 @@ export default function App() {
                   setKeyboard(false);
                 }}
               >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <circle cx="5" cy="12" r="1.5" />
-                  <circle cx="12" cy="12" r="1.5" />
-                  <circle cx="19" cy="12" r="1.5" />
-                </svg>
-                <span>More</span>
+                <MountainIcon />
+                <span>Explore</span>
               </button>
             </div>
             <p className="dock-caption">
@@ -729,21 +731,9 @@ export default function App() {
                     aria-label="Find leaf"
                     disabled={busy || !online}
                   >
-                    ↗
+                    Find
                   </button>
                 </form>
-                <button
-                  type="button"
-                  className="inline-keyboard"
-                  aria-label="Toggle on-screen keyboard"
-                  aria-pressed={keyboard}
-                  onClick={() => {
-                    setActive("search");
-                    setKeyboard(!keyboard);
-                  }}
-                >
-                  Keyboard
-                </button>
                 {touchKeyboard}
               </div>
               <button
@@ -780,15 +770,34 @@ export default function App() {
                 role="group"
                 aria-label="Adjust controls height"
               >
+                <p className="height-caption">Controls height</p>
                 <button
+                  aria-label="Move controls higher"
                   onClick={() => reach.setPosition(reach.position - 0.06)}
                 >
-                  Higher
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M12 20V4m-7 7 7-7 7 7"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
                 <button
+                  aria-label="Move controls lower"
                   onClick={() => reach.setPosition(reach.position + 0.06)}
                 >
-                  Lower
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M12 4v16m-7-7 7 7 7-7"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
                 <button onClick={reach.resetPosition}>Default height</button>
               </div>
