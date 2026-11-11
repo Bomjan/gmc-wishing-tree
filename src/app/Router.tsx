@@ -5,6 +5,9 @@ import { useSanctuary } from "../state";
 import "./app.css";
 const Tree = lazy(() => import("../App"));
 const Wall = lazy(() => import("../experiences/handprint-wall/Wall"));
+const TouchDiagnostics = lazy(
+  () => import("../experiences/handprint-wall/tracing/TouchDiagnostics"),
+);
 export default function Router() {
   const [path, setPath] = useState(location.pathname),
     [blocked, setBlocked] = useState(false),
@@ -66,7 +69,9 @@ export default function Router() {
           </main>
         }
       >
-        {path === "/wishing-tree" ? (
+        {path === "/handprint-wall/input-check" ? (
+          <TouchDiagnostics />
+        ) : path === "/wishing-tree" ? (
           <Tree onSessionLock={setBlocked} />
         ) : path === "/handprint-wall" ? (
           <Wall onSessionLock={setBlocked} />

@@ -1,3 +1,4 @@
+import { randomUUID } from "../../shared/randomUUID";
 import {
   useCallback,
   useEffect,
@@ -12,6 +13,8 @@ import {
   PALM_NAME_MAX,
   PALM_NAME_PATTERN,
   type OutlinePoint,
+  type OutlineSource,
+  type ContactArea,
   type PublicWall,
   type HandprintReceipt,
   type HandprintPlacement,
@@ -19,7 +22,8 @@ import {
   type HandprintSubmission,
   type PaintColourId,
 } from "../../shared/handprints";
-import { outline, paint, releasePaint } from "./paint";
+import type { HandPose } from "../../shared/paintedHand";
+import { outline, paint, releasePaint, loadPaintedHand } from "./paint";
 import { handprintWallTitle } from "../../app/experiences";
 import { TouchKeyboard } from "../../shared/ui/TouchKeyboard";
 import { HandCapture } from "./tracing/HandCapture";
@@ -48,8 +52,13 @@ export default function Wall({
   const [wall, setWall] = useState(cached);
   const [online, setOnline] = useState(false);
   const [step, setStep] = useState<Step>("capture");
+  const [paintReady, setPaintReady] = useState(false);
   const [shape, setShape] = useState<OutlinePoint[]>([]);
-  const [source, setSource] = useState<"trace" | "outline">("outline");
+  const [source, setSource] = useState<OutlineSource>("outline");
+  const [contactAreas, setContactAreas] = useState<
+    readonly ContactArea[] | undefined
+  >();
+  const [pose, setPose] = useState<HandPose | undefined>();
   const [colour, setColour] = useState<PaintColourId>("terracotta");
   const [size, setSize] = useState(1);
   const [name, setName] = useState("");
@@ -74,11 +83,27 @@ export default function Wall({
   const canvas = useRef<HTMLCanvasElement>(null);
   const plaster = useRef<HTMLCanvasElement | null>(null);
   const drag = useRef<{ id: number; x: number; y: number } | null>(null);
-  const key = useRef(crypto.randomUUID());
-  const session = useRef(crypto.randomUUID());
+  const key = useRef(randomUUID());
+  const session = useRef(randomUUID());
   const attemptBody = useRef("");
   const offset = useRef(0);
   const submitting = useRef(false);
+  useEffect(() => {
+    let active = true;
+    loadPaintedHand()
+      .then(() => {
+        if (active) setPaintReady(true);
+      })
+      .catch(() => {
+        if (active)
+          setMessage(
+            "The painted hand could not load. Please reload or trace your outline.",
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const request = async (path: string, options: RequestInit = {}) => {
     const response = await fetch(`/api/handprints${path}`, {
@@ -192,6 +217,8 @@ export default function Wall({
       .find((p) => p.id === receipt.id);
     if (print) {
       setShape([...print.outline]);
+      setContactAreas(print.contactAreas);
+      setPose(print.pose);
       setSource(print.source);
       setColour(print.colour);
       setSize(print.placement.size);
@@ -326,7 +353,15 @@ export default function Wall({
     if (step !== "wall") {
       paint(
         ctx,
-        { outline: shape, colour, seed: 71, palmName: name.trim() },
+        {
+          outline: shape,
+          contactAreas,
+          pose,
+          source,
+          colour,
+          seed: 71,
+          palmName: name.trim(),
+        },
         width / 2 + 27,
         height / 2,
         width * 0.68 * size,
@@ -388,6 +423,10 @@ export default function Wall({
     wall,
     step,
     shape,
+    contactAreas,
+    pose,
+    source,
+    paintReady,
     colour,
     size,
     name,
@@ -398,12 +437,24 @@ export default function Wall({
     reveal,
   ]);
 
-  const capture = useCallback((points: OutlinePoint[]) => {
-    setShape(points);
-    setSource("trace");
-    setStep("customise");
-    setMessage("");
-  }, []);
+  const capture = useCallback(
+    (
+      points: OutlinePoint[],
+      capturedSource: OutlineSource,
+      areas?: readonly ContactArea[],
+      capturedSize?: number,
+      capturedPose?: HandPose,
+    ) => {
+      setShape(points);
+      setContactAreas(areas);
+      setPose(capturedPose);
+      setSource(capturedSource);
+      if (capturedSize !== undefined) setSize(capturedSize);
+      setStep(capturedSource === "outline" ? "size" : "customise");
+      setMessage("");
+    },
+    [],
+  );
 
   function clearSearch() {
     setSearchOpen(false);
@@ -418,11 +469,13 @@ export default function Wall({
   function startNew() {
     clearSearch();
     setShape([]);
+    setContactAreas(undefined);
+    setPose(undefined);
     setSize(1);
     setColour("terracotta");
     setName("");
     setReceipt(null);
-    key.current = crypto.randomUUID();
+    key.current = randomUUID();
     attemptBody.current = "";
     setStep("capture");
   }
@@ -504,6 +557,8 @@ export default function Wall({
     setMessage("");
     const draft: HandprintSubmission = {
       outline: shape,
+      ...(contactAreas ? { contactAreas } : {}),
+      ...(pose ? { pose } : {}),
       source,
       colour,
       size,
@@ -511,7 +566,7 @@ export default function Wall({
     };
     const body = JSON.stringify(draft);
     if (attemptBody.current && attemptBody.current !== body)
-      key.current = crypto.randomUUID();
+      key.current = randomUUID();
     attemptBody.current = body;
     try {
       sessionStorage.setItem(
@@ -554,7 +609,7 @@ export default function Wall({
       remember(r);
       setFocus(null);
       setStep(shape.length ? "customise" : "capture");
-      key.current = crypto.randomUUID();
+      key.current = randomUUID();
       attemptBody.current = "";
       await refresh();
     } catch (e) {
@@ -606,7 +661,7 @@ export default function Wall({
           {
             {
               capture:
-                "Spread your fingers and rest five fingertips on the guide. Hold still for a moment.",
+                "Rest your hand flat, then lift it to reveal your painted impression.",
               size: "Adjust the outline to a size that feels right.",
               customise: "Choose a colour and add a name to the palm.",
               wall: "Every mark belongs here.",
@@ -617,7 +672,7 @@ export default function Wall({
 
       <div key={`stage-${step}`} className="wall-stage">
         {step === "capture" ? (
-          <HandCapture onCapture={capture} />
+          <HandCapture onCapture={capture} paintReady={paintReady} />
         ) : (
           <canvas
             ref={canvas}
@@ -654,6 +709,8 @@ export default function Wall({
               onClick={() => {
                 setSource("outline");
                 setShape(outline());
+                setContactAreas(undefined);
+                setPose(undefined);
                 setStep("size");
               }}
             >

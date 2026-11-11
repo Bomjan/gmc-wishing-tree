@@ -13,6 +13,8 @@ npm run demo
 
 Open http://localhost:5173. Demo mode needs neither PostgreSQL nor an AI key. It starts with 76 and 108 **demonstration** leaves, clearly labelled in the interface; its records live only in memory. The server and frontend must both be in demo mode (`DEMO_MODE=true`, `VITE_DEMO=true`, set by the script). Demo data is never inserted in the production database. Refreshing the browser retains demo state while that server process runs; restarting resets it.
 
+When opening the app on another device using the Mac's LAN IP, set `PUBLIC_ORIGIN` in the ignored `.env` to that exact browser origin, including scheme and port (for example `PUBLIC_ORIGIN=http://<MAC-LAN-IP>:5173`), then restart the server. Use that same URL on the Mac too. The default `http://localhost:5173` does not authorise requests from a LAN-IP URL: a mismatch rejects POST requests with 403 and closes WebSocket handshakes, appearing in Vite as repeated `ws proxy error: socket hang up`. Keep the origin check enabled. A demo restart clears in-memory contributions. Vite `hmr update` lines are routine development messages. These connection errors do not alter how many touch contacts the browser receives; use `/handprint-wall/input-check` on the actual display for touch diagnosis.
+
 Demo locator names: `morning_light`, `mountain_hope`, `mountain_home`. Try `mountain_hore` for an ambiguous match. A wish containing `reject` or `unavailable` exercises revision and moderation outage states. This is a deterministic test adapter, **not AI moderation**.
 
 ## Run with PostgreSQL and real moderation

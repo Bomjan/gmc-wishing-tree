@@ -1,3 +1,4 @@
+import { randomUUID } from "./shared/randomUUID";
 import { create } from "zustand";
 import type { Forest, Locator, Receipt } from "./shared";
 export type View = "home" | "form" | "accepted" | "mountain";
@@ -58,7 +59,7 @@ export const useSanctuary = create<State>((set) => ({
       cameraRevision: s.cameraRevision + 1,
     })),
 }));
-const session = crypto.randomUUID();
+const session = randomUUID();
 export async function api<T>(
   path: string,
   options: RequestInit = {},

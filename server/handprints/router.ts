@@ -210,7 +210,13 @@ export function handprintRouter(
       return res.json(receipt(existing));
     }
     const palmName = "size" in data ? data.palmName : undefined;
-    await moderateImage(data.outline, demo, palmName);
+    await moderateImage(
+      data.outline,
+      demo,
+      palmName,
+      data.contactAreas,
+      data.source,
+    );
     const result = await transaction(async (rows, save) => {
       const duplicate = rows.find((r) => r.idempotency_key === key);
       if (duplicate) {
@@ -292,6 +298,8 @@ export function handprintRouter(
           token_hash: hash(token(key)),
           data: {
             outline: data.outline,
+            ...(data.contactAreas ? { contactAreas: data.contactAreas } : {}),
+            ...(data.pose ? { pose: data.pose } : {}),
             source: data.source,
             colour: data.colour,
             placement,

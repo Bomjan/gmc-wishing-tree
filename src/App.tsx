@@ -1,3 +1,4 @@
+import { randomUUID } from "./shared/randomUUID";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { TouchKeyboard } from "./shared/ui/TouchKeyboard";
 import { Scene } from "./Scene";
@@ -248,7 +249,7 @@ export default function App({
     requesting.current = true;
     setBusy(true);
     setMessage("");
-    key.current ??= crypto.randomUUID();
+    key.current ??= randomUUID();
     sessionStorage.setItem("gmc-attempt", key.current);
     try {
       const value = await api<Receipt>("/submissions", {

@@ -1,4 +1,5 @@
 /** Shared Handprint Wall transport contracts. Validate all input server-side. */
+import type { HandPose } from "./paintedHand.js";
 export const PAINT_COLOURS = {
   terracotta: "#A65F45",
   ochre: "#B18A3B",
@@ -11,7 +12,15 @@ export type PaintColourId = keyof typeof PAINT_COLOURS;
 
 /** Normalised outline coordinates, each finite and in [0, 1]. Validate server-side. */
 export type OutlinePoint = readonly [x: number, y: number];
-export type OutlineSource = "trace" | "outline";
+export type OutlineSource =
+  "trace" | "outline" | "contact" | "painted-left" | "painted-right";
+/** Normalised, size-limited contact marks; no device IDs or sensor metadata. */
+export type ContactArea = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 export type HandprintState = "pending" | "finalised" | "cancelled" | "removed";
 export type HandprintModerationStatus =
   "pending" | "accepted" | "rejected" | "unavailable";
@@ -24,6 +33,9 @@ export type HandprintPlacement = {
 };
 type HandprintDesign = {
   outline: readonly OutlinePoint[];
+  contactAreas?: readonly ContactArea[];
+  /** Finger bend fitted from fingertip contacts; painted sources only. */
+  pose?: HandPose;
   source: OutlineSource;
   colour: PaintColourId;
 };

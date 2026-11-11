@@ -2,7 +2,15 @@ import {
   PAINT_COLOURS,
   type PublicHandprint,
   type OutlinePoint,
+  type OutlineSource,
 } from "../../shared/handprints";
+import {
+  fingerRegion,
+  isPaintedHand,
+  PAINTED_HAND_ASSET,
+  PAINTED_HAND_FINGERS,
+  type HandPose,
+} from "../../shared/paintedHand";
 const template: OutlinePoint[] = [
   [0.24, 0.95],
   [0.22, 0.65],
@@ -97,24 +105,121 @@ export function fitHand(contacts: OutlinePoint[]): OutlinePoint[] | null {
 }
 
 const textures = new Map<string, HTMLCanvasElement>();
+let impressionImage: HTMLImageElement | null = null;
+let impressionLoad: Promise<void> | null = null;
+export function loadPaintedHand() {
+  if (impressionLoad) return impressionLoad;
+  const image = new Image();
+  impressionImage = image;
+  impressionLoad = new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => {
+      if (impressionImage === image) {
+        impressionImage = null;
+        impressionLoad = null;
+      }
+      reject(new Error("The painted hand texture could not load."));
+    };
+    image.src = PAINTED_HAND_ASSET;
+  });
+  return impressionLoad;
+}
 export function releasePaint() {
   for (const c of textures.values()) {
     c.width = 0;
     c.height = 0;
   }
   textures.clear();
+  if (impressionImage) {
+    impressionImage.onload = null;
+    impressionImage.onerror = null;
+    impressionImage.src = "";
+  }
+  impressionImage = null;
+  impressionLoad = null;
 }
+function trace(c: CanvasRenderingContext2D, shape: readonly OutlinePoint[]) {
+  c.beginPath();
+  shape.forEach(([x, y], i) =>
+    i ? c.lineTo(x * 512, y * 512) : c.moveTo(x * 512, y * 512),
+  );
+  c.closePath();
+}
+
+/** Draw the artwork with each finger turned/stretched about its knuckle. */
+function drawPosedHand(
+  c: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  pose?: HandPose,
+) {
+  if (!pose) {
+    c.drawImage(image, 0, 0, 512, 512);
+    return;
+  }
+  const palm = document.createElement("canvas");
+  palm.width = palm.height = 512;
+  const pc = palm.getContext("2d")!;
+  pc.drawImage(image, 0, 0, 512, 512);
+  pc.globalCompositeOperation = "destination-out";
+  PAINTED_HAND_FINGERS.forEach((_, i) => {
+    trace(pc, fingerRegion(i, 0));
+    pc.fill();
+  });
+  c.drawImage(palm, 0, 0);
+  palm.width = palm.height = 0;
+  PAINTED_HAND_FINGERS.forEach(({ tip, base }, i) => {
+    const [turn, length] = pose.fingers[i] ?? [0, 1];
+    const along = Math.atan2(tip[1] - base[1], tip[0] - base[0]);
+    c.save();
+    c.translate(base[0] * 512, base[1] * 512);
+    c.rotate(turn + along);
+    c.scale(length, 1);
+    c.rotate(-along);
+    c.translate(-base[0] * 512, -base[1] * 512);
+    // The cut-out reaches slightly into the palm so the knuckle has no seam.
+    trace(c, fingerRegion(i));
+    c.clip();
+    c.drawImage(image, 0, 0, 512, 512);
+    c.restore();
+  });
+}
+
+const insideArea = (
+  areas: readonly { x: number; y: number; width: number; height: number }[],
+  x: number,
+  y: number,
+) =>
+  areas.some(
+    (a) =>
+      ((x - a.x) / (a.width / 2)) ** 2 + ((y - a.y) / (a.height / 2)) ** 2 <=
+      1,
+  );
+
 export function paint(
   ctx: CanvasRenderingContext2D,
-  p: Pick<PublicHandprint, "outline" | "colour" | "seed"> & {
+  p: Pick<
+    PublicHandprint,
+    "outline" | "colour" | "seed" | "contactAreas" | "pose"
+  > & {
     palmName?: string;
+    source?: OutlineSource;
   },
   x: number,
   y: number,
   size: number,
   rotation = 0,
 ) {
-  const key = JSON.stringify([p.seed, p.colour, p.outline]);
+  const painted = isPaintedHand(p.source);
+  if (painted && (!impressionImage?.complete || !impressionImage.naturalWidth))
+    return;
+  const key = JSON.stringify([
+    p.seed,
+    p.colour,
+    p.outline,
+    p.contactAreas,
+    p.source,
+    p.pose,
+  ]);
   let texture = textures.get(key);
   if (!texture) {
     texture = document.createElement("canvas");
@@ -126,26 +231,81 @@ export function paint(
       seed = (Math.imul(seed, 1664525) + 1013904223) | 0;
       return (seed >>> 0) / 4294967296;
     };
+    if (painted) {
+      c.save();
+      if (p.source === "painted-right") {
+        c.translate(512, 0);
+        c.scale(-1, 1);
+      }
+      drawPosedHand(c, impressionImage!, p.pose);
+      c.restore();
+      // Preserve pigment density as well as the transparent scratches/creases.
+      const pixels = c.getImageData(0, 0, 512, 512);
+      for (let i = 0; i < pixels.data.length; i += 4) {
+        const ink =
+          1 - (pixels.data[i] + pixels.data[i + 1] + pixels.data[i + 2]) / 765;
+        pixels.data[i + 3] *= ink;
+      }
+      c.putImageData(pixels, 0, 0);
+      c.globalCompositeOperation = "source-in";
+      c.fillStyle = PAINT_COLOURS[p.colour];
+      c.fillRect(0, 0, 512, 512);
+      c.globalCompositeOperation = "source-over";
+    }
     c.scale(512, 512);
-    c.beginPath();
-    p.outline.forEach(([a, b], i) => {
-      const next = p.outline[(i + 1) % p.outline.length];
-      if (!i) c.moveTo(a, b);
-      const steps = Math.max(
-        2,
-        Math.ceil(Math.hypot(next[0] - a, next[1] - b) * 180),
-      );
-      for (let j = 1; j <= steps; j++)
-        c.lineTo(
-          a + ((next[0] - a) * j) / steps + (random() - 0.5) * 0.005,
-          b + ((next[1] - b) * j) / steps + (random() - 0.5) * 0.005,
-        );
-    });
-    c.closePath();
-    c.clip();
+    if (!painted) {
+      c.beginPath();
+      if (p.contactAreas?.length) {
+        for (const area of p.contactAreas) {
+          c.moveTo(area.x + area.width / 2, area.y);
+          c.ellipse(
+            area.x,
+            area.y,
+            area.width / 2,
+            area.height / 2,
+            0,
+            0,
+            Math.PI * 2,
+          );
+        }
+      } else
+        p.outline.forEach(([a, b], i) => {
+          const next = p.outline[(i + 1) % p.outline.length];
+          if (!i) c.moveTo(a, b);
+          const steps = Math.max(
+            2,
+            Math.ceil(Math.hypot(next[0] - a, next[1] - b) * 180),
+          );
+          for (let j = 1; j <= steps; j++)
+            c.lineTo(
+              a + ((next[0] - a) * j) / steps + (random() - 0.5) * 0.005,
+              b + ((next[1] - b) * j) / steps + (random() - 0.5) * 0.005,
+            );
+        });
+      c.closePath();
+      c.clip();
+      c.fillStyle = PAINT_COLOURS[p.colour];
+      c.globalAlpha = 0.87;
+      c.fillRect(0, 0, 1, 1);
+    }
+    if (painted) c.globalCompositeOperation = "source-atop";
+    // Where the screen reported real contact, the pigment is pressed denser.
+    const pressed = painted ? (p.contactAreas ?? []) : [];
+    for (const a of pressed) {
+      const r = Math.max(a.width, a.height) / 2;
+      const g = c.createRadialGradient(a.x, a.y, 0, a.x, a.y, r);
+      g.addColorStop(0, "#1d120cb0");
+      g.addColorStop(0.7, "#1d120c70");
+      g.addColorStop(1, "#1d120c00");
+      c.save();
+      c.globalAlpha = 0.55;
+      c.fillStyle = g;
+      c.beginPath();
+      c.ellipse(a.x, a.y, a.width / 2, a.height / 2, 0, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+    }
     c.fillStyle = PAINT_COLOURS[p.colour];
-    c.globalAlpha = 0.87;
-    c.fillRect(0, 0, 1, 1);
     for (let i = 0; i < 40; i++) {
       c.globalAlpha = 0.03 + random() * 0.1;
       c.beginPath();
@@ -165,10 +325,15 @@ export function paint(
     for (let i = 0; i < 9500; i++) {
       c.globalAlpha = 0.08 + random() * 0.62;
       const r = 0.0003 + random() * 0.0025;
+      const wx = random(),
+        wy = random();
+      // Firm contact leaves fewer dry gaps in the pigment.
+      if (pressed.length && insideArea(pressed, wx, wy) && random() < 0.7)
+        continue;
       c.beginPath();
       c.ellipse(
-        random(),
-        random(),
+        wx,
+        wy,
         r,
         r * (0.3 + random() * 0.7),
         random() * 6,

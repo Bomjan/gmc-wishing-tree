@@ -453,6 +453,8 @@
   display: grid;
   place-items: center;
   aspect-ratio: 1;
+  width: min(100%, calc(var(--stage-height) * 0.39));
+  margin-inline: auto;
   overflow: hidden;
   touch-action: none;
   user-select: none;
@@ -465,6 +467,14 @@
 }
 .capture-surface svg {
   width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.capture-impression {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 .capture-guide {
@@ -476,9 +486,130 @@
     fill 220ms ease,
     stroke 220ms ease;
 }
-.capture-surface[data-ready="true"] .capture-guide {
+.capture-live-outline {
   fill: #4b75534d;
   stroke: #386346;
+  stroke-width: 0.55;
+  stroke-linejoin: round;
+}
+.capture-area {
+  fill: #386346;
+  fill-opacity: 0.7;
+  stroke: none;
+}
+.touch-diagnostics {
+  font-size: 1rem;
+}
+.touch-diagnostics .wall-heading h1 {
+  font-size: 3rem;
+}
+.diagnostic-surface {
+  position: relative;
+  height: calc(var(--stage-height) * 0.3);
+  touch-action: none;
+  user-select: none;
+  overflow: hidden;
+  border: 1px solid #8f7844;
+  border-radius: 1rem;
+  background: #fffaf0;
+}
+.diagnostic-contact {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  outline: 1px solid #294c3c;
+  background: #38634666;
+  pointer-events: none;
+}
+.diagnostic-table {
+  max-height: 10rem;
+  overflow-y: auto;
+}
+.diagnostic-table table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.diagnostic-table th,
+.diagnostic-table td {
+  padding: 0.4rem;
+  border-bottom: 1px solid #a79d7750;
+}
+.diagnostic-reset {
+  min-height: 3.5rem;
+  padding: 0.75rem 1.5rem;
+  font: inherit;
+}
+.capture-template {
+  fill: #4b755329;
+  stroke: #4c6e55;
+  stroke-width: 0.55;
+  stroke-dasharray: 1.5 1;
+}
+.capture-stroke {
+  fill: none;
+  stroke: #386346;
+  stroke-width: 0.55;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.capture-stroke-complete {
+  fill: #4b75534d;
+}
+.capture-modes,
+.capture-options {
+  display: flex;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-block: 0.7rem;
+}
+.capture-modes button,
+.capture-options button {
+  flex: 1;
+  min-height: 3.1rem;
+  padding: 0.65rem;
+  border-radius: 0.8rem;
+  border: 1px solid #a79d7790;
+  background: #fffaf0;
+  color: #294c3c;
+  font: inherit;
+  font-size: 1rem;
+}
+.capture-modes button[aria-pressed="true"],
+.capture-options button[aria-pressed="true"],
+.capture-options button.primary {
+  background: #294c3c;
+  color: #fffaf0;
+}
+.capture-options button:disabled {
+  opacity: 0.45;
+}
+.capture-instruction {
+  text-align: center;
+  font-size: 1rem;
+  margin: 0.7rem auto;
+  max-width: 36rem;
+}
+.capture-size {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 1rem;
+  margin: 0.75rem auto;
+  max-width: 32rem;
+}
+.capture-size input {
+  width: 100%;
+  min-height: 2.6rem;
+  accent-color: #294c3c;
+}
+.capture-continue {
+  width: 100%;
+  margin-top: 0.5rem;
+  min-height: 3.5rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 1rem;
+  font: inherit;
+  font-size: 1.15rem;
 }
 .capture-contact {
   fill: #386346;
@@ -503,13 +634,20 @@
   font-size: 1.1rem;
   margin: 0.8rem 0 0;
 }
+.capture-hint {
+  margin: 0.5rem auto 0;
+  max-width: 34rem;
+  text-align: center;
+  color: #655f4e;
+  font-size: 0.9rem;
+}
 .capture-progress {
   position: absolute;
   inset: auto 0 0;
   height: 0.35rem;
   background: #4b7553;
   transform-origin: left;
-  animation: capture-hold 650ms linear both;
+  animation: capture-hold 1000ms linear both;
 }
 @keyframes capture-hold {
   from {
