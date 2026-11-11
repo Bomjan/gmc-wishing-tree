@@ -1,4 +1,3 @@
-
 import { randomUUID, createHash } from "node:crypto";
 import type { Forest, Receipt, ForestEvent } from "../src/shared.js";
 import { near } from "../src/shared.js";
@@ -14,10 +13,18 @@ export class DemoStore {
         seed: 412,
         x: 0,
         z: 0,
-        leaves: Array.from({ length: 76 }, (_, slot) => ({
-          slot,
-          state: "finalised" as const,
-        })),
+        leaves: Array.from(
+          {
+            length: Math.max(
+              0,
+              Math.min(108, Number(process.env.DEMO_INITIAL_WISHES ?? 76) || 0),
+            ),
+          },
+          (_, slot) => ({
+            slot,
+            state: "finalised" as const,
+          }),
+        ),
       },
       {
         id: "demo-second",

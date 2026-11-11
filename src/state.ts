@@ -145,6 +145,7 @@ export function connectForest() {
     };
     ws.onerror = () => ws?.close();
   };
+  void refresh();
   connect();
   const poll = setInterval(() => void refresh(), 10000);
   const visible = () => {

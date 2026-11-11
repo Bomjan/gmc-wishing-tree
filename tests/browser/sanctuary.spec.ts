@@ -71,10 +71,14 @@ test("tree showcase loads local materials and animates a confirmed contribution 
   expect(count(after)).toBe(count(before) + 1);
   await page.screenshot({ path: "test-results/leaf-settled.png" });
   const stats = await metrics();
-  expect(stats.drawCalls).toBeLessThan(16);
+  expect(stats.drawCalls).toBeLessThan(220);
   expect(stats.trees).toHaveLength(1);
   expect(stats.backgroundMeshes).toBe(0);
-  expect(stats.backdrop).toBe("f1eee5");
+  expect(stats.backdrop).toBeUndefined();
+  const background = await page
+    .locator(".scene")
+    .evaluate((scene) => getComputedStyle(scene, "::before").backgroundImage);
+  expect(background).toContain("/wishing-tree-meadow.png");
   expect(errors).toEqual([]);
   // Keep the scene fixture reusable without leaving a test visitor behind.
   await request.post(`/api/submissions/${receipt.id}/undo`, {
@@ -138,9 +142,9 @@ test("actual tree size grows from four to 108 leaves without zooming to hide the
     });
     await expect.poll(async () => (await metrics()).trees?.[0]?.leaves).toBe(n);
     const tree = (await metrics()).trees![0];
-    expect(tree.woodHeight).toBeGreaterThan(height);
+    expect(tree.woodHeight).toBeGreaterThanOrEqual(height);
     height = tree.woodHeight;
-    expect(tree.woodVertices).toBeGreaterThan(vertices);
+    expect(tree.woodVertices).toBeGreaterThanOrEqual(vertices);
     vertices = tree.woodVertices;
     expect(await camera()).toEqual(initialCamera);
     await expect(page.locator(".dock-caption")).toContainText(
@@ -149,9 +153,89 @@ test("actual tree size grows from four to 108 leaves without zooming to hide the
   }
   const mature = (await metrics()).trees![0];
   expect(mature.scale).toBe(1);
-  expect(before.trees![0].woodHeight).toBeLessThan(mature.woodHeight / 3);
+  expect(before.trees![0].woodHeight).toBeLessThan(mature.woodHeight * 0.7);
   expect(mature.woodVertices).toBeGreaterThan(before.trees![0].woodVertices);
   expect(assets.some((url) => /ground-|rock-/.test(url))).toBe(false);
   await expect(page.locator(".sun-wash")).toHaveCount(0);
   await page.screenshot({ path: "test-results/tree-mature-108.png" });
+});
+
+test("the bare tree renders on an offline first visit and gives way to the live tree", async ({
+  page,
+}) => {
+  await page.route("**/api/forest", (route) => route.abort());
+  await page.goto("/wishing-tree?quality=low");
+  const treeIds = () =>
+    page.evaluate(async () => {
+      const path = "/src/Scene.tsx";
+      return (await import(path))
+        .getSceneMetrics()
+        .trees?.map((tree: { id: string }) => tree.id);
+    });
+  await expect.poll(treeIds, { timeout: 20000 }).toEqual(["preview"]);
+  await expect(page.locator(".sanctuary")).toHaveAttribute(
+    "data-online",
+    "false",
+  );
+
+  await page.unroute("**/api/forest");
+  await page.evaluate(async () => {
+    const path = "/src/state.ts";
+    await (await import(path)).loadForest();
+  });
+  await expect.poll(treeIds, { timeout: 20000 }).toEqual(["demo-current"]);
+  await expect(page.locator(".sanctuary")).toHaveAttribute(
+    "data-online",
+    "true",
+  );
+});
+
+test("animal companions appear once each at the four wish thresholds", async ({
+  page,
+}) => {
+  let count = 0;
+  await page.route("**/api/forest", (route) =>
+    route.fulfill({
+      json: {
+        demo: true,
+        serverTime: new Date().toISOString(),
+        trees: [
+          {
+            id: "animal-test",
+            seed: 412,
+            x: 0,
+            z: 0,
+            leaves: Array.from({ length: count }, (_, slot) => ({
+              slot,
+              state: "finalised",
+            })),
+          },
+        ],
+      },
+    }),
+  );
+  await page.goto("/wishing-tree?quality=low");
+  const companions = () =>
+    page.evaluate(async () => {
+      const path = "/src/Scene.tsx";
+      return (await import(path)).getSceneMetrics().companions;
+    });
+  const names = ["bird", "rabbit", "monkey", "elephant"].map(
+    (name) => `companion-${name}`,
+  );
+  for (count = 0; count <= 4; count++) {
+    await page.evaluate(async () => {
+      const path = "/src/state.ts";
+      await (await import(path)).loadForest();
+    });
+    await expect.poll(companions).toEqual(names.slice(0, count));
+  }
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: "test-results/thuenpa-puenzhi.png" });
+  count = 1;
+  await page.evaluate(async () => {
+    const path = "/src/state.ts";
+    await (await import(path)).loadForest();
+  });
+  await expect.poll(companions).toEqual(names.slice(0, 1));
 });

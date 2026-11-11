@@ -19,6 +19,7 @@ import {
   type Tree,
 } from "./shared";
 import { useSanctuary } from "./state";
+import { Companions } from "./experiences/wishing-tree/graphics/Companions";
 import { gmcxBrand } from "./shared/branding";
 import {
   leafGeometry,
@@ -129,6 +130,10 @@ export function getProjectedLeaves() {
 export function getSceneMetrics() {
   return {
     assetsReady,
+    companions:
+      developmentWorld
+        ?.getObjectByName("thuenpa-puenzhi")
+        ?.children.map((animal) => animal.name) ?? [],
     highlights:
       developmentWorld?.children
         .filter((o) => o.name.startsWith("wish-tree:"))
@@ -190,9 +195,16 @@ export function getSceneMetrics() {
   };
 }
 
-function branchGeometry(seed: number, slots: number[], detailed: boolean) {
+function branchGeometry(
+  seed: number,
+  slots: number[],
+  detailed: boolean,
+  preview: boolean,
+) {
   const parts: THREE.BufferGeometry[] = [];
-  const thickness = 0.3 + 0.7 * Math.sqrt(Math.min(108, slots.length) / 108);
+  const thickness = preview
+    ? 0.8
+    : 0.3 + 0.7 * Math.sqrt(Math.min(108, slots.length) / 108);
   const trunk = new THREE.CatmullRomCurve3([
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(0.08, 1.3, 0.03),
@@ -200,9 +212,9 @@ function branchGeometry(seed: number, slots: number[], detailed: boolean) {
     new THREE.Vector3(0.13, 4.1, 0.05),
     new THREE.Vector3(0.02, 4.85, 0.05),
   ]);
-  const branchCount = Math.ceil(
-    5 * Math.sqrt(Math.min(108, slots.length) / 108),
-  );
+  const branchCount = preview
+    ? 5
+    : Math.ceil(5 * Math.sqrt(Math.min(108, slots.length) / 108));
   parts.push(
     woodTube(trunk, 0.27 * thickness, detailed ? 22 : 8, detailed ? 9 : 5),
   );
@@ -299,6 +311,10 @@ function branchGeometry(seed: number, slots: number[], detailed: boolean) {
   parts.forEach((g) => g.dispose());
   return result;
 }
+// Render the bare tree while the forest is empty or its first snapshot is unavailable.
+const starterSlots = Array.from({ length: 18 }, (_, i) => i * 6);
+const previewTree: Tree = { id: "preview", seed: 71, x: 0, z: 0, leaves: [] };
+
 function WishTree({
   tree,
   materials,
@@ -338,10 +354,11 @@ function WishTree({
     () =>
       branchGeometry(
         tree.seed,
-        tree.leaves.map((l) => l.slot),
+        [...new Set([...starterSlots, ...tree.leaves.map((l) => l.slot)])],
         detailed,
+        tree === previewTree,
       ),
-    [tree.seed, signature, detailed],
+    [tree.seed, signature, detailed, tree === previewTree],
   );
   const leaf = useMemo(() => leafGeometry(detailed), [detailed]),
     edge = useMemo(leafEdgeGeometry, []);
@@ -436,7 +453,7 @@ function WishTree({
     group.current.rotation.z = reduced()
       ? 0
       : Math.sin(clock.elapsedTime * 0.45 + tree.seed) * 0.002;
-    const desired = treeScale(tree.leaves.length),
+    const desired = Math.max(0.55, treeScale(tree.leaves.length)),
       scale = reduced()
         ? desired
         : THREE.MathUtils.damp(group.current.scale.x, desired, 2.4, dt);
@@ -561,11 +578,11 @@ function WishTree({
       ref={group}
       name={"wish-tree:" + tree.id}
       position={[isolated ? 0 : tree.x, 0, isolated ? 0 : tree.z]}
-      scale={treeScale(tree.leaves.length)}
+      scale={Math.max(0.55, treeScale(tree.leaves.length))}
       onClick={(event) => {
         event.stopPropagation();
         const s = useSanctuary.getState();
-        if (event.delta > 6) return;
+        if (tree === previewTree || event.delta > 6) return;
         if (s.view === "home" || s.view === "mountain") {
           const leafSlot =
             event.object === mesh.current && event.instanceId !== undefined
@@ -589,6 +606,23 @@ function WishTree({
         receiveShadow
         dispose={null}
       />
+      <group name="starter-canopy">
+        {starterSlots
+          .filter((slot) => !tree.leaves.some((leaf) => leaf.slot === slot))
+          .map((slot) => (
+            <mesh
+              key={slot}
+              geometry={leaf}
+              material={materials.leaf}
+              position={leafPoint(slot, tree.seed)}
+              rotation={[0.4, slot * 2.399963, 0.2]}
+              scale={0.75}
+              castShadow
+              dispose={null}
+              raycast={() => {}}
+            />
+          ))}
+      </group>
       <sprite
         ref={glow}
         name="leaf-yellow-glow"
@@ -632,16 +666,11 @@ function WishTree({
 function World() {
   const { forest, view, focus, selection, quality } = useSanctuary();
   const current = activeTree(forest.trees, selection?.treeId || focus);
-  // Only visitor-contributed trees appear. The overview preserves stored x/z positions.
-  const visibleTrees =
-    view === "mountain" && !focus && !selection
-      ? forest.trees
-      : current
-        ? [current]
-        : [];
+  const overview =
+    forest.trees.length > 0 && view === "mountain" && !focus && !selection;
+  const visibleTrees = overview ? forest.trees : [current ?? previewTree];
   const materials = useMemo(createNatureMaterials, []);
   const lightTarget = useMemo(() => new THREE.Object3D(), []);
-  const overview = view === "mountain" && !focus && !selection;
   const x = overview ? current?.x || 0 : 0,
     z = overview ? current?.z || 0 : 0;
   useEffect(() => {
@@ -661,7 +690,6 @@ function World() {
   }, [materials]);
   return (
     <>
-      <color attach="background" args={["#f1eee5"]} />
       <hemisphereLight args={["#fffaf0", "#8e927f", 1.65]} />
       <primitive object={lightTarget} />
       <spotLight
@@ -703,6 +731,7 @@ function World() {
           isolated={!overview}
         />
       ))}
+      {!overview && current && <Companions count={current.leaves.length} />}
       <CameraRig />
     </>
   );
@@ -739,7 +768,7 @@ function CameraRig() {
     const x = 0,
       z = 0,
       y = 0;
-    if (view === "mountain" && !focus && !selection) {
+    if (forest.trees.length && view === "mountain" && !focus && !selection) {
       desired.current.set(
         0,
         Math.max(40, bounds * 0.65),
@@ -751,7 +780,7 @@ function CameraRig() {
       target.current.set(x, y + 2.4, z);
     }
     moving.current = true;
-  }, [revision, view, focus]);
+  }, [revision, view, focus, forest.trees.length > 0]);
   useFrame((_, delta) => {
     const c = controls.current;
     if (!c) return;
@@ -849,6 +878,7 @@ export function Scene() {
             dpr={quality === "high" ? [1, 1.5] : 1}
             camera={{ position: [6, 3.7, 13], fov: 38, near: 0.2, far: 300 }}
             gl={{
+              alpha: true,
               antialias: quality === "high",
               powerPreference: "high-performance",
             }}
