@@ -15,6 +15,7 @@
   "dependencies": {
     "@react-three/drei": "^10.7.0",
     "@react-three/fiber": "^9.4.0",
+    "@remotion/player": "4.0.542",
     "@tailwindcss/vite": "^4.1.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
@@ -22,6 +23,7 @@
     "pg": "^8.16.0",
     "react": "~19.2.0",
     "react-dom": "~19.2.0",
+    "remotion": "4.0.542",
     "tailwindcss": "^4.1.0",
     "three": "^0.180.0",
     "ws": "^8.18.0",

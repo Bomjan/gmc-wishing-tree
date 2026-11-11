@@ -161,6 +161,10 @@ test("rejection preserves form, optional keyboard works, pending survives reload
     ),
   ).toBeVisible();
   await expect(page.locator(".form-feedback")).toBeVisible();
+  await expect(page.locator(".wish-ritual")).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Your wish has taken root." }),
+  ).toHaveCount(0);
   await expect(page.getByLabel("Your wish", { exact: true })).toHaveValue(
     "reject this demo wish",
   );

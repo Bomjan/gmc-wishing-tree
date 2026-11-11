@@ -1,8 +1,32 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  Component,
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { Scene } from "./Scene";
 import { api, connectForest, loadForest, useSanctuary } from "./state";
 import { activeTree, type Locator, type Receipt } from "./shared";
 import { ReachHandle, useReachablePanel } from "./shared/kiosk/reach";
+const WishRitual = lazy(
+  () => import("./experiences/wishing-tree/graphics/WishRitual"),
+);
+class MotionBoundary extends Component<
+  { children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 function LeafIcon({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -134,7 +158,7 @@ export default function App() {
   }
   useEffect(() => {
     if (highlightTimer.current) clearTimeout(highlightTimer.current);
-    if (selection)
+    if (selection && view !== "accepted")
       highlightTimer.current = setTimeout(
         () => useSanctuary.getState().set({ selection: null }),
         highlightSeconds * 1000,
@@ -142,7 +166,19 @@ export default function App() {
     return () => {
       if (highlightTimer.current) clearTimeout(highlightTimer.current);
     };
-  }, [selection]);
+  }, [selection, view]);
+  useEffect(() => {
+    if (view === "form")
+      void import("./experiences/wishing-tree/graphics/WishRitual").catch(
+        () => {},
+      );
+    if (
+      view === "accepted" &&
+      receipt &&
+      (selection?.treeId !== receipt.treeId || selection.slot !== receipt.slot)
+    )
+      focusLeaf(receipt);
+  }, [view, receipt?.id]);
   useEffect(() => {
     const disconnect = connectForest();
     void api<typeof config>("/config")
@@ -464,6 +500,21 @@ export default function App() {
       }}
     >
       <Scene />
+      <MotionBoundary>
+        <Suspense fallback={null}>
+          {busy && view === "form" && (
+            <WishRitual phase="waiting" treeId={current?.id || ""} />
+          )}
+          {view === "accepted" && receipt && (
+            <WishRitual
+              key={receipt.id}
+              phase="arrival"
+              treeId={receipt.treeId}
+              slot={receipt.slot}
+            />
+          )}
+        </Suspense>
+      </MotionBoundary>
 
       <section
         className={`panel ${view === "mountain" ? "panel-mountain" : ""} ${view === "home" || view === "mountain" ? "panel-welcome" : ""}`}

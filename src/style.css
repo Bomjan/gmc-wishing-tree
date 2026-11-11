@@ -1500,3 +1500,13 @@ textarea:focus {
 .form-guidance {
   margin-bottom: 0;
 }
+.wish-ritual {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+.panel {
+  z-index: 2;
+}

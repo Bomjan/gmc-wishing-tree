@@ -145,3 +145,11 @@ The primary action explains that each wish adds a leaf. Explore replaces the amb
 Verification: production build, submission/Undo/search and direct scene interaction checks passed. Portrait browser coverage verifies keyboard Next, focus changes, reopen, field anchoring and bounded controls. These checks verify behaviour and layout; first-time visitor learnability still needs observation on the installed touchscreen.
 
 [Guided keyboard capture](docs/screenshots/visitor-keyboard-guide.png), recorded with empty fields.
+
+## Remotion light journey and visible contribution highlighting
+
+The former one-pixel depth-tested outline could disappear behind foliage, and the twelve-second selection timeout also cleared the visitor's leaf while their receipt was still open. The accepted leaf now has a yellow surface and dedicated lightweight highlight overlay that remains visible through foliage until Done. Receipt recovery restores selection; search keeps its configurable timeout.
+
+Integrated pinned Remotion/Player 4.0.542 into the existing application as a lazy animation chunk. Waiting shows a restrained root orbit. After server confirmation, a gold filament tracks from the root toward the actual animated leaf, with an unfurling 4.8-second 3D journey and settling light pulses. The Player reads only public rendering coordinates. It creates no extra contribution leaf, does not move the camera, and cannot block Undo. Motion failures are isolated from the core interface. Reduced motion shows the resting leaf and yellow highlight directly.
+
+Verification: production build and 24 PostgreSQL/HTTP/geometry tests passed. Four browser checks passed for full submission/Undo/finalise/search; held request with no early success; yellow highlight surviving the former timeout and clearing on Done; reduced motion with immediate Undo; and rejection stopping the waiting effect without a success reveal. Reviewed [unfurling](docs/screenshots/wish-light-journey.png) and [settled highlight](docs/screenshots/wish-yellow-highlight.png) captures. The lazy motion chunk is approximately 388 KB / 124 KB gzip. Installed Samsung GPU performance still needs measurement.

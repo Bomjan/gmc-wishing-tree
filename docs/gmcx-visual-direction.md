@@ -16,7 +16,9 @@ Wish trees use tapered textured wood, hierarchical branches and a layered crown 
 
 ## Leaf arrival
 
-After a server-confirmed reservation reaches the authoritative forest snapshot, that contribution's own instance approaches its branch, unfolds and settles over 3.2 seconds. A brief warm colour/edge accent marks the new leaf. Incoming arrivals remain queued; no extra particle leaves are added. Existing search selection takes priority over arrival highlighting. The visitor's submission retains the existing gentle camera focus; remote contributions never request camera movement. Reduced-motion mode immediately renders the final pose.
+After a server-confirmed reservation reaches the authoritative forest snapshot, that contribution's own instance approaches its branch, unfolds and settles over 4.8 seconds. A brief warm colour/edge accent marks the new leaf. Incoming arrivals remain queued; no extra particle leaves are added. Existing search selection takes priority over arrival highlighting. The visitor's submission retains the existing gentle camera focus; remote contributions never request camera movement. Reduced-motion mode immediately renders the final pose.
+
+The visitor's accepted leaf takes a curved journey from the trunk into its assigned slot. A Remotion Player overlays root ripples, a light filament and a settling pulse using the live 3D projection. The leaf is marked in yellow with a filled lightweight overlay and edge that remain visible through foliage. Its receipt keeps the highlight until Done; search highlights still expire. The motion is decorative and never controls acceptance, Undo or finalisation. The contribution count remains exactly one leaf per occupied slot.
 
 Undo remains server-authorised for the original ten-second deadline and removes the reserved instance/slot. Animation does not finalise a wish or claim success before confirmation. Seeded positions and visual hashes do not contain wish text or usernames.
 

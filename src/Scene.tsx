@@ -50,6 +50,34 @@ export function getCameraPosition() {
 export function getCameraTarget() {
   return developmentTarget?.toArray();
 }
+/** Public rendering coordinates only; no visitor content enters the animation. */
+export function getRitualAnchors(treeId: string, slot?: number) {
+  const group = developmentWorld?.getObjectByName("wish-tree:" + treeId);
+  if (!group || !developmentCamera) return null;
+  const project = (point: THREE.Vector3) => {
+    group.localToWorld(point);
+    point.project(developmentCamera!);
+    return {
+      x: (point.x * 0.5 + 0.5) * 1080,
+      y: (-point.y * 0.5 + 0.5) * 1920,
+    };
+  };
+  const root = project(new THREE.Vector3(0, 0.1, 0));
+  const tree = useSanctuary
+    .getState()
+    .forest.trees.find((t) => t.id === treeId);
+  const index = tree?.leaves.findIndex((leaf) => leaf.slot === slot) ?? -1;
+  const leaves = group.children.find(
+    (o) => o instanceof THREE.InstancedMesh,
+  ) as THREE.InstancedMesh | undefined;
+  if (index < 0 || !leaves) return { root, leaf: null };
+  const matrix = new THREE.Matrix4();
+  leaves.getMatrixAt(index, matrix);
+  return {
+    root,
+    leaf: project(new THREE.Vector3(0, 0.6, 0).applyMatrix4(matrix)),
+  };
+}
 /** Read-only development probe for real pointer/raycast browser checks. */
 export function getProjectedLeaves() {
   if (
@@ -101,6 +129,26 @@ export function getProjectedLeaves() {
 export function getSceneMetrics() {
   return {
     assetsReady,
+    highlights:
+      developmentWorld?.children
+        .filter((o) => o.name.startsWith("wish-tree:"))
+        .flatMap((o) => {
+          const h = o.children.find(
+            (child) => child.name === "leaf-highlight",
+          ) as THREE.Mesh | undefined;
+          if (!h?.visible) return [];
+          const material = h.material as THREE.MeshBasicMaterial;
+          const selected = useSanctuary.getState().selection;
+          return [
+            {
+              treeId: o.name.slice(10),
+              slot:
+                selected?.treeId === o.name.slice(10) ? selected.slot : null,
+              color: material.color.getHexString(),
+              depthTest: material.depthTest,
+            },
+          ];
+        }) || [],
     trees: developmentWorld?.children
       .filter((o) => o.name.startsWith("wish-tree:"))
       .map((o) => {
@@ -263,6 +311,7 @@ function WishTree({
   const group = useRef<THREE.Group>(null),
     mesh = useRef<THREE.InstancedMesh>(null),
     outline = useRef<THREE.LineLoop>(null),
+    highlight = useRef<THREE.Mesh>(null),
     wood = useRef<THREE.Mesh>(null),
     age = useRef(0);
   const births = useRef(
@@ -278,6 +327,11 @@ function WishTree({
     ),
     detail = useRef(detailed);
   const selection = useSanctuary((s) => s.selection);
+  const view = useSanctuary((s) => s.view);
+  useEffect(() => {
+    if (view === "accepted" && selection?.treeId === tree.id)
+      births.current.set(selection.slot, age.current);
+  }, [view, selection?.treeId, selection?.slot, tree.id]);
   const signature = tree.leaves.map((l) => l.slot).join(",");
   const branch = useMemo(
     () =>
@@ -292,6 +346,7 @@ function WishTree({
     edge = useMemo(leafEdgeGeometry, []);
   const dummy = useMemo(() => new THREE.Object3D(), []),
     color = useMemo(() => new THREE.Color(), []),
+    warmColor = useMemo(() => new THREE.Color("#d9c87c"), []),
     gold = useMemo(
       () =>
         new THREE.LineBasicMaterial({
@@ -301,9 +356,24 @@ function WishTree({
           transparent: true,
           opacity: 0.8,
           depthWrite: false,
+          depthTest: false,
         }),
       [],
     );
+  const highlightMaterial = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: gmcxBrand.actionGold,
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide,
+        depthTest: false,
+        depthWrite: false,
+        toneMapped: false,
+      }),
+    [],
+  );
+  useEffect(() => () => highlightMaterial.dispose(), [highlightMaterial]);
   useEffect(() => () => branch.dispose(), [branch]);
   useEffect(() => () => leaf.dispose(), [leaf]);
   useEffect(
@@ -360,6 +430,8 @@ function WishTree({
         ? age.current - births.current.get(l.slot)!
         : -1;
       const movement = leafArrival(seconds, reduced());
+      const selected =
+        selection?.treeId === tree.id && selection.slot === l.slot;
       const base = leafPoint(l.slot, tree.seed),
         leafSize = 0.44 + (l.slot % 5) * 0.035;
       dummy.position.set(
@@ -367,6 +439,15 @@ function WishTree({
         base[1] + movement.y,
         base[2] + movement.z,
       );
+      if (selected && view === "accepted" && movement.progress < 1) {
+        const travel = movement.travel;
+        dummy.position.set(
+          base[0] * travel +
+            Math.sin(travel * Math.PI * 2) * (1 - travel) * 0.35,
+          0.35 + (base[1] - 0.35) * travel,
+          base[2] * travel + Math.sin(travel * Math.PI) * 0.5,
+        );
+      }
       const sway = reduced()
         ? 0
         : Math.sin(clock.elapsedTime * 0.85 + l.slot * 1.1) * 0.028;
@@ -384,10 +465,9 @@ function WishTree({
       mesh.current!.setMatrixAt(index, dummy.matrix);
       color
         .setHSL(0.22 + (l.slot % 7) * 0.004, 0.24, 0.43 + (l.slot % 5) * 0.025)
-        .lerp(new THREE.Color("#d9c87c"), movement.warmth * 0.45);
+        .lerp(warmColor, movement.warmth * 0.45);
+      if (selected) color.set(gmcxBrand.actionGold);
       mesh.current!.setColorAt(index, color);
-      const selected =
-        selection?.treeId === tree.id && selection.slot === l.slot;
       const arriving = seconds >= 0 && seconds < LEAF_ARRIVAL_SECONDS;
       if (import.meta.env.DEV) {
         const id = `${tree.id}:${l.slot}`;
@@ -409,11 +489,20 @@ function WishTree({
         outline.current.quaternion.copy(dummy.quaternion);
         outline.current.scale.copy(dummy.scale).multiplyScalar(1.035);
         gold.opacity = selected
-          ? 0.7
+          ? 1
           : Math.sin(movement.progress * Math.PI) * 0.48;
+        if (highlight.current) {
+          highlight.current.position.copy(dummy.position);
+          highlight.current.quaternion.copy(dummy.quaternion);
+          highlight.current.scale.copy(dummy.scale);
+          highlightMaterial.opacity = selected
+            ? 0.6
+            : 0.2 * Math.sin(movement.progress * Math.PI);
+        }
       }
     });
     if (outline.current) outline.current.visible = hasOutline;
+    if (highlight.current) highlight.current.visible = hasOutline;
     mesh.current.instanceMatrix.needsUpdate = true;
     if (mesh.current.instanceColor)
       mesh.current.instanceColor.needsUpdate = true;
@@ -465,7 +554,19 @@ function WishTree({
         geometry={edge}
         material={gold}
         visible={false}
+        renderOrder={22}
+        raycast={() => {}}
         dispose={null}
+      />
+      <mesh
+        ref={highlight}
+        name="leaf-highlight"
+        geometry={leaf}
+        material={highlightMaterial}
+        visible={false}
+        renderOrder={21}
+        dispose={null}
+        raycast={() => {}}
       />
     </group>
   );
@@ -702,11 +803,9 @@ export function Scene() {
             onCreated={({ gl, camera, scene }) => {
               gl.toneMapping = THREE.ACESFilmicToneMapping;
               gl.toneMappingExposure = 1.05;
-              if (import.meta.env.DEV) {
-                developmentCamera = camera;
-                developmentRenderer = gl;
-                developmentWorld = scene;
-              }
+              developmentCamera = camera;
+              developmentRenderer = gl;
+              developmentWorld = scene;
               gl.domElement.addEventListener("webglcontextlost", (e) => {
                 e.preventDefault();
                 setLost(true);

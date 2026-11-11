@@ -1,4 +1,4 @@
-export const LEAF_ARRIVAL_SECONDS = 3.2;
+export const LEAF_ARRIVAL_SECONDS = 4.8;
 const smooth = (x: number) => {
   const t = Math.max(0, Math.min(1, x));
   return t * t * (3 - 2 * t);
@@ -19,6 +19,7 @@ export function leafArrival(seconds: number, reducedMotion = false) {
           0.8;
   return {
     progress: t,
+    travel: smooth(t / 0.8),
     x: (1 - approach) * 1.25,
     y: (1 - approach) * 1.7 + settle,
     z: (1 - approach) * 0.65,
