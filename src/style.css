@@ -58,10 +58,38 @@ textarea:focus {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  /* Drawn sky, not a photograph: stays sharp at 2160 × 3840 and keeps the
+     contributed tree as the only scenic subject. The soft floor pool gives the
+     roots and shadow somewhere to rest without a landscape. */
   background:
-    radial-gradient(ellipse at 50% 54%, #fff5dc80, transparent 75%),
-    url("/wishing-tree-meadow.png") 58% center / cover no-repeat;
-  filter: saturate(0.55);
+    radial-gradient(
+      ellipse 48% 7% at 50% 76%,
+      #7d6f4c42,
+      #a99a7018 55%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 95% 26% at 50% 80%,
+      #e2d6b5 0%,
+      #ebe1c6a8 45%,
+      transparent 100%
+    ),
+    radial-gradient(
+      circle at 22% 24%,
+      #fff3cc 0%,
+      #ffe9a866 14%,
+      #ffd76622 30%,
+      transparent 52%
+    ),
+    linear-gradient(
+      180deg,
+      #b9d3e6 0%,
+      #d2e2ec 26%,
+      #ece9df 54%,
+      #f4ead3 66%,
+      #ebe0c4 80%,
+      #ddd1b0 100%
+    );
 }
 .scene canvas {
   touch-action: none;

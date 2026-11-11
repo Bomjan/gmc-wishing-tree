@@ -170,6 +170,8 @@ export function woodTube(
   radius: number,
   segments = 12,
   sides = 7,
+  /** Fraction of the radius lost by the tip (0.88 leaves a fine point). */
+  taper = 0.88,
 ) {
   const g = new THREE.TubeGeometry(curve, segments, radius, sides, false),
     p = g.attributes.position,
@@ -179,10 +181,31 @@ export function woodTube(
       centre = curve.getPointAt(t);
     const point = new THREE.Vector3(p.getX(i), p.getY(i), p.getZ(i))
       .sub(centre)
-      .multiplyScalar(1 - t * 0.88)
+      .multiplyScalar(1 - t * taper)
       .add(centre);
     p.setXYZ(i, point.x, point.y, point.z);
     uv.setXY(i, uv.getY(i) * 1.4, t * curve.getLength() * 1.8);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+/** Low, irregular mound of soil and moss that the roots grow into.
+ * UV v runs from 0 at the rim to 1 at the crown; the soil material fades the
+ * rim out so the mound settles into the drawn floor without a hard edge. */
+export function moundGeometry() {
+  const g = new THREE.SphereGeometry(1, 48, 14, 0, Math.PI * 2, 0, Math.PI / 2),
+    p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i),
+      y = p.getY(i),
+      z = p.getZ(i);
+    const edge = 0.9 + noise(x * 2.3 + 4, z * 2.3 + 9) * 0.2;
+    p.setXYZ(
+      i,
+      x * edge * 1.3,
+      Math.pow(y, 1.6) * 0.17 * (0.85 + noise(x * 3, z * 3) * 0.3) - 0.02,
+      z * edge * 1.3,
+    );
   }
   g.computeVertexNormals();
   return g;

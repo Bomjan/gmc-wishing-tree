@@ -44,11 +44,56 @@ function leafTexture() {
       }
   });
 }
+/** Earth and moss for the low mound the roots grow into. */
+function soilTexture() {
+  return canvasTexture(256, (c) => {
+    const r = random(733);
+    c.fillStyle = "#6c5f45";
+    c.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 900; i++) {
+      const x = r() * 256,
+        y = r() * 256,
+        size = 2 + r() * 9;
+      c.fillStyle =
+        r() > 0.55
+          ? `rgba(104,124,70,${0.18 + r() * 0.3})`
+          : `rgba(58,46,32,${0.15 + r() * 0.25})`;
+      c.beginPath();
+      c.arc(x, y, size, 0, Math.PI * 2);
+      c.fill();
+    }
+    for (let i = 0; i < 9000; i++) {
+      c.fillStyle = r() > 0.5 ? "#d9cfa818" : "#1e170f1a";
+      c.fillRect(r() * 256, r() * 256, 1 + r() * 2, 1 + r() * 2);
+    }
+  });
+}
 /** Only the tree's materials are loaded; landscape assets remain available for future work. */
 export function createNatureMaterials() {
   const owned: THREE.Texture[] = [];
-  const leafMap = leafTexture();
-  owned.push(leafMap);
+  const leafMap = leafTexture(),
+    soilMap = soilTexture();
+  soilMap.wrapS = soilMap.wrapT = THREE.RepeatWrapping;
+  soilMap.repeat.set(3, 3);
+  owned.push(leafMap, soilMap);
+  // Opaque crown fading to clear at the rim (alpha maps read the green channel).
+  const soilFade = canvasTexture(64, (c) => {
+    const g = c.createLinearGradient(0, 64, 0, 0);
+    g.addColorStop(0, "#000");
+    g.addColorStop(0.45, "#fff");
+    g.addColorStop(1, "#fff");
+    c.fillStyle = g;
+    c.fillRect(0, 0, 64, 64);
+  });
+  soilFade.colorSpace = THREE.NoColorSpace;
+  owned.push(soilFade);
+  const soil = new THREE.MeshStandardMaterial({
+    map: soilMap,
+    alphaMap: soilFade,
+    transparent: true,
+    roughness: 1,
+    color: "#d8cfbd",
+  });
   const bark = new THREE.MeshStandardMaterial({
     color: "#b3aaa0",
     roughness: 0.95,
@@ -58,8 +103,9 @@ export function createNatureMaterials() {
     side: THREE.DoubleSide,
     roughness: 0.78,
     color: "white",
-    emissive: "#30411c",
-    emissiveIntensity: 0.055,
+    // A faint warm inner light suggests sun through the leaves.
+    emissive: "#5d6a24",
+    emissiveIntensity: 0.1,
   });
   let closed = false;
   const loader = new THREE.TextureLoader();
@@ -97,11 +143,13 @@ export function createNatureMaterials() {
   return {
     bark,
     leaf,
+    soil,
     ready,
     dispose() {
       closed = true;
       bark.dispose();
       leaf.dispose();
+      soil.dispose();
       owned.forEach((t) => t.dispose());
     },
   };

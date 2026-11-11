@@ -78,7 +78,9 @@ test("tree showcase loads local materials and animates a confirmed contribution 
   const background = await page
     .locator(".scene")
     .evaluate((scene) => getComputedStyle(scene, "::before").backgroundImage);
-  expect(background).toContain("/wishing-tree-meadow.png");
+  // The sky is drawn with gradients; no photographic landscape backdrop.
+  expect(background).toContain("gradient");
+  expect(background).not.toContain("url(");
   expect(errors).toEqual([]);
   // Keep the scene fixture reusable without leaving a test visitor behind.
   await request.post(`/api/submissions/${receipt.id}/undo`, {
@@ -188,54 +190,4 @@ test("the bare tree renders on an offline first visit and gives way to the live 
     "data-online",
     "true",
   );
-});
-
-test("animal companions appear once each at the four wish thresholds", async ({
-  page,
-}) => {
-  let count = 0;
-  await page.route("**/api/forest", (route) =>
-    route.fulfill({
-      json: {
-        demo: true,
-        serverTime: new Date().toISOString(),
-        trees: [
-          {
-            id: "animal-test",
-            seed: 412,
-            x: 0,
-            z: 0,
-            leaves: Array.from({ length: count }, (_, slot) => ({
-              slot,
-              state: "finalised",
-            })),
-          },
-        ],
-      },
-    }),
-  );
-  await page.goto("/wishing-tree?quality=low");
-  const companions = () =>
-    page.evaluate(async () => {
-      const path = "/src/Scene.tsx";
-      return (await import(path)).getSceneMetrics().companions;
-    });
-  const names = ["bird", "rabbit", "monkey", "elephant"].map(
-    (name) => `companion-${name}`,
-  );
-  for (count = 0; count <= 4; count++) {
-    await page.evaluate(async () => {
-      const path = "/src/state.ts";
-      await (await import(path)).loadForest();
-    });
-    await expect.poll(companions).toEqual(names.slice(0, count));
-  }
-  await page.waitForTimeout(1200);
-  await page.screenshot({ path: "test-results/thuenpa-puenzhi.png" });
-  count = 1;
-  await page.evaluate(async () => {
-    const path = "/src/state.ts";
-    await (await import(path)).loadForest();
-  });
-  await expect.poll(companions).toEqual(names.slice(0, 1));
 });

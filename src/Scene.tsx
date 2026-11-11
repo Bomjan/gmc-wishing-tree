@@ -19,11 +19,12 @@ import {
   type Tree,
 } from "./shared";
 import { useSanctuary } from "./state";
-import { Companions } from "./experiences/wishing-tree/graphics/Companions";
 import { gmcxBrand } from "./shared/branding";
 import {
   leafGeometry,
   leafEdgeGeometry,
+  moundGeometry,
+  random,
   woodTube,
 } from "./experiences/wishing-tree/graphics/nature";
 import {
@@ -130,10 +131,6 @@ export function getProjectedLeaves() {
 export function getSceneMetrics() {
   return {
     assetsReady,
-    companions:
-      developmentWorld
-        ?.getObjectByName("thuenpa-puenzhi")
-        ?.children.map((animal) => animal.name) ?? [],
     highlights:
       developmentWorld?.children
         .filter((o) => o.name.startsWith("wish-tree:"))
@@ -218,18 +215,24 @@ function branchGeometry(
   parts.push(
     woodTube(trunk, 0.27 * thickness, detailed ? 22 : 8, detailed ? 9 : 5),
   );
+  // Trunk centre at a height, so limbs start on the bark rather than the axis.
+  const trunkAt = (y: number) =>
+    trunk.getPoint(THREE.MathUtils.clamp(y / 4.85, 0, 1));
   if (detailed) {
-    for (let i = 0; i < branchCount; i++) {
-      const a = i * 2.4 + seed * 0.001;
+    // Root flare: thick where it leaves the trunk, tapering as it dives into
+    // the soil mound instead of lying on the ground like a cut log.
+    for (let i = 0; i < Math.max(4, branchCount); i++) {
+      const a = i * 2.4 + seed * 0.001,
+        reach = 0.7 + ((i * 0.618) % 1) * 0.3;
       parts.push(
         woodTube(
           new THREE.CatmullRomCurve3([
-            new THREE.Vector3(Math.cos(a) * 0.95, -0.07, Math.sin(a) * 0.95),
-            new THREE.Vector3(Math.cos(a) * 0.27, 0.17, Math.sin(a) * 0.27),
-            new THREE.Vector3(0, 0.8, 0),
+            new THREE.Vector3(Math.cos(a) * 0.04, 0.75, Math.sin(a) * 0.04),
+            new THREE.Vector3(Math.cos(a) * 0.38, 0.22, Math.sin(a) * 0.38),
+            new THREE.Vector3(Math.cos(a) * reach, 0.02, Math.sin(a) * reach),
           ]),
-          0.09 * thickness,
-          7,
+          0.13 * thickness,
+          9,
           6,
         ),
       );
@@ -253,17 +256,22 @@ function branchGeometry(
       (_, limb) => limb,
     );
     for (const limb of new Set([...groups.map(limbFor), ...emergingLimbs])) {
-      const end = limbEnd(limb);
+      const end = limbEnd(limb),
+        // Stagger where limbs leave the trunk so they do not fan from one knot.
+        start = trunkAt(1.55 + ((limb * 0.618 + seed * 0.0007) % 1) * 1.15),
+        outward = new THREE.Vector3(end.x, 0, end.z).normalize(),
+        elbow = start
+          .clone()
+          .addScaledVector(outward, 0.42)
+          .add(new THREE.Vector3(0, (end.y - start.y) * 0.38, 0));
       parts.push(
         woodTube(
-          new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 1.4 + limb * 0.13, 0),
-            end.clone().multiply(new THREE.Vector3(0.4, 0.76, 0.4)),
-            end,
-          ]),
+          new THREE.CatmullRomCurve3([start, elbow, end]),
           0.12 * thickness,
           14,
           8,
+          // Keep the limb tip as thick as the branches that continue from it.
+          0.6,
         ),
       );
     }
@@ -284,6 +292,42 @@ function branchGeometry(
           6,
         ),
       );
+      // Short bare side twigs give the canopy an inner structure. They are
+      // wood only: every leaf on the tree still stands for one wish.
+      const twigs = random(seed * 131 + group * 17);
+      for (let k = 0; k < 3; k++) {
+        const from = start.clone().lerp(endpoint, 0.3 + twigs() * 0.45),
+          angle = twigs() * Math.PI * 2,
+          length = 0.32 + twigs() * 0.38;
+        parts.push(
+          woodTube(
+            new THREE.CatmullRomCurve3([
+              from,
+              from
+                .clone()
+                .add(
+                  new THREE.Vector3(
+                    Math.cos(angle) * length * 0.5,
+                    length * 0.35,
+                    Math.sin(angle) * length * 0.5,
+                  ),
+                ),
+              from
+                .clone()
+                .add(
+                  new THREE.Vector3(
+                    Math.cos(angle) * length,
+                    length * 0.55,
+                    Math.sin(angle) * length,
+                  ),
+                ),
+            ]),
+            0.022 * thickness,
+            5,
+            4,
+          ),
+        );
+      }
     }
     for (const slot of slots) {
       const end = new THREE.Vector3(...leafPoint(slot, seed)),
@@ -361,7 +405,9 @@ function WishTree({
     [tree.seed, signature, detailed, tree === previewTree],
   );
   const leaf = useMemo(() => leafGeometry(detailed), [detailed]),
-    edge = useMemo(leafEdgeGeometry, []);
+    edge = useMemo(leafEdgeGeometry, []),
+    mound = useMemo(moundGeometry, []);
+  useEffect(() => () => mound.dispose(), [mound]);
   const dummy = useMemo(() => new THREE.Object3D(), []),
     color = useMemo(() => new THREE.Color(), []),
     warmColor = useMemo(() => new THREE.Color("#d9c87c"), []),
@@ -487,7 +533,8 @@ function WishTree({
       const selected =
         selection?.treeId === tree.id && selection.slot === l.slot;
       const base = leafPoint(l.slot, tree.seed),
-        leafSize = 0.44 + (l.slot % 5) * 0.035;
+        // Varied, slightly smaller leaves read as a fuller, older canopy.
+        leafSize = 0.38 + ((l.slot * 0.7548777) % 1) * 0.2;
       dummy.position.set(
         base[0] + movement.x,
         base[1] + movement.y,
@@ -518,7 +565,11 @@ function WishTree({
       dummy.updateMatrix();
       mesh.current!.setMatrixAt(index, dummy.matrix);
       color
-        .setHSL(0.22 + (l.slot % 7) * 0.004, 0.24, 0.43 + (l.slot % 5) * 0.025)
+        .setHSL(
+          0.19 + ((l.slot * 0.381966) % 1) * 0.075,
+          0.3 + (l.slot % 4) * 0.045,
+          0.4 + ((l.slot * 0.618034) % 1) * 0.15,
+        )
         .lerp(warmColor, movement.warmth * 0.45);
       if (selected) color.set(gmcxBrand.actionGold);
       mesh.current!.setColorAt(index, color);
@@ -605,6 +656,15 @@ function WishTree({
         castShadow
         receiveShadow
         dispose={null}
+      />
+      {/* After the wood mesh: scene metrics read the first plain mesh as wood. */}
+      <mesh
+        name="root-mound"
+        geometry={mound}
+        material={materials.soil}
+        receiveShadow
+        dispose={null}
+        raycast={() => {}}
       />
       <group name="starter-canopy">
         {starterSlots
@@ -731,7 +791,6 @@ function World() {
           isolated={!overview}
         />
       ))}
-      {!overview && current && <Companions count={current.leaves.length} />}
       <CameraRig />
     </>
   );
