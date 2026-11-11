@@ -312,6 +312,7 @@ function WishTree({
     mesh = useRef<THREE.InstancedMesh>(null),
     outline = useRef<THREE.LineLoop>(null),
     highlight = useRef<THREE.Mesh>(null),
+    glow = useRef<THREE.Sprite>(null),
     wood = useRef<THREE.Mesh>(null),
     age = useRef(0);
   const births = useRef(
@@ -373,7 +374,43 @@ function WishTree({
       }),
     [],
   );
-  useEffect(() => () => highlightMaterial.dispose(), [highlightMaterial]);
+  const glowTexture = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 128;
+    const context = canvas.getContext("2d")!;
+    const gradient = context.createRadialGradient(64, 64, 3, 64, 64, 62);
+    gradient.addColorStop(0, "rgba(255,242,164,0.98)");
+    gradient.addColorStop(0.16, "rgba(255,215,102,0.78)");
+    gradient.addColorStop(0.42, "rgba(255,199,65,0.34)");
+    gradient.addColorStop(1, "rgba(255,199,65,0)");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 128, 128);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
+  }, []);
+  const glowMaterial = useMemo(
+    () =>
+      new THREE.SpriteMaterial({
+        map: glowTexture,
+        color: "#FFD766",
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+        depthTest: false,
+        depthWrite: false,
+        toneMapped: false,
+      }),
+    [glowTexture],
+  );
+  useEffect(
+    () => () => {
+      highlightMaterial.dispose();
+      glowMaterial.dispose();
+      glowTexture.dispose();
+    },
+    [highlightMaterial, glowMaterial, glowTexture],
+  );
   useEffect(() => () => branch.dispose(), [branch]);
   useEffect(() => () => leaf.dispose(), [leaf]);
   useEffect(
@@ -496,13 +533,25 @@ function WishTree({
           highlight.current.quaternion.copy(dummy.quaternion);
           highlight.current.scale.copy(dummy.scale);
           highlightMaterial.opacity = selected
-            ? 0.6
+            ? 0.9
             : 0.2 * Math.sin(movement.progress * Math.PI);
+          if (glow.current) {
+            glow.current.position.copy(dummy.position);
+            glow.current.quaternion.copy(dummy.quaternion);
+            const breathe = selected
+              ? 1 + Math.sin(age.current * 2.3) * 0.08
+              : 1;
+            glow.current.scale.set(2.5 * breathe, 2.5 * breathe, 1);
+            glowMaterial.opacity = selected
+              ? 0.82 + Math.sin(age.current * 2.3) * 0.12
+              : 0.42 * Math.sin(movement.progress * Math.PI);
+          }
         }
       }
     });
     if (outline.current) outline.current.visible = hasOutline;
     if (highlight.current) highlight.current.visible = hasOutline;
+    if (glow.current) glow.current.visible = hasOutline;
     mesh.current.instanceMatrix.needsUpdate = true;
     if (mesh.current.instanceColor)
       mesh.current.instanceColor.needsUpdate = true;
@@ -538,6 +587,15 @@ function WishTree({
         material={materials.bark}
         castShadow
         receiveShadow
+        dispose={null}
+      />
+      <sprite
+        ref={glow}
+        name="leaf-yellow-glow"
+        material={glowMaterial}
+        visible={false}
+        renderOrder={20}
+        raycast={() => {}}
         dispose={null}
       />
       <instancedMesh
