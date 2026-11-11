@@ -11,7 +11,7 @@ test("tree showcase loads local materials and animates a confirmed contribution 
       errors.push(m.text());
   });
   await page.addInitScript(() => localStorage.setItem("gmc-quality", "low"));
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(page.locator(".sanctuary")).toHaveAttribute(
     "data-online",
     "true",
@@ -112,7 +112,7 @@ test("actual tree size grows from four to 108 leaves without zooming to hide the
       },
     }),
   );
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   const metrics = () =>
     page.evaluate(async () => {
       const path = "/src/Scene.tsx";

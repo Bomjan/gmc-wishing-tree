@@ -1,121 +1,90 @@
-# Handprint Wall contributor handoff
+# Shared touchscreen: Wishing Tree and Wall of Us
 
-This commit prepares the **file structure only**, as requested. Wishing Tree is still the running application. The shared menu, route switcher, tracing, wall renderer, handprint persistence/moderation and operator removal are **not implemented**. There are no new working handprint endpoints or applied database migrations. Do not present this scaffold as the completed experience.
+One Vite/React application, Express server, PostgreSQL pool and WebSocket broadcaster. `/` is the shared menu; `/wishing-tree` lazy-loads the original tree; `/handprint-wall` lazy-loads the wall. AI walkthrough remains outside this repository. Target: Samsung 55-inch portrait 2160 × 3840. The whole stage fits desktop previews.
 
-## Start here
+## Setup
 
-```sh
-git clone git@github.com:Bomjan/gmc-wishing-tree.git
-cd gmc-wishing-tree
-npm ci
-npm run demo
-npm run build
-```
+Use Node 22.12+ and `npm ci`. `npm run demo` starts explicitly labelled in-memory experiences, without a database or AI credentials. The handprint wall starts empty; visitor-created demo marks persist only until that demo server restarts. Demo moderation uses a labelled approval simulator.
 
-Read root `AGENTS.md`, then `README.md`. One application/server/database is required. The museum touchscreen is **55-inch portrait UHD, 2160 × 3840**, and the application fits the complete 9:16 stage into desktop previews. No website header/footer or utility bar. The AI walkthrough is a separate screen and must not be added here.
+For production configure `.env` using `.env.example`, then run `npm run migrate`, `npm run build`, `npm start`. Keep frontend/server demo flags consistent. Migration sequencing is ordered, recorded in `schema_migrations`, protected by an advisory lock and transactional. Existing forest schema is preserved. Only `.sql` files run; the historical `.sql.example` does not.
 
-## Actual prepared structure
+- `VITE_HANDPRINT_WALL_TITLE`: configurable working title, default Wall of Us; rebuild frontend after changing.
+- `VITE_IDLE_SECONDS`: default 90; warning during final 15 seconds. Reset unmounts the experience and clears unfinished visitor input. Submission/Undo sessions block reset and Home until resolved.
+- `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`: existing server provider configuration.
+- `HANDPRINT_AI_MODEL`: image-capable model override, otherwise `AI_MODEL` / gpt-4.1-mini. Must accept PNG data images in Chat Completions and JSON object output. Provider outage, invalid output, rejection and missing credentials never publish a print.
+- `TOKEN_SECRET`: stable server-only secret. Preserve across restarts to retain temporary Undo authorisation.
+- `OPERATOR_TOKEN`: separate server-only credential. Without it operator removal is disabled.
 
-```text
-src/
-  main.tsx                    # unchanged current entry
-  App.tsx                     # existing Wishing Tree experience, unchanged
-  Scene.tsx                   # existing mountain renderer, unchanged
-  state.ts                    # existing tree state/API/reconnect, unchanged
-  shared.ts                   # existing forest transport types, unchanged
-  style.css                   # existing portrait sanctuary design, unchanged
-  app/
-    experiences.ts            # planned menu metadata and configurable wall title
-    components/               # reserved shared-menu UI
-  experiences/
-    wishing-tree/
-      index.ts                # re-export of current App, ready for lazy routing
-    handprint-wall/
-      index.ts                # type-only entry, no placeholder visitor page
-      components/
-      tracing/
-      paint/
-      placement/
-      scene/
-      state/
-      api/
-  shared/
-    handprints.ts             # proposed types, palette and tunable defaults
-    components/
-    kiosk/
-    graphics/
-server/
-  index.ts                    # existing Express/ws composition, unchanged
-  store.ts                    # existing persistent tree service, unchanged
-  demo.ts                     # existing isolated tree fixtures, unchanged
-  moderation.ts               # existing server text moderation, unchanged
-  migrate.ts                  # currently applies 001_forest.sql only
-  handprints/
-    routes/
-    store/
-    geometry/
-    moderation/
-    rendering/
-    placement/
-    demo/
-    operator/
-db/migrations/
-  001_forest.sql              # existing tree schema: do not rewrite it
-  002_handprints.sql.example  # inactive schema work checklist, not executable DDL
-tests/
-  store.test.ts               # existing tree database regressions
-  http.test.ts                # existing real server/provider contract checks
-  handprints/                # future tests and test-discovery instructions
-  browser/                   # add menu/wall specs alongside existing tests
-public/handprint-wall/        # future local, licensed textures/menu preview assets
-```
+The Wall of Us opens in **Painted handprint** mode. The capture area stays empty until a hand touches it; the painted impression then presses in (about 0.5 s, instant with reduced motion) where the hand rests and stays there after lifting. Raw reported contacts drive the print (`fitPaintedHand` in `src/shared/paintedHand.ts`):
 
-Empty work folders have tracked `.gitkeep` files so they exist after clone. README files explain each area's responsibility. No second package.json, dependency installation, backend service or demo database was created.
+- **Five or more separate contacts in a hand layout** (`data-fit="posed"`): the artwork is similarity-fitted to the fingertips (size, rotation, position, thumb side), then each finger is cut out of the artwork and turned/stretched about its knuckle toward its fingertip contact. The bend is stored as `pose` (5 × [rotation, length]), bounded by `POSE_LIMITS`.
+- **Fewer contacts with reported sizes** (`"sized"`): a tall merged area is treated as the whole hand's extent and a smaller one as the palm; it sets size and position. Thumb side remains the visitor's choice.
+- **No size data** (`"position"`): position only; the visitor's size and side are used.
 
-## Implementation brief
+Every sized raw contact is stored as a `contactAreas` ellipse in stamp space and rendered as denser pressed pigment inside the artwork (fewer dry gaps). The artwork's detail (creases, fingers, palm) remains a fixed artistic texture, not a measured skin contour or fingerprint scan. Visitors can still change thumb side and size (0.5–1.4) after lifting, then explicitly choose **Use my handprint**. No camera is requested.
 
-### Menu and routing
+`public/handprints/painted-hand-v1.png` is a local transparent ink asset generated for the project from a prompt inspired by the supplied style references. It is tinted and rendered by Canvas 2D; visitor use makes no image-generation request and adds no service or dependency. [Artwork provenance and generation prompt](painted-hand-artwork.md) record the asset's origin. Do not replace this versioned asset in place, because accepted contributions must retain their appearance.
 
-Build `/` as two large visual-preview cards: Wishing Tree — “Leave a wish. Watch it grow.”; Wall of Us — “Leave your mark.” `VITE_HANDPRINT_WALL_TITLE` configures the working wall title. Mount the existing tree under `/wishing-tree` and the wall under `/handprint-wall`. Metadata is in `src/app/experiences.ts`; the runtime is not routed yet.
+New impressions use `source: "painted-left"` or `"painted-right"` (thumb side in the artwork), with optional `pose` and `contactAreas`. The server validates the preset, pose bounds and contact ellipses and canonicalises the compatibility outline, rejecting arbitrary image URLs and a `pose` on non-painted sources. Moderation of painted prints still sends the fixed artwork; contact patches never switch it to a contact-print prompt. Production moderation receives the fixed local PNG and optional visitor label; provider failure/rejection still cannot publish. The existing JSONB data column stores the selected source, size, seed and other design fields without a migration. Gallery/preview rendering, receipt recovery, reload and Undo retain the selected artwork. The bounded stamp cache includes the artwork source, and its image/canvases are released when leaving the wall.
 
-Use React lazy imports, one expensive graphics scene at a time and explicit GPU cleanup. Menu previews must not mount both live 3D scenes. Each experience needs an obvious Home action. Accepted records remain in the existing database when switching; previous visitor inputs, search/highlights, strokes and temporary UI state must clear. Guard active submissions and server-owned Undo windows before abandoning their session. Preserve the tree's current moderation, idempotency, privacy, Undo, stable 108-slot growth and search behaviour.
+Contact IDs/positions/sizes remain in component memory. A full simultaneous frame is retained on lift for the in-session preview; pointer cancellation, unexpected lost capture, leaving the capture area, focus loss, page hiding, Home/idle and Start over clear the draft. A new placement starts a new draft. Pointer geometry bends whole fingers and sets scale within fixed limits; it never redraws the artwork's detailed silhouette. Handedness and size are visitor-adjustable because a single contact cannot identify them reliably.
 
-### Creation flow
+Previous `source: "contact"` records remain supported: their `contactAreas` are separate normalised ellipses with gaps, rendered and moderated through the existing path. Manual/default-outline contributions keep their original validation and rendering. The default visitor workflow no longer creates small contact-dot prints.
 
-1. **Introduction:** show the shared wall and “Leave your mark”.
-2. **Trace:** “Trace your hand.” / “Place one hand on the screen. With your other finger, trace around it.” Use Pointer Events for mouse, touch and stylus. Also offer Draw freehand, Undo last stroke, Clear, Continue and Back. Disable scrolling only within the drawing area. Handle pointer cancellation/capture loss and configurable single-active-pointer input, ignoring additional pointers. No palm scanning, fingerprints, camera or sign-in.
-3. **Fallback:** “Use a hand outline” provides an explicitly generic adjustable silhouette (size and proportions), never a pretend scan. Never silently substitute it for an unusable trace.
-4. **Refine:** smooth jitter, close small gaps, preserve overall shape and fill a valid silhouette. Empty or unusable outlines get a helpful retry message. Show a preview.
-5. **Paint:** six large swatches (terracotta, ochre, forest green, teal, muted blue, plum), bounded resize/rotation. No name, username, email or personal message fields. Shared defaults use normalised outline points, world-unit placement and radians for rotation.
-6. **Placement:** suggest available wall space; bounded dragging; never completely obscure another visitor's mark. “Press and hold to leave your mark” has visible progress and a normal confirmation alternative. A server-confirmed reservation precedes transfer animation, highlight and “You are part of this place.” Show server-deadline “Undo · 10s”.
-7. **Undo:** authorise with a temporary opaque token, release placement and return to preview if cancelled in time. After expiry, permanent public contribution, with no public editing/deletion. Finalisation must survive disconnection/reload/restart.
+**Trace my outline** remains an optional manual mode. A resting contact stays idle; the first contact that moves more than 1.2% of the square area's width owns the stroke. Other simultaneous contacts cannot add points. Trace around the resting hand with the other index finger in one loop, starting and ending at the wrist, then lift the tracing finger and explicitly accept the outline. A valid contour requires enough points, extent and area and must finish near its start. Paths are bounded in memory and resampled to at most 256 submission points. Open/degenerate strokes and cancellations cannot be accepted. Manual submissions retain `source: "trace"`; the explicit default-shape fallback retains `source: "outline"`.
 
-### Rendering and exploration
+No camera, biometric scanner, fingerprint capture, external API or added library is used. Device contact IDs and raw event data remain only in component memory. Accepted contact prints store sanitised rounded geometry, just as manual prints store sanitised outlines. The touchscreen may merge or suppress contacts or omit size data; neither libraries nor browser APIs can recover a full silhouette from missing sensor data. Verify reported sizes, calibration and physical scale on the actual display. `navigator.maxTouchPoints` alone does not establish area or full-contour reporting.
 
-HTML controls, Canvas 2D tracing/preparation and front-facing React Three Fiber wall lighting/surface. Warm plaster or subtle stone, natural irregular paint edges, grain, small gaps, varied coverage and restrained flecks. Generate variation from a stored seed; never use emoji hands, fingerprint ridges or identical stock stamps. Section texture atlases or another bounded strategy must avoid one heavyweight material/draw call per print forever.
+The installed display is the Samsung QM55B-T at the GMC Experience Centre reception, mounted in portrait at 2160 × 3840. [Samsung's QM55B-T datasheet](https://www.comm-tec.de/en-us/product/attachment/80LH55QMBTBGCXEN/Samsung_LH55QMBTBGCXEN_Datasheet.pdf) specifies 10-point PCAP touch. This is its advertised simultaneous-contact capacity; it does not establish full-palm contour capture or what the installed browser will receive. Field feedback reported a flat hand as a single area, so the visitor flow must not require five separate contacts. For an external kiosk PC, connect video and the display's `TOUCH OUT PC` USB connection, then calibrate touch for the portrait display as described in chapter 3 of the [Samsung QMB-T user manual](https://manuals.plus/m/d6f754887410d3d9af7a7a80080f9695cbec4fa05f4b6dc7462bcfae03f75b18.pdf). Verify live contact reporting in the actual kiosk browser before deployment.
 
-Bounded pan/zoom and Return to latest. Prints have no personal tooltip/detail data. Add adjacent sections as space fills; stable world coordinates and seeds must survive reload. Cache public wall state, refresh authoritative snapshots after reconnect, preserve a current draft during outage and never call an unsaved print permanent. Incoming events must not move an active visitor's camera. Separate and label deterministic demo records.
+## Actual-screen input check and unresolved handprint requirement
 
-### Backend, moderation and operator maintenance
+The latest requirement allows another technique that produces the supplied painted-handprint visual style when a whole hand is placed on the screen. This is implemented as touch-triggered artistic impression rendering. Exact automatic skin/contact-contour capture remains unavailable from a single contact; the artwork must not be described as a visitor fingerprint or measured palm scan. Camera capture is excluded at this installation because its camera is broken; do not add a camera workflow as a workaround.
 
-Extend `server/index.ts`, reusing pg, Express security and `ws`. Proposed types are in `src/shared/handprints.ts`, but runtime server validation is still required: bounded point count, finite normalised coordinates, usable area/shape, paint allowlist, size/rotation, placement bounds and body limits. No arbitrary SVG/HTML. Generate the moderation raster on the server from validated point geometry; do not trust a client-provided preview as the source of truth.
+The app is served from the Mac's LAN IP and opened in Chrome at the installation. The Mac serves code; the computer/device running Chrome and the touchscreen connection supply input. The client OS/driver still needs to be established.
 
-Extend the current provider via an image-capable moderation adapter. Moderate freehand and fallback submissions before publishing; neutral rejection asks for a hand redraw. No provider or unsupported image moderation means retry/unavailable in production, never silent approval. Clearly label demo stubs. Add protected operator removal for abusive content, separate from public permanence, with server-only credentials and appropriate audit data.
+Open `/handprint-wall/input-check` on the installation using the same host and port as the app. This separate, lazily loaded diagnostic shows the client platform, advertised `maxTouchPoints`, live/peak counts for both Pointer Events and native Touch Events, and unscaled contact dimensions in CSS pixels. It makes no handprint API calls, saves nothing and never requests a camera. Data clears on Reset, focus loss or route exit. It is not linked from the museum menu.
 
-Persist section geometry/positions/seeds; handprint IDs, sanitised outline, colour/seed, world pose, status, moderation state, Undo deadline, creation time, token hash, unique idempotency key and request fingerprint. Use transactions and section locks for placement conflicts. Return a nearby suggestion, do not overwrite. Cancelled placement must become available again. Keep RLS/private roles and protect operator functionality.
+1. Try five separated fingertips and note both streams' peak counts.
+2. Reset, rest the whole hand flat and note both peak counts and contact sizes.
+3. Record the displayed browser platform. Do not infer the client OS from the hosting Mac.
 
-Visitor endpoint proposal: `GET /api/handprints/sections`, `POST /api/handprints/submissions`, `GET /api/handprints/submissions/:id`, `POST /api/handprints/submissions/:id/undo`; optional opaque-key recovery for lost acceptance responses. Minimal reserved/cancelled/finalised/removed events, no bearer tokens in public events. Existing `/api/forest` and tree routes remain unchanged.
+A `maxTouchPoints` value alone cannot establish flat-hand capture. Pointer geometry of 1 × 1 or Touch geometry of 0 × 0 is unavailable size data. If Touch Events expose more contacts than Pointer Events, investigate the app's input path. If both streams expose only one contact for a flat hand, this browser has no separate finger/palm contour; investigate the actual client connection/driver/controller capabilities. More contact points by themselves still do not constitute a full skin-contact silhouette. For a connected PC, Samsung documents the display's `TOUCH OUT PC` USB link in addition to video and touch calibration. Do not promise a full handprint unless a contour-capable input source is verified.
 
-**Migration caveat:** the current runner hard-codes `001_forest.sql`. Implement ordered, tracked, transactional migrations before activating the template as `002_handprints.sql`. Do not merely add a SQL file and assume it runs. The global request parser currently has an 8 KB wish limit; add any larger handprint parser only to the appropriate router while retaining wish limits.
+## Submission and persistence
 
-### Shared kiosk requirements
+Visitors preview the handprint, select a colour, and can add a first name or nickname on the palm. Submit sends the outline, colour, size and optional label. The server validates the name and moderates it alongside a PNG of the silhouette in production. Failed requests retain the in-session draft for retry. A changed payload uses a new idempotency key. Lost acceptance responses can be recovered with the private retry key. Receipt credentials stay in session storage for the active Undo window.
 
-Large touch targets, clear Back/Home, no hover-only controls or emojis, reduced-motion support, accessible non-hold confirmation and configurable idle warning followed by reset. Clear drafts/previous visitor details; preserve accepted records. Do not reset during an active submission or Undo window. Keep graphics rendering if moderation or networking is unavailable; explain the outage and preserve the current retryable draft within the session.
+The server selects a free position and random angle under the existing transaction lock, using the latest section until a new section is needed. The accepted receipt identifies the placed print and section so the gallery can reveal it. Existing prints and clients that provide an explicit pose retain their original placement contract.
 
-### Verification and delivery
+Search uses a case-insensitive exact name, with support for multiple matches. It finds finalised marks and jumps to the matching section. Palm labels are stored with the print and rendered for the submitting visitor and when an exact-name search finds a match. Public snapshots, wall caches, WebSocket events and logs omit labels. Search requests send the query in the body and return up to 24 matching print locations.
 
-Cover pointer cancellation, multiple contacts, mouse/stylus/touch, empty/malformed/oversized geometry, duplicate retries, concurrent conflicts, deadline boundaries, real restart during pending finalisation, missed events, deterministic paint/positions, switching experiences and Home/idle cleanup. Keep current tree suites. Capture portrait desktop/native screenshots and measure actual performance honestly; physical palm interference/multi-touch behaviour needs the Samsung hardware. Complete touchscreen input first; no separate project or AI walkthrough.
+Records include sanitised geometry/source, colour, seed, pose, state, accepted moderation status, deadline, timestamps, request fingerprint, unique retry key and hashed authorisation token. Pending records finalise opportunistically and on a 500ms sweep, including after restart. Undo is valid only while the server says pending and before its 10-second deadline. Public finalisation has no editing/deletion control. Operator removal remains available.
 
-Implement in order: shared menu/routes → tracing/fallback → paint/placement → database/moderation/Undo → wall exploration/sections → reconnect/idle/resource optimisation → tree regressions. Deliver setup/configuration, migrations, separate demo mode, screenshots and an accurate feature/test/limitations report.
+## API
+
+- `GET /api/handprints/sections`: public sections and pending/finalised print data, demo flag and server time.
+- `POST /api/handprints/submissions`: strict submission contract with automatic placement. Supply a UUID `Idempotency-Key` header. The scoped body limit is 64KB.
+- `POST /api/handprints/search`: accepts `{ name }` and returns exact matches as print IDs and section IDs.
+- `POST /api/handprints/recovery`: UUID retry key as temporary bearer credential; returns the original receipt.
+- `GET /api/handprints/submissions/:id`: temporary bearer token required.
+- `POST /api/handprints/submissions/:id/undo`: same token; deadline enforced by server.
+- `POST /api/handprints/operator/:id/remove`: `Authorization: Bearer <OPERATOR_TOKEN>`. Removes public content and records an operator audit timestamp. Keep this credential out of visitor clients and logs; call from a protected operator machine. No operator credential is embedded in the browser.
+
+WebSocket events contain only event type, section ID and optional handprint ID. Reconnection reloads authoritative public state; 10-second polling repairs missed events. Incoming contributions never move the active camera. Use a single API process for live event fan-out, as for the existing tree.
+
+## Rendering and resources
+
+The wall uses a single Canvas 2D section surface, rather than a second WebGL scene. No per-mark GPU material/texture/draw-call accumulation. A bounded 48-entry raster stamp cache is explicitly released on route cleanup. Spatial separation bounds the number of prints in each section; only one section is painted at a time. Paint variation is seeded: grain, uneven coverage and lighter paint retain the same appearance after reload. Warm plaster grain is deterministic. Pan is bounded and zoom is 1–2×. Section buttons expose adjacent sections. Search zooms toward the matching print and highlights it. Menu previews are illustrations, not contributions.
+
+The wall canvas is released on unmount. The existing React Three Fiber canvas is unmounted before mounting another experience and retains its existing disposal lifecycle. No camera stream or temporary GPU textures are created by the wall. Reduced-motion preferences suppress entrance and highlight animation.
+
+## Verification and remaining deployment checks
+
+Run `npm run build`, `TEST_DATABASE_URL=<dedicated PostgreSQL> npm test`, and `npm run test:browser`. The database tests create isolated schemas and remove them afterward. `pg_virtualenv -t -v 16 npm test` also works where installed. Browser tests start a fresh demo server; generated screenshots are under `test-results/` and stay out of Git.
+
+Unit and HTTP tests cover geometry validation, fingertip fitting, concurrent allocation, name privacy, retry identity, Undo and deadline enforcement. The PostgreSQL/provider contract test covers fail-closed moderation, persistence, restart recovery, exact-name search and removal. Browser tests exercise the original fallback flow, single merged palm contacts triggering a full textured impression, unavailable contact sizes, colour/thumb-side/size choices, impression submission/reload/Undo, live two-hand manual tracing, interrupted capture, search after reload, and switching back to Wishing Tree.
+
+Use the installed Samsung touchscreen to verify simultaneous contact reporting, palm rejection, physical guide scale and frame rate. Production moderation quality also requires a check with the configured provider.
 
 Branding update: use `src/shared/branding.ts` and `docs/gmcx-visual-direction.md` for the current GMCX identity rather than reintroducing the earlier green-button theme. The six handprint paint choices remain visual paint choices and are not changed by interface branding.

@@ -1,4 +1,4 @@
-/** Type-only feature entry. The visitor experience is intentionally not built yet. */
+export { default } from "./Wall";
 export type {
   HandprintSubmission,
   HandprintReceipt,

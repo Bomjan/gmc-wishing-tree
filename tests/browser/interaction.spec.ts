@@ -6,7 +6,7 @@ test("default scene supports drag, wheel, two-finger zoom and direct leaf select
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.addInitScript(() => localStorage.setItem("gmc-quality", "low"));
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(page.locator(".sanctuary")).toHaveAttribute(
     "data-online",
     "true",

@@ -1,6 +1,6 @@
 # GMC Wishing Tree — second touchscreen
 
-React / TypeScript / Vite, React Three Fiber / drei, Tailwind, Zustand, Express / TypeScript, PostgreSQL and standard `ws`. No Godot, walkthrough or chatbot. The canvas remains mounted throughout the visitor interaction.
+React / TypeScript / Vite, React Three Fiber / drei, Tailwind, Zustand, Express / TypeScript, PostgreSQL and standard `ws`. No Godot, walkthrough or chatbot. The shared menu at `/` opens `/wishing-tree` or `/handprint-wall`. Only the selected experience mounts; route changes release the tree WebGL scene. The wall uses one Canvas 2D section surface.
 
 ## Run the isolated demonstration
 
@@ -12,6 +12,8 @@ npm run demo
 ```
 
 Open http://localhost:5173. Demo mode needs neither PostgreSQL nor an AI key. It starts with 76 and 108 **demonstration** leaves, clearly labelled in the interface; its records live only in memory. The server and frontend must both be in demo mode (`DEMO_MODE=true`, `VITE_DEMO=true`, set by the script). Demo data is never inserted in the production database. Refreshing the browser retains demo state while that server process runs; restarting resets it.
+
+When opening the app on another device using the Mac's LAN IP, set `PUBLIC_ORIGIN` in the ignored `.env` to that exact browser origin, including scheme and port (for example `PUBLIC_ORIGIN=http://<MAC-LAN-IP>:5173`), then restart the server. Use that same URL on the Mac too. The default `http://localhost:5173` does not authorise requests from a LAN-IP URL: a mismatch rejects POST requests with 403 and closes WebSocket handshakes, appearing in Vite as repeated `ws proxy error: socket hang up`. Keep the origin check enabled. A demo restart clears in-memory contributions. Vite `hmr update` lines are routine development messages. These connection errors do not alter how many touch contacts the browser receives; use `/handprint-wall/input-check` on the actual display for touch diagnosis.
 
 Demo locator names: `morning_light`, `mountain_hope`, `mountain_home`. Try `mountain_hore` for an ambiguous match. A wish containing `reject` or `unavailable` exercises revision and moderation outage states. This is a deterministic test adapter, **not AI moderation**.
 
@@ -52,7 +54,7 @@ chromium --kiosk --no-first-run --disable-pinch http://localhost:3001
 
 Use the window manager / display settings to place the kiosk on touchscreen two. `--disable-pinch` prevents browser page zoom; the 3D tree view's two-finger dolly/pan controls still work. Configure OS screen blanking and OS touch keyboard on the kiosk. The HTML keyboard opens automatically when a form or search field receives focus; visitors can dismiss it using Close keyboard. Never pass `--disable-web-security` or disable WebGL. For operator setup, append `?quality=low` or `?quality=high` to the kiosk URL; the setting persists locally and controls DPR, shadow resolution and leaf detail. Test both quality settings on the actual display resolution before launch.
 
-## Visitor behaviour
+## Wishing Tree visitor behaviour
 
 Exactly two submission fields: username and wish. ASCII letters/numbers/underscores, 3–24 by default; one accepted wish per normalised username, not verified per human. Wish defaults to 1–500 English characters. Limits are configurable on the server and loaded by the interface. Username limits remain within the database's 3–24 hard bounds.
 
@@ -110,9 +112,7 @@ UI dimensions use a 1080 × 1920 portrait design basis, scaling to 2× at native
 
 The museum wall display has no website header, footer, utility bar or navigation branding. Only the tree and its interaction area appear. Demo mode is identified in the small leaf-count caption. Keyboard controls appear only during text entry and move with the interaction panel, and rendering quality is configured by the operator URL rather than visitor-facing chrome.
 
-## Handprint Wall contributor scaffold
-
-The shared-app extension folders are prepared for the next contributor. **The menu, new routes and Handprint Wall are not implemented or mounted yet**; the existing Wishing Tree continues to run unchanged. Start with [the handoff brief](docs/handprint-wall-handoff.md) and [AGENTS.md](AGENTS.md). Proposed menu metadata, handprint transport contracts, palette/defaults, tracked empty feature folders and an **inactive** migration template are included. The actual filesystem and implementation responsibilities are documented in the handoff. Do not start a separate application or backend.
+## Wall of Us and shared menu
 
 ## GMCX visual identity and leaf arrival
 
@@ -131,3 +131,13 @@ The on-screen keyboard opens automatically when Username, Your wish or leaf sear
 Run the isolated accelerated idle checks with `VITE_IDLE_SECONDS=4 npm run test:browser -- tests/browser/idle.spec.ts`; this test file is skipped during normal browser runs.
 
 The submission reveal uses a lazily loaded Remotion Player (`remotion` and `@remotion/player`, pinned together). While moderation is in progress, a restrained light orbit indicates waiting. After server confirmation, a gold filament rises from the tree's roots to the actual moving leaf as it unfolds, then settles into a yellow highlight. The highlight remains until Done while the receipt is open; search highlights retain their configured timeout. Undo stays immediately available. Reduced motion skips the ornament and shows the resting yellow leaf. No private text or credentials are passed to the animation. [Light journey](docs/screenshots/wish-light-journey.png) · [settled highlight](docs/screenshots/wish-yellow-highlight.png).
+
+## Wall of Us
+
+See [Handprint Wall setup and behaviour](docs/handprint-wall-handoff.md) for routes, controls, moderation, operator removal, rendering and limits. `VITE_HANDPRINT_WALL_TITLE` changes the working title. Both experiences use the same server/database, and the walkthrough remains outside this application.
+
+Run `npm run migrate` before starting an upgraded installation. The runner tracks ordered `.sql` migrations transactionally under an advisory lock; existing forest tables are retained. `002_handprints.sql.example` remains an inactive historical checklist.
+
+Wall of Us opens with a five-fingertip guide that fits a stylised hand outline. Visitors can also size a default hand. They choose a colour, optionally add a name to the palm, and submit. The server chooses the print’s position and rotation, and the gallery reveals it after acceptance. Exact-name search highlights matching prints without including names in public wall snapshots. Home and idle reset wait through submission and the server-owned Undo window.
+
+Production image moderation uses `HANDPRINT_AI_MODEL` (falling back to `AI_MODEL`) at the existing provider; it must accept image URLs containing PNG data and JSON-object responses. Missing credentials, unsupported image input and provider failures stop publishing. Demo mode clearly labels its simulated approval and stores no production data. Test-provider contract checks do not establish paid-provider quality.

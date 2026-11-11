@@ -5,7 +5,7 @@ test("confirmed reveal highlights the visitor's actual leaf beyond the Undo coun
   page,
 }) => {
   await page.addInitScript(() => localStorage.setItem("gmc-quality", "low"));
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(page.locator(".sanctuary")).toHaveAttribute(
     "data-online",
     "true",
@@ -69,7 +69,7 @@ test("reduced motion skips the ritual but preserves the yellow leaf and immediat
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.addInitScript(() => localStorage.setItem("gmc-quality", "low"));
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(page.locator(".sanctuary")).toHaveAttribute(
     "data-online",
     "true",

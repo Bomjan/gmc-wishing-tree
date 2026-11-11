@@ -1,15 +1,3 @@
-# Handprint Wall — implementation work area
+# Wall of Us
 
-Not a working experience yet. No placeholder page or silently approving moderation service is mounted.
-
-| Folder        | Responsibility                                                                                                                       |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `components/` | HTML introduction, progress, Back/Home, feedback and controls                                                                        |
-| `tracing/`    | Pointer Events canvas, one-active-pointer mode, cancellation, stroke Undo/Clear, adjustable fallback outline, silhouette preparation |
-| `paint/`      | Curated swatches, seeded paint variation, raster preview, size/rotation limits                                                       |
-| `placement/`  | Bounded drag placement, suggested location, hold-progress and normal confirm alternative                                             |
-| `scene/`      | Front-facing R3F plaster wall, pan/zoom, section texture atlases and GPU disposal                                                    |
-| `state/`      | Session-only draft, creation flow, active submission/Undo receipt and reset                                                          |
-| `api/`        | Existing API client integration, idempotency, cached wall snapshots and reconnect                                                    |
-
-Shared contracts/defaults: `../../shared/handprints.ts`. Build the page as `HandprintWall.tsx` and export it only when functional. Use no names, messages, camera, palm scanner or fingerprints. Traced input must never be silently replaced with a generic hand. See the handoff brief for server moderation and persistence requirements.
+`Wall.tsx` handles capture, sizing, customisation, submission and Undo, wall browsing and name search. `tracing/HandCapture.tsx` defaults to **Painted handprint**: one touch (including a merged palm or unknown contact size) places a complete textured artistic hand impression where the hand rests; five or more fingertip contacts also bend each painted finger toward its contact, and reported contact areas are pressed in as denser pigment. The visitor can select thumb side and size and accept it after lifting. This produces the supplied visual style without a camera; it does not scan the visitor's palm/fingerprint. `paint.ts` loads the versioned local PNG, preserves its crease transparency, tints it and caches/releases stamps. `src/shared/paintedHand.ts` defines the fixed source presets and canonical envelopes. Production moderation uses the same fixed artwork plus any visitor label. Manual tracing and the explicit default-shape fallback remain available, and older contact-area prints retain their rendering. The wall loads lazily through `src/app/Router.tsx`. See [the handoff](../../../docs/handprint-wall-handoff.md) and [artwork prompt/provenance](../../../docs/painted-hand-artwork.md).

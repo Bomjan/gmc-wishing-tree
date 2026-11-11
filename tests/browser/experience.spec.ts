@@ -8,7 +8,7 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(
     page.getByRole("button", { name: "Make a wish", exact: true }),
   ).toBeVisible();
@@ -130,7 +130,7 @@ test("touchscreen submission, Undo, finalise, search and mountain navigation", a
 test("rejection preserves form, optional keyboard works, pending survives reload", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(page.locator(".sanctuary")).toHaveAttribute(
     "data-online",
     "true",
@@ -186,7 +186,7 @@ test("reconnection reloads authoritative state and ambiguous search exposes no d
   page,
   request,
 }) => {
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(page.locator(".sanctuary")).toHaveAttribute(
     "data-online",
     "true",
@@ -217,7 +217,7 @@ test("incoming wishes do not hijack the camera while a visitor is typing", async
   page,
   request,
 }) => {
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(page.locator(".sanctuary")).toHaveAttribute(
     "data-online",
     "true",
@@ -271,7 +271,7 @@ test("incoming wishes do not hijack the camera while a visitor is typing", async
 test("measure software-rendered frame delivery without asserting kiosk performance", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(page.locator("canvas")).toHaveCount(1);
   await expect(page.locator(".sanctuary")).toHaveAttribute(
     "data-online",

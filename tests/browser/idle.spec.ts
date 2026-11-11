@@ -15,7 +15,7 @@ test("reloads after inactivity and clears the previous visitor's draft", async (
       String(Number(localStorage.getItem(key) || 0) + 1),
     );
   });
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(page.locator(".sanctuary")).toHaveAttribute(
     "data-online",
     "true",
@@ -53,7 +53,7 @@ test("does not reload during a server-owned Undo window", async ({ page }) => {
       String(Number(localStorage.getItem(key) || 0) + 1),
     );
   });
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(page.locator(".sanctuary")).toHaveAttribute(
     "data-online",
     "true",
@@ -90,7 +90,7 @@ test("does not reload while a submission request is in flight", async ({
       String(Number(localStorage.getItem(key) || 0) + 1),
     );
   });
-  await page.goto("/");
+  await page.goto("/wishing-tree");
   await expect(page.locator(".sanctuary")).toHaveAttribute(
     "data-online",
     "true",

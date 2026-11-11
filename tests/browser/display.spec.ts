@@ -13,7 +13,7 @@ for (const viewport of [
       await page.addInitScript(() =>
         localStorage.setItem("gmc-quality", "low"),
       );
-      await page.goto("/");
+      await page.goto("/wishing-tree");
       await expect(page.locator(".sanctuary")).toHaveAttribute(
         "data-online",
         "true",
