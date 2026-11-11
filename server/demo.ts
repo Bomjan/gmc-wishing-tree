@@ -3,46 +3,46 @@ import type { Forest, Receipt, ForestEvent } from "../src/shared.js";
 import { near } from "../src/shared.js";
 import { PublicError } from "./moderation.js";
 // Isolated, deterministic exhibition fixtures. Never used by production Store.
+const initialWishes = Math.max(
+  0,
+  Math.min(108, Number(process.env.DEMO_INITIAL_WISHES ?? 76) || 0),
+);
 export class DemoStore {
   data: Forest = {
     demo: true,
     serverTime: new Date().toISOString(),
-    trees: [
-      {
-        id: "demo-current",
-        seed: 412,
-        x: 0,
-        z: 0,
-        leaves: Array.from(
-          {
-            length: Math.max(
-              0,
-              Math.min(108, Number(process.env.DEMO_INITIAL_WISHES ?? 76) || 0),
-            ),
-          },
-          (_, slot) => ({
-            slot,
-            state: "finalised" as const,
-          }),
-        ),
-      },
-      {
-        id: "demo-second",
-        seed: 912,
-        x: -13,
-        z: -12,
-        leaves: Array.from({ length: 108 }, (_, slot) => ({
-          slot,
-          state: "finalised" as const,
-        })),
-      },
-    ],
+    trees:
+      initialWishes === 0
+        ? []
+        : [
+            {
+              id: "demo-current",
+              seed: 412,
+              x: 0,
+              z: 0,
+              leaves: Array.from({ length: initialWishes }, (_, slot) => ({
+                slot,
+                state: "finalised" as const,
+              })),
+            },
+            {
+              id: "demo-second",
+              seed: 912,
+              x: -13,
+              z: -12,
+              leaves: Array.from({ length: 108 }, (_, slot) => ({
+                slot,
+                state: "finalised" as const,
+              })),
+            },
+          ],
   };
   records = new Map<
     string,
     { name: string; receipt: Receipt; key: string; fingerprint: string }
   >();
   constructor(private emit: (e: ForestEvent) => void) {
+    if (initialWishes === 0) return;
     for (const [i, name] of [
       "morning_light",
       "mountain_hope",
