@@ -1,7 +1,4 @@
 /** Shared menu metadata. */
-export const handprintWallTitle =
-  import.meta.env.VITE_HANDPRINT_WALL_TITLE?.trim() || "Wall of Us";
-
 export const experiences = [
   {
     id: "wishing-tree",
@@ -11,10 +8,10 @@ export const experiences = [
     status: "implemented",
   },
   {
-    id: "handprint-wall",
-    path: "/handprint-wall",
-    title: handprintWallTitle,
-    description: "Leave your mark.",
+    id: "signature-wall",
+    path: "/signature-wall",
+    title: "Wall of Signatures",
+    description: "Sign, doodle and choose your spot.",
     status: "implemented",
   },
 ] as const;

@@ -6,7 +6,6 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { readFile } from "node:fs/promises";
 import pg from "pg";
-import { outline } from "../src/experiences/handprint-wall/paint.js";
 import { WebSocket } from "ws";
 
 // Exercise the actual Express/ws server and provider adapter, with a local fake
@@ -34,7 +33,7 @@ test(
     const pool = new pg.Pool({ connectionString: url.toString() });
     await pool.query(await readFile("db/migrations/001_forest.sql", "utf8"));
     await pool.query(
-      await readFile("db/migrations/002_handprints.sql", "utf8"),
+      await readFile("db/migrations/003_signatures.sql", "utf8"),
     );
     let providerStatus = 200,
       accepted = true,
@@ -107,37 +106,34 @@ test(
         },
         body: JSON.stringify(body),
       });
-    const handBody = {
-      outline: outline(),
-      source: "outline",
-      colour: "teal",
-      placement: { sectionId: "section-0", x: 4, y: 6, size: 1, rotation: 0 },
+    const signatureBody = {
+      username: "Sonam_Private",
+      strokes: [
+        {
+          colour: "green",
+          points: [
+            [0.2, 0.3],
+            [0.4, 0.6],
+          ],
+        },
+      ],
+      placement: { section: 0, x: 0.5, y: 0.5 },
     };
-    const autoHand = {
-      outline: handBody.outline,
-      source: handBody.source,
-      colour: handBody.colour,
-      size: 0.9,
-      palmName: "Sonam Private",
-    };
-    const handSubmit = (
-      key = randomUUID(),
-      design: typeof handBody | typeof autoHand = handBody,
-    ) =>
-      fetch(base + "/api/handprints/submissions", {
+    const submitSignature = (key = randomUUID()) =>
+      fetch(base + "/api/signatures/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": key },
-        body: JSON.stringify(design),
+        body: JSON.stringify(signatureBody),
       });
-    const searchHands = async (name: string) =>
+    const searchSignatures = async (username: string) =>
       (
-        await fetch(base + "/api/handprints/search", {
+        await fetch(base + "/api/signatures/search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name }),
+          body: JSON.stringify({ username }),
         })
       ).json();
-    let handReceipt: any;
+    let signatureReceipt: any;
     try {
       await start();
       providerStatus = 503;
@@ -146,10 +142,10 @@ test(
         (await pool.query("SELECT count(*) FROM submissions")).rows[0].count,
         "0",
       );
-      assert.equal((await handSubmit()).status, 503);
+      assert.equal((await submitSignature()).status, 503);
       providerStatus = 200;
       accepted = false;
-      assert.equal((await handSubmit(randomUUID(), autoHand)).status, 422);
+      assert.equal((await submitSignature()).status, 422);
       assert.equal((await submit()).status, 422);
       accepted = true;
       english = false;
@@ -185,21 +181,20 @@ test(
         ).status,
         404,
       );
-      const handKey = randomUUID();
-      const handResults = await Promise.all([
-        handSubmit(handKey),
-        handSubmit(handKey),
+      const signatureKey = randomUUID();
+      const signatureResults = await Promise.all([
+        submitSignature(signatureKey),
+        submitSignature(signatureKey),
       ]);
-      assert(handResults.every((r) => r.ok));
-      handReceipt = await handResults[0].json();
-      assert.equal((await handResults[1].json()).id, handReceipt.id);
-      const conflict = await handSubmit();
+      assert(signatureResults.every((r) => r.ok));
+      signatureReceipt = await signatureResults[0].json();
+      assert.equal((await signatureResults[1].json()).id, signatureReceipt.id);
+      const conflict = await submitSignature();
       assert.equal(conflict.status, 409);
-      assert((await conflict.json()).suggestedPlacement);
       const wallBefore = await (
-        await fetch(base + "/api/handprints/sections")
+        await fetch(base + "/api/signatures/sections/0")
       ).json();
-      assert(!JSON.stringify(wallBefore).includes(handReceipt.token));
+      assert(!JSON.stringify(wallBefore).includes(signatureReceipt.token));
       ws.close();
       await once(ws, "close");
       ws = undefined;
@@ -211,30 +206,31 @@ test(
         })
       ).json();
       assert.equal(recovered.state, "pending");
-      const handRecovered = await (
-        await fetch(`${base}/api/handprints/submissions/${handReceipt.id}`, {
-          headers: { Authorization: `Bearer ${handReceipt.token}` },
-        })
+      const signatureRecovered = await (
+        await fetch(
+          `${base}/api/signatures/submissions/${signatureReceipt.id}`,
+          {
+            headers: { Authorization: `Bearer ${signatureReceipt.token}` },
+          },
+        )
       ).json();
-      assert.equal(handRecovered.state, "pending");
+      assert.equal(signatureRecovered.state, "pending");
       assert.equal(
         (
           await fetch(
-            `${base}/api/handprints/submissions/${handReceipt.id}/undo`,
+            `${base}/api/signatures/submissions/${signatureReceipt.id}/undo`,
             {
               method: "POST",
-              headers: { Authorization: `Bearer ${handReceipt.token}` },
+              headers: { Authorization: `Bearer ${signatureReceipt.token}` },
             },
           )
         ).status,
         200,
       );
-      const automatic = await handSubmit(randomUUID(), autoHand);
-      assert.equal(automatic.status, 201);
-      handReceipt = await automatic.json();
-      assert.equal(handReceipt.placement.size, autoHand.size);
-      assert.ok(Math.abs(handReceipt.placement.rotation) <= Math.PI / 6);
-      assert.deepEqual(await searchHands(autoHand.palmName), []);
+      const placedAgain = await submitSignature();
+      assert.equal(placedAgain.status, 201);
+      signatureReceipt = await placedAgain.json();
+      assert.deepEqual(await searchSignatures(signatureBody.username), []);
       assert.equal(
         (
           await fetch(`${base}/api/submissions/${receipt.id}/undo`, {
@@ -251,33 +247,36 @@ test(
         [receipt.id],
       );
       await pool.query(
-        "UPDATE handprints SET undo_deadline=clock_timestamp() WHERE id=$1",
-        [handReceipt.id],
+        "UPDATE signatures SET undo_deadline=clock_timestamp() WHERE id=$1",
+        [signatureReceipt.id],
       );
       await start();
-      const handStatus = await (
-        await fetch(`${base}/api/handprints/submissions/${handReceipt.id}`, {
-          headers: { Authorization: `Bearer ${handReceipt.token}` },
-        })
+      const signatureStatus = await (
+        await fetch(
+          `${base}/api/signatures/submissions/${signatureReceipt.id}`,
+          {
+            headers: { Authorization: `Bearer ${signatureReceipt.token}` },
+          },
+        )
       ).json();
-      assert.equal(handStatus.state, "finalised");
+      assert.equal(signatureStatus.state, "finalised");
       const wallAfter = await (
-        await fetch(base + "/api/handprints/sections")
+        await fetch(base + "/api/signatures/sections/0")
       ).json();
-      const permanent = wallAfter.sections
-        .flatMap((s: any) => s.prints)
-        .find((p: any) => p.id === handReceipt.id);
-      assert.deepEqual(permanent.placement, handReceipt.placement);
-      assert.deepEqual(permanent.outline, handBody.outline);
-      assert.ok(!JSON.stringify(wallAfter).includes(autoHand.palmName));
-      assert.deepEqual(await searchHands("sonam"), []);
-      assert.deepEqual(await searchHands("  sonam  private "), [
-        { id: handReceipt.id, sectionId: handReceipt.placement.sectionId },
+      const permanent = wallAfter.signatures.find(
+        (mark: any) => mark.id === signatureReceipt.id,
+      );
+      assert.deepEqual(permanent.placement, signatureBody.placement);
+      assert.deepEqual(permanent.strokes, signatureBody.strokes);
+      assert.ok(!JSON.stringify(wallAfter).includes(signatureBody.username));
+      assert.deepEqual(await searchSignatures("sonam"), []);
+      assert.deepEqual(await searchSignatures("  sonam_private "), [
+        { id: signatureReceipt.id, section: 0 },
       ]);
       assert.equal(
         (
           await fetch(
-            `${base}/api/handprints/operator/${handReceipt.id}/remove`,
+            `${base}/api/signatures/operator/${signatureReceipt.id}/remove`,
             { method: "POST" },
           )
         ).status,
@@ -286,7 +285,7 @@ test(
       assert.equal(
         (
           await fetch(
-            `${base}/api/handprints/operator/${handReceipt.id}/remove`,
+            `${base}/api/signatures/operator/${signatureReceipt.id}/remove`,
             {
               method: "POST",
               headers: { Authorization: "Bearer operator-test-only" },
@@ -298,30 +297,33 @@ test(
       assert.equal(
         (
           await pool.query(
-            "SELECT count(*) FROM handprint_operator_audit WHERE handprint_id=$1",
-            [handReceipt.id],
+            "SELECT count(*) FROM signature_operator_audit WHERE signature_id=$1",
+            [signatureReceipt.id],
           )
         ).rows[0].count,
         "1",
       );
       const removedWall = await (
-        await fetch(base + "/api/handprints/sections")
+        await fetch(base + "/api/signatures/sections/0")
       ).json();
-      assert.deepEqual(await searchHands(autoHand.palmName), []);
+      assert.deepEqual(await searchSignatures(signatureBody.username), []);
       assert(
-        !removedWall.sections
-          .flatMap((s: any) => s.prints)
-          .some((p: any) => p.id === handReceipt.id),
+        !removedWall.signatures.some(
+          (mark: any) => mark.id === signatureReceipt.id,
+        ),
       );
       assert.equal(
         (
-          await fetch(base + "/api/handprints/submissions", {
+          await fetch(base + "/api/signatures/submissions", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "Idempotency-Key": randomUUID(),
             },
-            body: JSON.stringify({ ...handBody, extra: "x".repeat(70000) }),
+            body: JSON.stringify({
+              ...signatureBody,
+              extra: "x".repeat(70000),
+            }),
           })
         ).status,
         413,
@@ -351,7 +353,7 @@ test(
       ]) {
         assert(!publicData.includes(body.username));
         assert(!publicData.includes("PRIVATE_WISH_MARKER"));
-        assert(!publicData.includes(autoHand.palmName));
+        assert(!publicData.includes(signatureBody.username));
       }
       assert(events.some((e) => JSON.parse(e).type === "leaf_reserved"));
     } finally {

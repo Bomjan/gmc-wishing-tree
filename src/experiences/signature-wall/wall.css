@@ -1,0 +1,298 @@
+.signature-experience {
+  position: relative;
+  box-sizing: border-box;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background: #faf9f5;
+  color: #28333b;
+  font:
+    max(1.25rem, 15px) / 1.45 "Roboto",
+    sans-serif;
+}
+.signature-heading,
+.signature-dock {
+  position: absolute;
+  inset-inline: 0;
+  width: min(100%, max(42rem, 500px));
+  margin-inline: auto;
+  padding-inline: max(1rem, 12px);
+  pointer-events: none;
+}
+.signature-heading {
+  top: max(3.5rem, 60px);
+}
+.signature-dock {
+  bottom: 10dvh;
+  display: flex;
+  flex-direction: column;
+  max-height: 80dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-block: 0.4rem;
+}
+.signature-dock :is(button, form) {
+  pointer-events: auto;
+}
+.signature-drawing,
+.signature-search {
+  padding: max(0.85rem, 10px);
+  border: 1px solid #dedbd2;
+  border-radius: 0.85rem;
+  background: #faf9f5f5;
+  box-shadow: 0 0.4rem 1.2rem #382f1710;
+}
+.signature-drawing {
+  --drawing-width: min(calc(100vw - 24px), max(42rem, 480px));
+  --drawing-top: clamp(0px, var(--drawing-y, 25dvh), calc(100dvh - 64px));
+  position: absolute;
+  left: clamp(
+    0px,
+    var(--drawing-x, calc((100vw - var(--drawing-width)) / 2)),
+    calc(100vw - var(--drawing-width))
+  );
+  top: var(--drawing-top);
+  width: var(--drawing-width);
+  max-height: calc(100dvh - var(--drawing-top) - 12px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.signature-drawing .signature-drag-handle {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  width: 100%;
+  background: #eeede5;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  font-weight: 600;
+}
+.signature-drawing .signature-drag-handle:active {
+  cursor: grabbing;
+}
+.signature-drag-handle::before {
+  content: "⠿";
+  margin-inline-end: 0.6em;
+  color: #535961;
+}
+.home-control.signature-home-control {
+  top: max(12px, 1rem);
+  left: max(12px, 1rem);
+  min-height: max(44px, 3.5rem);
+  padding-inline: max(14px, 1.2rem);
+  border-color: #1776b2;
+  background: #1776b2;
+  color: #fff;
+  font-size: max(16px, 1.3rem);
+}
+.signature-experience h1 {
+  margin: 0 0 0.55rem;
+  color: #151515;
+  font:
+    400 max(3.25rem, 30px) / 1.15 "Lora",
+    Georgia,
+    serif;
+  text-align: center;
+  text-shadow:
+    0 0 0.5rem #faf9f5,
+    0 0 1rem #faf9f5;
+}
+.signature-experience p {
+  margin: 0.45rem 0;
+  text-align: center;
+  text-shadow:
+    0 0 0.5rem #faf9f5,
+    0 0 1rem #faf9f5;
+}
+.signature-experience button {
+  min-height: max(3.35rem, 44px);
+  border-radius: 0.75rem;
+  padding: 0.65rem 1.2rem;
+  border: 1px solid #c8cfd1;
+  background: #fff;
+  color: #28333b;
+  font: inherit;
+  cursor: pointer;
+}
+.signature-experience button.primary {
+  border-color: #1776b2;
+  background: #1776b2;
+  color: #fff;
+}
+.signature-experience button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.signature-experience :focus-visible {
+  outline: 0.15rem solid #1776b2;
+  outline-offset: 0.15rem;
+}
+.signature-wall-surface {
+  position: absolute;
+  inset: 0;
+  container-type: size;
+  isolation: isolate;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #fff 35%, #f5f2e8);
+}
+.signature-wall-logo {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: 57%;
+  max-height: 58%;
+  object-fit: contain;
+  opacity: 0.13;
+  pointer-events: none;
+}
+.signature-mark {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.signature-mark-front,
+.signature-mark[data-preview] {
+  z-index: 1;
+}
+.signature-mark[data-preview] {
+  opacity: 0.85;
+  outline: 2px dashed #1776b2;
+}
+.signature-mark[data-preview="occupied"] {
+  opacity: 0.5;
+  outline-color: #ac3845;
+}
+.signature-ink-glow {
+  filter: drop-shadow(0 0 0.35rem #ffb400);
+}
+.signature-wall-surface[tabindex] {
+  touch-action: none;
+  cursor: crosshair;
+}
+.signature-wall-surface:focus-visible {
+  outline-offset: -0.2rem;
+}
+.signature-row,
+.signature-pagination,
+.signature-palette {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.85rem 0;
+}
+.signature-pagination,
+.signature-palette {
+  justify-content: center;
+}
+.signature-row > button {
+  flex: 1;
+}
+.signature-pagination > span {
+  min-width: 10rem;
+  text-align: center;
+  text-shadow:
+    0 0 0.5rem #faf9f5,
+    0 0 1rem #faf9f5;
+}
+.signature-pagination button {
+  min-width: max(3.35rem, 44px);
+}
+.signature-sections {
+  margin-block: 0.35rem;
+}
+.signature-palette {
+  gap: 1.15rem;
+  margin: 1.35rem 0;
+}
+.signature-palette button {
+  width: max(3.35rem, 34px);
+  padding: 0;
+  border-radius: 50%;
+  border: 0.2rem solid #fff;
+}
+.signature-palette button[aria-pressed="true"] {
+  outline: 0.15rem solid #253847;
+  outline-offset: 0.12rem;
+}
+.signature-pad {
+  display: block;
+  width: 100%;
+  aspect-ratio: 12 / 7;
+  border: 1px solid #aebfc9;
+  border-radius: 0.8rem;
+  background: #fff;
+  touch-action: none;
+  cursor: crosshair;
+}
+.signature-drawing label,
+.signature-search label {
+  display: block;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+.signature-input input {
+  flex: 1;
+  min-width: 0;
+  height: max(3.35rem, 44px);
+  padding: 0 0.75rem;
+  border: 1px solid #aebfc9;
+  border-radius: 0.7rem;
+  font: inherit;
+  background: #fff;
+}
+.signature-input > button {
+  flex: 0 0 auto;
+}
+.signature-experience .signature-help {
+  color: #535961;
+  font-size: max(1rem, 12px);
+}
+.signature-drawing .signature-help {
+  text-align: left;
+}
+.signature-experience .signature-undo {
+  display: block;
+  margin: 1rem auto;
+  background: #ffd766;
+  border-color: #b69a5a;
+  color: #4b3800;
+}
+.signature-experience .touch-keyboard {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  transform: none;
+}
+.signature-experience .touch-keyboard button {
+  min-height: 2.7rem;
+  padding: 0.3rem;
+}
+.signature-search {
+  order: -1;
+  margin-bottom: 0.55rem;
+}
+.signature-status:empty {
+  display: none;
+}
+.signature-card-preview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.signature-card-preview img,
+.signature-card-preview canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.signature-card-preview img {
+  padding: 1rem;
+  opacity: 0.15;
+}

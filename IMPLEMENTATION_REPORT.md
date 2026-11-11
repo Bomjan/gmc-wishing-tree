@@ -68,7 +68,7 @@ Validation: production build and formatting checks passed; **22 database/HTTP/ge
 
 Current captures: [portrait UHD scene](docs/screenshots/gmcx-sanctuary-4k.png), [UHD form](docs/screenshots/gmcx-form-4k.png), [arrival](docs/screenshots/gmcx-leaf-arrival.png), [resting state](docs/screenshots/gmcx-leaf-settled.png).
 
-Latest [software-rendered timing sample](docs/performance-gmcx.json): 47 animation-frame callbacks over 4030.7 ms; median interval 16.7 ms, 95th percentile 183.3 ms. This is Chromium SwiftShader, low detail, in a 1440 × 1000 development window (with the portrait scene fitted inside it). It is not a native-kiosk GPU benchmark or a smooth-frame-rate claim. Hardware profiling and further art/asset refinement remain necessary for finished photorealism. The Handprint Wall remains a scaffold for the other contributor.
+Latest [software-rendered timing sample](docs/performance-gmcx.json): 47 animation-frame callbacks over 4030.7 ms; median interval 16.7 ms, 95th percentile 183.3 ms. This is Chromium SwiftShader, low detail, in a 1440 × 1000 development window (with the portrait scene fitted inside it). It is not a native-kiosk GPU benchmark or a smooth-frame-rate claim. Hardware profiling and further art/asset refinement remain necessary for finished photorealism.
 
 ## Minimal interaction and adjustable reach revision
 
@@ -78,7 +78,7 @@ For the floor-level 55-inch portrait installation, controls default to 32% from 
 
 Validation: production TypeScript/frontend/backend build, Prettier and Git whitespace checks passed. Ten targeted browser checks passed across two runs: four portrait/desktop preview sizes including native 2160 × 3840; complete submission/Undo/finalise/search; actual mouse drag, wheel, CDP two-finger zoom and leaf raycast; rejection/keyboard/pending reload; authoritative reconnect; remote-camera stability; and movable keyboard/form bounds with cancelled adjustment and cleared drafts. The earlier 22 database/HTTP/geometry/animation results remain applicable; this revision changes no backend or schema. No hardware frame-rate or universal physical reach claim is made. Check touch latency, OS keyboard behaviour, mounting clearance and seated/standing reach on the actual installation.
 
-Current captures: [minimal portrait scene](docs/screenshots/minimal-tree.png), [native UHD scene](docs/screenshots/minimal-tree-4k.png), [UHD form](docs/screenshots/reachable-form-4k.png), [adjusted form and keyboard](docs/screenshots/reachable-form-keyboard.png). Earlier captures document previous iterations. Handprint Wall remains the prepared contributor scaffold.
+Current captures: [minimal portrait scene](docs/screenshots/minimal-tree.png), [native UHD scene](docs/screenshots/minimal-tree-4k.png), [UHD form](docs/screenshots/reachable-form-4k.png), [adjusted form and keyboard](docs/screenshots/reachable-form-keyboard.png). Earlier captures document previous iterations.
 
 ## Right-edge controls revision
 

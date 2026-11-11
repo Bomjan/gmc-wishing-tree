@@ -4,7 +4,7 @@ One React/TypeScript/Vite application, one Express/TypeScript server, one Postgr
 
 ## Current status
 
-Wishing Tree, shared menu and Handprint Wall are connected to the runtime. See `docs/handprint-wall-handoff.md` for setup, implementation boundaries and verification. Empty scaffold directories and `002_handprints.sql.example` remain historical preparation; the active migration is `002_handprints.sql`.
+The shared menu opens Wishing Tree and Wall of Signatures. Signatures use freehand strokes and private exact username lookup.
 
 ## Preserve existing behaviour
 
@@ -16,11 +16,11 @@ Wishing Tree, shared menu and Handprint Wall are connected to the runtime. See `
 
 ## Extension boundaries
 
-- Shared app/menu/routing: `src/app/`. New feature: `src/experiences/handprint-wall/`. Reusable kiosk/graphics/UI code: `src/shared/`.
-- Backend extension: `server/handprints/`, mounted into the existing `server/index.ts`; reuse its server, database, security and WebSocket infrastructure. Do not create a second project or service.
-- Shared handprint types/defaults: `src/shared/handprints.ts`. Types do not replace server validation.
-- `db/migrations/002_handprints.sql.example` is inactive. The runner now applies tracked, ordered `.sql` files transactionally; preserve this sequencing.
-- Label demo data explicitly; no silent production moderation stub. Hand tracing is manual drawing, never biometric scanning or fingerprint capture.
+- Shared app/menu/routing: `src/app/`. New feature: `src/experiences/signature-wall/`. Reusable kiosk/graphics/UI code: `src/shared/`.
+- Backend extension: `server/signatures/`, mounted into the existing `server/index.ts`; reuse its server, database, security and WebSocket infrastructure. Do not create a second project or service.
+- Shared signature types and limits: `src/shared/signatures.ts`. Types do not replace server validation.
+- The migration runner applies tracked, ordered `.sql` files transactionally. Add schema changes in a new migration and preserve the database migration ledger.
+- Label demo data explicitly; no silent production moderation stub. Signatures and doodles are drawn by visitors. Store username lookup keys privately.
 - Lazy-load one expensive scene at a time and dispose of textures/resources on route changes. Clear private drafts/visitor data on Home/idle while preserving accepted contributions and active server-owned Undo deadlines.
 
 ## Commands

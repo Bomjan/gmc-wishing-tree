@@ -1,6 +1,6 @@
 # GMC Wishing Tree — second touchscreen
 
-React / TypeScript / Vite, React Three Fiber / drei, Tailwind, Zustand, Express / TypeScript, PostgreSQL and standard `ws`. No Godot, walkthrough or chatbot. The shared menu at `/` opens `/wishing-tree` or `/handprint-wall`. Only the selected experience mounts; route changes release the tree WebGL scene. The wall uses one Canvas 2D section surface.
+React / TypeScript / Vite, React Three Fiber / drei, Tailwind, Zustand, Express / TypeScript, PostgreSQL and standard `ws`. No Godot, walkthrough or chatbot. The shared menu at `/` opens `/wishing-tree` or `/signature-wall`. Only the selected experience mounts; route changes release the tree WebGL scene. The wall uses one Canvas 2D section surface.
 
 ## Run the isolated demonstration
 
@@ -13,11 +13,13 @@ npm run demo
 
 Open http://localhost:5173. Demo mode needs neither PostgreSQL nor an AI key. It starts with 76 and 108 **demonstration** leaves by default, clearly labelled in the interface. Set `DEMO_INITIAL_WISHES=0` before `npm run demo` to start with an empty forest; the first accepted wish creates the first tree. Demo records live only in memory. The server and frontend must both be in demo mode (`DEMO_MODE=true`, `VITE_DEMO=true`, set by the script). Demo data is never inserted in the production database. Refreshing the browser retains demo state while that server process runs; restarting resets it.
 
-When opening the app on another device using the Mac's LAN IP, set `PUBLIC_ORIGIN` in the ignored `.env` to that exact browser origin, including scheme and port (for example `PUBLIC_ORIGIN=http://<MAC-LAN-IP>:5173`), then restart the server. Use that same URL on the Mac too. The default `http://localhost:5173` does not authorise requests from a LAN-IP URL: a mismatch rejects POST requests with 403 and closes WebSocket handshakes, appearing in Vite as repeated `ws proxy error: socket hang up`. Keep the origin check enabled. A demo restart clears in-memory contributions. Vite `hmr update` lines are routine development messages. These connection errors do not alter how many touch contacts the browser receives; use `/handprint-wall/input-check` on the actual display for touch diagnosis.
+During development, open `http://localhost:5173` on the Mac or `http://<MAC-LAN-IP>:5173` on the touchscreen. The Vite proxy accepts same-origin requests on either address and forwards them to the API. For a deployed app served directly by Express, set `PUBLIC_ORIGIN` to the exact browser origin including scheme and port. A demo restart clears in-memory contributions.
 
 Demo locator names: `morning_light`, `mountain_hope`, `mountain_home`. Try `mountain_hore` for an ambiguous match. A wish containing `reject` or `unavailable` exercises revision and moderation outage states. This is a deterministic test adapter, **not AI moderation**.
 
 ## Run with PostgreSQL and real moderation
+
+For local development with the bundled database, open Docker Desktop and run `docker compose up -d --wait db` before running migrations. The service listens on `localhost:5432` and matches the database URL in `.env.example`. Start the service again if migrations fail with `ECONNREFUSED` on that port.
 
 1. Create a dedicated database, or obtain a backend PostgreSQL connection string from Supabase. Use a backend role that owns these tables or can bypass RLS; never put this connection string or a Supabase service key in Vite variables. For Supabase configure TLS using your provider's verified connection settings, including the appropriate CA. Do not disable certificate verification.
 2. Copy `.env.example` to `.env`. Set `DATABASE_URL`, `AI_API_KEY` and independent `ENCRYPTION_KEY` / `TOKEN_SECRET`. Generate each key with `openssl rand -base64 32`. Keep these secrets backed up securely and outside Git.
@@ -112,11 +114,11 @@ UI dimensions use a 1080 × 1920 portrait design basis, scaling to 2× at native
 
 The museum wall display has no website header, footer, utility bar or navigation branding. Only the tree and its interaction area appear. Demo mode is identified in the small leaf-count caption. Keyboard controls appear only during text entry and move with the interaction panel, and rendering quality is configured by the operator URL rather than visitor-facing chrome.
 
-## Wall of Us and shared menu
+## Shared menu
 
 ## GMCX visual identity and leaf arrival
 
-The current kiosk uses [GMCX](https://gmcx.bt/) typography and blue/gold palette, with locally bundled Lora/Roboto fonts and no website header/footer. The default scene isolates one contribution tree against a quiet warm backdrop, with a restrained spotlight and contact shadow; the wider view shows actual contribution trees only. Trunk and branches thicken as the tree grows, and the full tree scales continuously from sapling to mature size with the contribution count. An accepted leaf approaches, unfurls and settles over 4.8 seconds; reduced-motion skips directly to the resting pose. Counts, logical leaf slots, server confirmation, Undo and private wish behaviour are unchanged. See [visual direction, credits and review captures](docs/gmcx-visual-direction.md). These changes do not implement or mount the Handprint Wall scaffold.
+The current kiosk uses [GMCX](https://gmcx.bt/) typography and blue/gold palette, with locally bundled Lora/Roboto fonts and no website header/footer. The default scene isolates one contribution tree against a quiet warm backdrop, with a restrained spotlight and contact shadow; the wider view shows actual contribution trees only. Trunk and branches thicken as the tree grows, and the full tree scales continuously from sapling to mature size with the contribution count. An accepted leaf approaches, unfurls and settles over 4.8 seconds; reduced-motion skips directly to the resting pose. Counts, logical leaf slots, server confirmation, Undo and private wish behaviour are unchanged. See [visual direction, credits and review captures](docs/gmcx-visual-direction.md).
 
 Wish entry and confirmation sheets use translucent white glass surfaces that keep the tree visible behind them, a compact GMC Experience Centre wordmark, blue Lora headings, blue/gold accent rules, Roboto form controls and the GMCX yellow-gold primary action.
 
@@ -132,12 +134,8 @@ Run the isolated accelerated idle checks with `VITE_IDLE_SECONDS=4 npm run test:
 
 The submission reveal uses a lazily loaded Remotion Player (`remotion` and `@remotion/player`, pinned together). While moderation is in progress, a restrained light orbit indicates waiting. After server confirmation, a gold filament rises from the tree's roots to the actual moving leaf as it unfolds, then settles into a yellow highlight. The highlight remains until Done while the receipt is open; search highlights retain their configured timeout. Undo stays immediately available. Reduced motion skips the ornament and shows the resting yellow leaf. No private text or credentials are passed to the animation. [Light journey](docs/screenshots/wish-light-journey.png) · [settled highlight](docs/screenshots/wish-yellow-highlight.png).
 
-## Wall of Us
+## Wall of Signatures
 
-See [Handprint Wall setup and behaviour](docs/handprint-wall-handoff.md) for routes, controls, moderation, operator removal, rendering and limits. `VITE_HANDPRINT_WALL_TITLE` changes the working title. Both experiences use the same server/database, and the walkthrough remains outside this application.
+Visitors draw their signature and optional doodles using the pen palette, enter a private username, and tap an open spot to place their drawing. The supplied logo is centred behind the ink at 13% opacity. Search uses an exact case-insensitive username match and highlights the drawing on its wall section. Usernames are stored as keyed lookup hashes and excluded from public responses and WebSocket events.
 
-Run `npm run migrate` before starting an upgraded installation. The runner tracks ordered `.sql` migrations transactionally under an advisory lock; existing forest tables are retained. `002_handprints.sql.example` remains an inactive historical checklist.
-
-Wall of Us opens with a five-fingertip guide that fits a stylised hand outline. Visitors can also size a default hand. They choose a colour, optionally add a name to the palm, and submit. The server chooses the print’s position and rotation, and the gallery reveals it after acceptance. Exact-name search highlights matching prints without including names in public wall snapshots. Home and idle reset wait through submission and the server-owned Undo window.
-
-Production image moderation uses `HANDPRINT_AI_MODEL` (falling back to `AI_MODEL`) at the existing provider; it must accept image URLs containing PNG data and JSON-object responses. Missing credentials, unsupported image input and provider failures stop publishing. Demo mode clearly labels its simulated approval and stores no production data. Test-provider contract checks do not establish paid-provider quality.
+Run `npm run migrate` before starting an upgraded installation. Migration 003 adds signature tables and preserves the existing tables and migration history. Production drawings use `SIGNATURE_AI_MODEL` (falling back to `AI_MODEL`), with PNG image input and a JSON decision. Keep `TOKEN_SECRET` stable for username lookup and Undo. Demo drawings are held in memory. Signatures have a 5-second server-owned Undo window, with authenticated receipt recovery and operator removal.

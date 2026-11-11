@@ -9,8 +9,8 @@ import { resolve } from "node:path";
 import { Store } from "./store.js";
 import { DemoStore } from "./demo.js";
 import { moderate, PublicError } from "./moderation.js";
-import { handprintRouter } from "./handprints/router.js";
-import type { HandprintEvent } from "../src/shared/handprints.js";
+import { signatureRouter } from "./signatures/router.js";
+import type { SignatureEvent } from "../src/shared/signatures.js";
 import type { ForestEvent } from "../src/shared.js";
 const app = express(),
   server = createServer(app),
@@ -26,7 +26,7 @@ if (
   throw new Error(
     "Set DATABASE_URL, TOKEN_SECRET and a 32-byte base64 ENCRYPTION_KEY. See .env.example.",
   );
-const broadcast = (e: ForestEvent | HandprintEvent) => {
+const broadcast = (e: ForestEvent | SignatureEvent) => {
   for (const client of wss.clients)
     if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify(e));
 };
@@ -58,7 +58,7 @@ app.use(
     },
   }),
 );
-app.use("/api/handprints", express.json({ limit: "64kb" }));
+app.use("/api/signatures", express.json({ limit: "64kb" }));
 app.use(express.json({ limit: "8kb" }));
 app.use("/api", (_req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
@@ -90,7 +90,7 @@ app.use("/api", (req, _res, next) => {
     return next(new PublicError(429, "Please pause a moment and try again."));
   next();
 });
-app.use("/api/handprints", handprintRouter(demo, pool, broadcast));
+app.use("/api/signatures", signatureRouter(demo, pool, broadcast));
 const uuid = z.uuid();
 const auth = (req: express.Request) => {
   const id = uuid.parse(req.params.id),
@@ -174,7 +174,7 @@ app.use(
         e instanceof PublicError
           ? e.message
           : status === 400
-            ? req.originalUrl.startsWith("/api/handprints")
+            ? req.originalUrl.startsWith("/api/signatures")
               ? "Check your input, then try again."
               : "Check your username and wish, then try again."
             : "The sanctuary is temporarily offline. Please retry.",

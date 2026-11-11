@@ -3,11 +3,9 @@ import { WallPreview } from "./components/WallPreview";
 import { experiences } from "./experiences";
 import { useSanctuary } from "../state";
 import "./app.css";
+import "../experiences/signature-wall/wall.css";
 const Tree = lazy(() => import("../App"));
-const Wall = lazy(() => import("../experiences/handprint-wall/Wall"));
-const TouchDiagnostics = lazy(
-  () => import("../experiences/handprint-wall/tracing/TouchDiagnostics"),
-);
+const Wall = lazy(() => import("../experiences/signature-wall/Wall"));
 export default function Router() {
   const [path, setPath] = useState(location.pathname),
     [blocked, setBlocked] = useState(false),
@@ -69,11 +67,9 @@ export default function Router() {
           </main>
         }
       >
-        {path === "/handprint-wall/input-check" ? (
-          <TouchDiagnostics />
-        ) : path === "/wishing-tree" ? (
+        {path === "/wishing-tree" ? (
           <Tree />
-        ) : path === "/handprint-wall" ? (
+        ) : path === "/signature-wall" ? (
           <Wall onSessionLock={setBlocked} />
         ) : (
           <main className="menu">
@@ -114,7 +110,7 @@ export default function Router() {
       </Suspense>
       {path !== "/" && (
         <button
-          className="home-control"
+          className={`home-control${path === "/signature-wall" ? " signature-home-control" : ""}`}
           disabled={blocked}
           onClick={() => navigate("/")}
         >

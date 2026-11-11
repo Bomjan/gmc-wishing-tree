@@ -1,6 +1,6 @@
 # Shared frontend / cross-stack code
 
-- `handprints.ts`: proposed transport contracts and palette/defaults; safe for frontend and server imports. No runtime validation or persistence is implied.
+- `signatures.ts` defines the pen palette, stroke limits, placement bounds and public signature contracts.
 - `components/`: reusable touch buttons, Home actions, swatches and status UI.
 - `kiosk/`: shared idle warning/reset, route session cleanup, submission/Undo guards.
 - `graphics/`: deterministic texture helpers and GPU resource lifecycle utilities.

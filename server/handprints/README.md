@@ -1,3 +1,0 @@
-# Handprint backend
-
-Mounted into the existing server at `/api/handprints`, sharing its PostgreSQL pool, origin/rate protections and WebSocket broadcaster. `router.ts` handles persistence, idempotency, serialised automatic allocation, exact-name search, Undo, finalisation and protected operator removal. `geometry.ts` validates point data and palm labels. `moderation.ts` generates a PNG from validated geometry and moderates it and the optional palm label using the configured image-capable provider. Production fails closed. See `docs/handprint-wall-handoff.md` for configuration and contracts. Reserved subfolders remain unused.
