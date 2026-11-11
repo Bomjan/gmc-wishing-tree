@@ -74,14 +74,14 @@ function LightJourney({ phase, treeId, slot }: RitualProps) {
           </filter>
           <radialGradient id="ritual-aura">
             <stop stopColor="#FFF4B8" stopOpacity=".98" />
-            <stop offset=".18" stopColor="#FFD766" stopOpacity=".8" />
+            <stop offset=".18" stopColor="#FFD66B" stopOpacity=".8" />
             <stop offset=".48" stopColor="#E8B943" stopOpacity=".34" />
-            <stop offset="1" stopColor="#FFD766" stopOpacity="0" />
+            <stop offset="1" stopColor="#FFD66B" stopOpacity="0" />
           </radialGradient>
           <radialGradient id="ritual-flash">
             <stop stopColor="#FFF0A6" stopOpacity=".27" />
-            <stop offset=".42" stopColor="#FFD766" stopOpacity=".12" />
-            <stop offset="1" stopColor="#FFD766" stopOpacity="0" />
+            <stop offset=".42" stopColor="#FFD66B" stopOpacity=".12" />
+            <stop offset="1" stopColor="#FFD66B" stopOpacity="0" />
           </radialGradient>
         </defs>
         {!waiting && (
@@ -120,7 +120,7 @@ function LightJourney({ phase, treeId, slot }: RitualProps) {
             <path
               d={path}
               fill="none"
-              stroke="#FFD766"
+              stroke="#FFD66B"
               strokeWidth="24"
               filter="url(#ritual-soft)"
               pathLength="1"
@@ -170,7 +170,7 @@ function LightJourney({ phase, treeId, slot }: RitualProps) {
                   y1={leaf.y + Math.sin(angle) * inner}
                   x2={leaf.x + Math.cos(angle) * outer}
                   y2={leaf.y + Math.sin(angle) * outer}
-                  stroke={ray % 3 === 0 ? "#FFF4B8" : "#FFD766"}
+                  stroke={ray % 3 === 0 ? "#FFF4B8" : "#FFD66B"}
                   strokeWidth={ray % 3 === 0 ? 4 : 2.5}
                   strokeLinecap="round"
                   opacity={bloom * (ray % 2 ? 0.5 : 0.8)}
@@ -203,16 +203,28 @@ function LightJourney({ phase, treeId, slot }: RitualProps) {
           top: "85%",
           width: "100%",
           textAlign: "center",
-          color: "#745C00",
-          fontFamily: "Lora, Georgia, serif",
-          fontSize: 27,
+          color: "#FFFFFF",
+          fontFamily: "Roboto, Arial, sans-serif",
+          fontWeight: 500,
+          fontSize: 24,
+          lineHeight: "34px",
           opacity: waiting
-            ? 0.84
+            ? 0.92
             : interpolate(seconds, [0, 0.8, 4.9, 5.8], [0, 1, 1, 0], clamp),
           translate: `0 ${interpolate(seconds, [0, 1.4], [14, 0], clamp)}px`,
         }}
       >
-        {waiting ? "Tending your wish…" : "Watch your leaf unfold."}
+        {/* Brand caption: text on a dark panel with the yellow accent. */}
+        <span
+          style={{
+            display: "inline-block",
+            padding: "12px 28px",
+            background: "rgba(23, 23, 23, 0.9)",
+            borderLeft: "5px solid #FFD66B",
+          }}
+        >
+          {waiting ? "Tending your wish…" : "Watch your leaf unfold."}
+        </span>
       </div>
     </AbsoluteFill>
   );

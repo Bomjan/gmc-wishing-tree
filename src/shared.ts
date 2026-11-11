@@ -50,7 +50,9 @@ export function leafPoint(
 }
 export function treeScale(n: number) {
   const count = Math.min(108, Math.max(0, Number.isFinite(n) ? n : 0));
-  return 0.22 + 0.78 * Math.pow(count / 108, 0.62);
+  // Strictly increasing: every accepted wish makes the tree a little larger,
+  // from a young sapling (0.36) to its full size at 108 leaves.
+  return 0.36 + 0.64 * Math.pow(count / 108, 0.8);
 }
 /** Same active tree for the renderer, camera and public progress caption. */
 export function activeTree(trees: Tree[], id?: string | null) {
@@ -83,4 +85,19 @@ export function forestBounds(trees: Tree[]) {
     70,
     ...trees.flatMap((t) => [Math.abs(t.x) + 24, Math.abs(t.z) + 24]),
   );
+}
+/** Thuenpa Puenzhi, the Four Harmonious Friends. In the story the bird ate the
+ * seed the tree grew from, the rabbit nibbled it as a sapling, the monkey ate
+ * its fruit when it was young and the elephant only knew it fully grown, so
+ * they arrive in that order of age as the wishing tree grows. */
+export const FRIENDS = ["bird", "rabbit", "monkey", "elephant"] as const;
+export type Friend = (typeof FRIENDS)[number];
+/** Leaf counts at which each friend arrives on an installation tree. */
+export const FRIEND_THRESHOLDS = [1, 27, 54, 81] as const;
+
+/** How many friends stand around a tree. In the demo, one arrives per new wish. */
+export function friendsFor(count: number, demoBaseline: number | null) {
+  if (demoBaseline !== null)
+    return Math.max(0, Math.min(FRIENDS.length, count - demoBaseline));
+  return FRIEND_THRESHOLDS.filter((threshold) => count >= threshold).length;
 }

@@ -7,6 +7,7 @@ import {
 } from "react";
 import { randomUUID } from "../../shared/randomUUID";
 import { TouchKeyboard } from "../../shared/ui/TouchKeyboard";
+import { ReachHandle, useReachablePanel } from "../../shared/kiosk/reach";
 import { signatureOverlaps } from "../../shared/signature-overlap";
 import {
   PEN_COLOURS,
@@ -87,7 +88,8 @@ export default function Wall({
   );
 
   const kioskSession = useRef(randomUUID());
-  const wall = useRef<HTMLElement>(null);
+  // Same visitor-adjustable right-edge rail as the Wishing Tree.
+  const reach = useReachablePanel(step);
   const selectedSection = useRef(section);
   const requestVersion = useRef(0);
   const receiptVersion = useRef(0);
@@ -315,7 +317,9 @@ export default function Wall({
   }, [pending, receipt?.id, request, remember]);
 
   useEffect(() => {
-    const surface = wall.current;
+    const surface = reach.stageRef.current?.querySelector<HTMLElement>(
+      ".signature-wall-surface",
+    );
     if (!surface) return;
     const observer = new ResizeObserver(([{ contentRect }]) => {
       if (contentRect.width > 0 && contentRect.height > 0)
@@ -481,13 +485,18 @@ export default function Wall({
     <p className="signature-status" role="status">
       {occupied
         ? "This spot is occupied. Try another spot."
-        : message || (!online ? "Connecting to the wall…" : "")}
+        : message ||
+          (!online
+            ? "Connecting to the wall…"
+            : step === "place"
+              ? "Tap an open spot on the wall to place your signature."
+              : "")}
     </p>
   );
 
   return (
     <main
-      ref={wall}
+      ref={reach.stageRef}
       className="signature-experience"
       data-step={step}
       data-online={online}
@@ -510,15 +519,6 @@ export default function Wall({
             : undefined
         }
       />
-      <header className="signature-heading">
-        <h1>Wall of Signatures</h1>
-        {step === "place" && <p>Tap an open spot to place your signature.</p>}
-        {demo && (
-          <p className="signature-help">
-            Demo · Drawings reset when the server restarts
-          </p>
-        )}
-      </header>
       {step === "draw" ? (
         <DrawingPanel onSubmit={continueToPlacement}>
           <p>Sign with your finger and add doodles around it.</p>
@@ -619,7 +619,17 @@ export default function Wall({
           {status}
         </DrawingPanel>
       ) : (
-        <div className="signature-dock">
+        <section
+          className="signature-dock"
+          aria-label="Wall of Signatures actions"
+          ref={reach.panelRef}
+        >
+          <ReachHandle
+            position={reach.position}
+            onChange={reach.setPosition}
+            stageRef={reach.stageRef}
+            panelRef={reach.panelRef}
+          />
           {status}
           {sectionCount > 1 && (
             <nav
@@ -751,7 +761,11 @@ export default function Wall({
               )}
             </form>
           )}
-        </div>
+          <p className="signature-caption">
+            {demo && <span>Demo</span>}
+            Section {section + 1} of {sectionCount}
+          </p>
+        </section>
       )}
     </main>
   );

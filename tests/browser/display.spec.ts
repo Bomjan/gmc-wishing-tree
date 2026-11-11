@@ -18,9 +18,9 @@ for (const viewport of [
         "data-online",
         "true",
       );
-      await expect(page.locator("header,footer,.utility-controls")).toHaveCount(
-        0,
-      );
+      // One shared brand header (logo, Back, Home); no footer or utility bar.
+      await expect(page.locator(".kiosk-header")).toHaveCount(1);
+      await expect(page.locator("footer,.utility-controls")).toHaveCount(0);
       const canvas = page.locator("canvas");
       await expect(canvas).toHaveCount(1);
       await expect(
@@ -31,12 +31,13 @@ for (const viewport of [
           .getByRole("button", { name: "Make a wish", exact: true })
           .boundingBox();
       const stageWidth = Math.min(viewport.width, (viewport.height * 9) / 16);
-      expect(panel!.width).toBeLessThan(stageWidth * 0.12);
+      // Narrow dark action rail on the right edge.
+      expect(panel!.width).toBeLessThan(stageWidth * 0.3);
       expect(panel!.width * panel!.height).toBeLessThan(
-        stageWidth * viewport.height * 0.02,
+        stageWidth * viewport.height * 0.05,
       );
       const right = (viewport.width + stageWidth) / 2;
-      expect(panel!.x).toBeGreaterThan(right - stageWidth * 0.16);
+      expect(panel!.x).toBeGreaterThan(right - stageWidth * 0.3);
       expect(panel!.x + panel!.width).toBeLessThanOrEqual(
         right - stageWidth * 0.02,
       );

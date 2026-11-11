@@ -13,9 +13,10 @@ test("form and keyboard move together, stay bounded and recover from cancelled a
   const grip = page.getByRole("slider", { name: "Controls height" });
   const panel = page.locator(".panel");
   const initialPanel = (await panel.boundingBox())!;
-  expect(initialPanel.x).toBeGreaterThan(1080 * 0.4);
-  expect(initialPanel.width).toBeLessThan(1080 * 0.49);
-  expect(initialPanel.height).toBeLessThan(530);
+  expect(initialPanel.x).toBeGreaterThan(1080 * 0.3);
+  expect(initialPanel.width).toBeLessThan(1080 * 0.65);
+  // Content-sized with the guide's 72 px touch targets.
+  expect(initialPanel.height).toBeLessThan(680);
   const submit = (await page
     .getByRole("button", { name: "Add my leaf" })
     .boundingBox())!;
@@ -37,7 +38,8 @@ test("form and keyboard move together, stay bounded and recover from cancelled a
   ).toBeCloseTo(fieldY, 0);
   await page.screenshot({ path: "test-results/right-sheet-keyboard.png" });
   await expect(panel.locator(".touch-keyboard")).toHaveCount(1);
-  expect((await panel.boundingBox())!.height).toBeLessThan(800);
+  // 56 px minimum keys (brand guide) make the open keyboard taller.
+  expect((await panel.boundingBox())!.height).toBeLessThan(1100);
   expect(await keyboard.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(
     true,
   );

@@ -21,8 +21,9 @@ test("default scene supports drag, wheel, two-finger zoom and direct leaf select
     .toBe(3);
   await page.waitForTimeout(1500);
   const dock = await page.locator(".panel-welcome").boundingBox();
-  expect(dock!.width).toBeLessThan(130);
-  expect(dock!.x).toBeGreaterThan(900);
+  // Narrow dark rail at the right edge (17rem of the 1080-unit stage).
+  expect(dock!.width).toBeLessThan(1080 * 0.3);
+  expect(dock!.x).toBeGreaterThan(1080 * 0.7);
   await expect(page.locator(".panel-welcome h1")).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "View all trees", exact: true }),
@@ -121,23 +122,27 @@ test("default scene supports drag, wheel, two-finger zoom and direct leaf select
   });
   expect(points.length).toBeGreaterThan(0);
   const dockRect = (await page.locator(".panel-welcome").boundingBox())!;
-  const point = points.find(
+  const reachable = points.filter(
     (p) =>
       p.x < dockRect.x ||
       p.x > dockRect.x + dockRect.width ||
       p.y < dockRect.y - 10 ||
       p.y > dockRect.y + dockRect.height + 10,
-  )!;
-  expect(point).toBeTruthy();
-  await page.mouse.click(point.x, point.y);
-  await expect
-    .poll(() =>
-      page.evaluate(async () => {
-        const path = "/src/state.ts";
-        return (await import(path)).useSanctuary.getState().selection;
-      }),
-    )
-    .toBeTruthy();
+  );
+  expect(reachable.length).toBeGreaterThan(0);
+  const selection = () =>
+    page.evaluate(async () => {
+      const path = "/src/state.ts";
+      return (await import(path)).useSanctuary.getState().selection;
+    });
+  // A leaf seen almost edge-on has no surface at its centre point, as for a
+  // visitor's finger; tap leaves in depth order until one is selected.
+  for (const point of reachable.slice(0, 6)) {
+    await page.mouse.click(point.x, point.y);
+    await page.waitForTimeout(250);
+    if (await selection()) break;
+  }
+  await expect.poll(selection).toBeTruthy();
   await expect(page.locator(".panel-welcome")).toBeVisible();
   await page.getByRole("button", { name: "Make a wish", exact: true }).click();
   await page.getByLabel("Username", { exact: true }).fill("temporary_visitor");

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 260">
+  <defs>
+    <radialGradient id="coat" cx="45%" cy="35%" r="70%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.7" stop-color="#f4f2ef"/>
+      <stop offset="1" stop-color="#d7d3cd"/>
+    </radialGradient>
+    <linearGradient id="inner" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7c3cd"/>
+      <stop offset="1" stop-color="#ef9fb1"/>
+    </linearGradient>
+  </defs>
+  <g stroke="#5b4636" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+    <!-- far ear -->
+    <path d="M140 72 C124 40 124 10 138 4 C152 0 162 30 158 68 Z" fill="url(#coat)"/>
+    <!-- tail puff -->
+    <circle cx="48" cy="212" r="14" fill="url(#coat)"/>
+    <!-- seated body -->
+    <path d="M50 236 C36 200 44 150 84 132 C120 116 160 128 170 160 C180 196 172 230 150 244 L70 246 C60 246 52 242 50 236 Z" fill="url(#coat)"/>
+    <!-- haunch -->
+    <path d="M66 236 C62 206 80 184 108 186 C132 188 144 210 138 236" fill="none" stroke="#a9a29a" stroke-width="2"/>
+    <!-- hind foot and fore paw -->
+    <path d="M70 246 C76 238 110 238 122 246 C116 252 78 252 70 246 Z" fill="#f4f2ef"/>
+    <path d="M150 246 C150 236 170 234 176 242 C176 250 156 252 150 246 Z" fill="#f4f2ef"/>
+    <!-- head -->
+    <path d="M118 108 C116 76 142 60 166 66 C190 72 202 96 196 118 C190 138 166 148 146 144 C128 140 120 126 118 108 Z" fill="url(#coat)"/>
+    <!-- near ear with pink inner -->
+    <path d="M158 72 C156 34 168 6 182 8 C196 12 192 46 174 78 Z" fill="url(#coat)"/>
+    <path d="M166 66 C166 38 174 18 181 18 C188 22 184 46 172 70 Z" fill="url(#inner)" stroke="none"/>
+    <!-- eye, nose, mouth, whiskers -->
+    <circle cx="172" cy="98" r="5" fill="#3a2a22" stroke="none"/>
+    <circle cx="174" cy="96" r="1.6" fill="#ffffff" stroke="none"/>
+    <path d="M190 110 C194 108 198 110 197 114 C194 116 190 114 190 110 Z" fill="#ef9fb1" stroke-width="1.6"/>
+    <path d="M194 116 C192 122 186 124 182 120" fill="none" stroke-width="1.8"/>
+    <path d="M186 116 L210 110 M186 120 L210 122" fill="none" stroke="#a9a29a" stroke-width="1.4"/>
+    <!-- cheek blush -->
+    <ellipse cx="164" cy="118" rx="9" ry="5" fill="#f7c3cd" stroke="none" opacity="0.7"/>
+  </g>
+</svg>

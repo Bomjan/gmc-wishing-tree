@@ -5,8 +5,10 @@ import { PublicError } from "./moderation.js";
 // Isolated, deterministic exhibition fixtures. Never used by production Store.
 const initialWishes = Math.max(
   0,
-  Math.min(108, Number(process.env.DEMO_INITIAL_WISHES ?? 76) || 0),
+  Math.min(108, Number(process.env.DEMO_INITIAL_WISHES ?? 24) || 0),
 );
+/** Leaves the demo tree starts with; animals then arrive one per new wish. */
+export const demoInitialWishes = initialWishes;
 export class DemoStore {
   data: Forest = {
     demo: true,

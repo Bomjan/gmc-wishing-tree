@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280">
+  <defs>
+    <linearGradient id="body" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#fbd8d2"/>
+      <stop offset="0.5" stop-color="#f19aa0"/>
+      <stop offset="1" stop-color="#d65a72"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0" y1="1" x2="0.6" y2="0">
+      <stop offset="0" stop-color="#f6b9bf"/>
+      <stop offset="0.55" stop-color="#fdeef0"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+  </defs>
+  <g stroke="#5b4636" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+    <!-- long streaming tail ribbons, each with a pale centre line -->
+    <path d="M150 168 C118 150 92 116 70 104 C48 92 26 104 30 122 C34 136 50 134 50 124 C58 118 78 126 96 140 C116 156 134 170 148 176 Z" fill="#3b7fc4"/>
+    <path d="M152 176 C118 178 74 168 46 178 C20 188 14 214 32 220 C46 224 54 210 44 204 C58 194 92 194 124 188 C136 186 146 182 152 182 Z" fill="#d9434f"/>
+    <path d="M156 184 C130 200 104 228 80 236 C58 244 50 266 66 272 C80 276 88 262 78 258 C92 248 118 234 140 214 C148 206 154 196 158 190 Z" fill="#3f9a6b"/>
+    <path d="M148 162 C130 132 122 96 104 72 C92 56 72 58 72 72 C72 84 86 86 88 78 C100 90 110 120 124 148 C132 160 140 168 146 170 Z" fill="#f2c94c"/>
+    <g fill="none" stroke-width="1.3">
+      <path d="M146 172 C120 154 96 126 64 112" stroke="#d6e7f6"/>
+      <path d="M148 180 C114 184 80 182 48 194" stroke="#fbd0d4"/>
+      <path d="M154 188 C130 206 106 228 82 248" stroke="#d6efe0"/>
+      <path d="M144 166 C130 140 118 106 96 80" stroke="#fff1bf"/>
+    </g>
+    <!-- slender legs -->
+    <path d="M214 214 L210 252 M210 252 L200 258 M210 252 L218 259 M232 212 L236 250 M236 250 L228 258 M236 250 L246 256" fill="none" stroke="#c96a2c" stroke-width="2.8"/>
+    <!-- far wing raised behind the back -->
+    <path d="M198 150 C190 108 204 70 234 46 C232 76 238 104 240 132 Z" fill="#f4c3c8"/>
+    <!-- slim teardrop body -->
+    <path d="M148 172 C166 140 214 128 250 136 C270 140 280 156 272 174 C260 198 222 212 186 204 C166 200 152 188 148 172 Z" fill="url(#body)"/>
+    <!-- near wing raised, with scalloped feather tips -->
+    <path d="M196 160 C182 122 190 78 226 42 C234 36 242 44 236 52 C246 46 254 54 246 63 C257 60 263 71 254 78 C264 79 267 92 256 97 C259 122 252 146 236 160 Z" fill="url(#wing)"/>
+    <g fill="none" stroke="#e48b98" stroke-width="1.6">
+      <path d="M208 152 C200 122 206 92 228 58"/>
+      <path d="M222 156 C218 128 226 100 244 72"/>
+      <path d="M236 156 C236 134 242 112 252 92"/>
+    </g>
+    <path d="M200 140 C214 134 232 134 248 140" fill="none" stroke="#3b7fc4" stroke-width="2.4"/>
+    <!-- long curved neck -->
+    <path d="M244 144 C252 120 264 100 282 88 L302 96 C292 112 282 130 274 150 Z" fill="url(#body)"/>
+    <!-- small head with a white cheek -->
+    <path d="M286 90 C282 72 294 60 307 62 C319 64 325 77 319 89 C313 99 297 101 286 90 Z" fill="#f6b2b6"/>
+    <path d="M300 82 C306 79 314 81 315 87 C311 93 303 93 299 89 Z" fill="#ffffff" stroke-width="1.4"/>
+    <!-- swept-back plume crest (not a comb) -->
+    <path d="M290 62 C276 46 262 40 246 42" fill="none" stroke="#d9434f" stroke-width="2.4"/>
+    <path d="M246 42 C240 38 238 46 244 48 C250 50 252 42 246 42 Z" fill="#d9434f" stroke-width="1.4"/>
+    <path d="M296 60 C288 40 276 30 262 28" fill="none" stroke="#3b7fc4" stroke-width="2.4"/>
+    <path d="M262 28 C256 24 254 32 260 34 C266 36 268 28 262 28 Z" fill="#3b7fc4" stroke-width="1.4"/>
+    <!-- slender hooked beak and eye -->
+    <path d="M318 76 C328 76 338 80 342 86 C334 86 326 85 318 84 Z" fill="#f2b33d"/>
+    <circle cx="308" cy="74" r="3" fill="#2b2119" stroke="none"/>
+    <circle cx="309" cy="73" r="1" fill="#ffffff" stroke="none"/>
+  </g>
+</svg>

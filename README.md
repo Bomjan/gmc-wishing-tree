@@ -11,7 +11,7 @@ npm ci
 npm run demo
 ```
 
-Open http://localhost:5173. Demo mode needs neither PostgreSQL nor an AI key. It starts with 76 and 108 **demonstration** leaves by default, clearly labelled in the interface. Set `DEMO_INITIAL_WISHES=0` before `npm run demo` to start with an empty forest; the first accepted wish creates the first tree. Demo records live only in memory. The server and frontend must both be in demo mode (`DEMO_MODE=true`, `VITE_DEMO=true`, set by the script). Demo data is never inserted in the production database. Refreshing the browser retains demo state while that server process runs; restarting resets it.
+Open http://localhost:5173. Demo mode needs neither PostgreSQL nor an AI key. It starts with 24 and 108 **demonstration** leaves by default, clearly labelled in the interface, so the young demo tree visibly grows with each new wish. Set `DEMO_INITIAL_WISHES` (0–108) to choose the starting count. Set `DEMO_INITIAL_WISHES=0` before `npm run demo` to start with an empty forest; the first accepted wish creates the first tree. Demo records live only in memory. The server and frontend must both be in demo mode (`DEMO_MODE=true`, `VITE_DEMO=true`, set by the script). Demo data is never inserted in the production database. Refreshing the browser retains demo state while that server process runs; restarting resets it.
 
 During development, open `http://localhost:5173` on the Mac or `http://<MAC-LAN-IP>:5173` on the touchscreen. The Vite proxy accepts same-origin requests on either address and forwards them to the API. For a deployed app served directly by Express, set `PUBLIC_ORIGIN` to the exact browser origin including scheme and port. A demo restart clears in-memory contributions.
 

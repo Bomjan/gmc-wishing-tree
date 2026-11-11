@@ -12,6 +12,7 @@ import { Scene } from "./Scene";
 import { api, connectForest, loadForest, useSanctuary } from "./state";
 import { activeTree, type Locator, type Receipt } from "./shared";
 import { ReachHandle, useReachablePanel } from "./shared/kiosk/reach";
+import { playWishSound } from "./shared/kiosk/sound";
 const WishRitual = lazy(
   () => import("./experiences/wishing-tree/graphics/WishRitual"),
 );
@@ -179,10 +180,26 @@ export default function App() {
     )
       focusLeaf(receipt);
   }, [view, receipt?.id]);
+  // Sound follows the arrival animation: one play per accepted wish.
+  const sounded = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      view === "accepted" &&
+      receipt?.state === "pending" &&
+      sounded.current !== receipt.id
+    ) {
+      sounded.current = receipt.id;
+      playWishSound();
+    }
+  }, [view, receipt?.id, receipt?.state]);
   useEffect(() => {
     const disconnect = connectForest();
-    void api<typeof config>("/config")
-      .then(setConfig)
+    void api<typeof config & { demoInitialWishes?: number }>("/config")
+      .then(({ demoInitialWishes, ...value }) => {
+        setConfig(value);
+        if (typeof demoInitialWishes === "number")
+          useSanctuary.getState().set({ demoInitialWishes });
+      })
       .catch(() => {});
     const attempt = sessionStorage.getItem("gmc-attempt");
     if (attempt) {
@@ -553,7 +570,7 @@ export default function App() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                Back
+                Cancel
               </button>
             </div>
             <p className="form-guidance">

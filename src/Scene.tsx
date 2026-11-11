@@ -1,6 +1,7 @@
 import {
   Component,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -19,6 +20,10 @@ import {
   type Tree,
 } from "./shared";
 import { useSanctuary } from "./state";
+import {
+  friendsFor,
+  ThuenpaPuenzhi,
+} from "./experiences/wishing-tree/graphics/ThuenpaPuenzhi";
 import { gmcxBrand } from "./shared/branding";
 import {
   leafGeometry,
@@ -128,9 +133,58 @@ export function getProjectedLeaves() {
   }
   return points.sort((a, b) => a.depth - b.depth);
 }
+/** Screen boxes of the four friends, for placement checks in development. */
+function friendRects() {
+  const group = developmentWorld?.getObjectByName("thuenpa-puenzhi");
+  if (!group || !developmentCamera || !developmentRenderer) return [];
+  const rect = developmentRenderer.domElement.getBoundingClientRect();
+  const right = new THREE.Vector3().setFromMatrixColumn(
+    developmentCamera.matrixWorld,
+    0,
+  );
+  return group.children.map((friend) => {
+    const sprite = friend.children.find(
+      (c) => c instanceof THREE.Sprite,
+    ) as THREE.Sprite;
+    const base = friend.getWorldPosition(new THREE.Vector3()),
+      w = sprite.scale.x / 2,
+      corners = [
+        base.clone().addScaledVector(right, -w),
+        base.clone().addScaledVector(right, w),
+        base
+          .clone()
+          .addScaledVector(right, -w)
+          .setY(base.y + sprite.scale.y),
+        base
+          .clone()
+          .addScaledVector(right, w)
+          .setY(base.y + sprite.scale.y),
+      ].map((p) => {
+        p.project(developmentCamera!);
+        return {
+          x: rect.left + (p.x * 0.5 + 0.5) * rect.width,
+          y: rect.top + (-p.y * 0.5 + 0.5) * rect.height,
+        };
+      });
+    const xs = corners.map((c) => c.x),
+      ys = corners.map((c) => c.y);
+    return {
+      name: friend.name,
+      x: Math.min(...xs),
+      y: Math.min(...ys),
+      width: Math.max(...xs) - Math.min(...xs),
+      height: Math.max(...ys) - Math.min(...ys),
+    };
+  });
+}
 export function getSceneMetrics() {
   return {
     assetsReady,
+    companions:
+      developmentWorld
+        ?.getObjectByName("thuenpa-puenzhi")
+        ?.children.map((friend) => friend.name) ?? [],
+    companionRects: friendRects(),
     highlights:
       developmentWorld?.children
         .filter((o) => o.name.startsWith("wish-tree:"))
@@ -192,6 +246,94 @@ export function getSceneMetrics() {
   };
 }
 
+/** Shared branch layout: the wood and the decorative foliage use the same
+ * limbs and twigs, so every small leaf grows from real wood. */
+function limbOf(group: number, seed: number) {
+  return (
+    Math.round(
+      ((group * 2.399963 + seed * 0.001) % (Math.PI * 2)) / ((Math.PI * 2) / 5),
+    ) % 5
+  );
+}
+function limbEnd(limb: number) {
+  const angle = (limb * Math.PI * 2) / 5;
+  return new THREE.Vector3(
+    Math.cos(angle) * 0.83,
+    2.95 + (limb % 3) * 0.18,
+    Math.sin(angle) * 0.83,
+  );
+}
+function clusterBranch(group: number, seed: number) {
+  return {
+    start: limbEnd(limbOf(group, seed)),
+    endpoint: new THREE.Vector3(...leafPoint(group * 6, seed)).multiply(
+      new THREE.Vector3(0.87, 0.96, 0.87),
+    ),
+  };
+}
+function twigsOf(group: number, seed: number) {
+  const { start, endpoint } = clusterBranch(group, seed),
+    twigs = random(seed * 131 + group * 17);
+  return Array.from({ length: 3 }, () => {
+    const from = start.clone().lerp(endpoint, 0.3 + twigs() * 0.45),
+      angle = twigs() * Math.PI * 2,
+      length = 0.32 + twigs() * 0.38,
+      out = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
+    return {
+      from,
+      bend: from
+        .clone()
+        .addScaledVector(out, length * 0.5)
+        .add(new THREE.Vector3(0, length * 0.35, 0)),
+      tip: from
+        .clone()
+        .addScaledVector(out, length)
+        .add(new THREE.Vector3(0, length * 0.55, 0)),
+    };
+  });
+}
+/** Small decorative leaves along the twigs and around each leaf cluster, so
+ * the canopy looks full. They are smaller and deeper green than wish leaves,
+ * ignore taps, and thicken as the tree grows. */
+function foliageMatrices(seed: number, slots: number[], count: number) {
+  const groups = [...new Set(slots.map((slot) => Math.floor(slot / 6)))],
+    density = 0.55 + 0.45 * Math.min(1, count / 108),
+    dummy = new THREE.Object3D(),
+    out: { matrix: THREE.Matrix4; shade: number }[] = [];
+  for (const group of groups) {
+    const r = random(seed * 977 + group * 31),
+      { start, endpoint } = clusterBranch(group, seed),
+      spots: THREE.Vector3[] = [];
+    for (const { bend, tip } of twigsOf(group, seed)) {
+      for (let i = 0; i < 4; i++) spots.push(tip.clone());
+      spots.push(bend.clone());
+    }
+    for (let i = 0; i < 5; i++)
+      spots.push(new THREE.Vector3(...leafPoint(group * 6 + (i % 6), seed)));
+    spots.push(start.clone().lerp(endpoint, 0.55), endpoint.clone());
+    for (const spot of spots) {
+      if (r() > density) continue;
+      dummy.position
+        .copy(spot)
+        .add(
+          new THREE.Vector3(
+            r() - 0.5,
+            (r() - 0.5) * 0.7,
+            r() - 0.5,
+          ).multiplyScalar(0.42),
+        );
+      dummy.rotation.set(
+        0.2 + (r() - 0.5) * 1.6,
+        r() * Math.PI * 2,
+        (r() - 0.5) * 1.2,
+      );
+      dummy.scale.setScalar(0.22 + r() * 0.12);
+      dummy.updateMatrix();
+      out.push({ matrix: dummy.matrix.clone(), shade: r() });
+    }
+  }
+  return out;
+}
 function branchGeometry(
   seed: number,
   slots: number[],
@@ -238,19 +380,7 @@ function branchGeometry(
       );
     }
     const groups = [...new Set(slots.map((slot) => Math.floor(slot / 6)))];
-    const limbFor = (group: number) =>
-      Math.round(
-        ((group * 2.399963 + seed * 0.001) % (Math.PI * 2)) /
-          ((Math.PI * 2) / 5),
-      ) % 5;
-    const limbEnd = (limb: number) => {
-      const angle = (limb * Math.PI * 2) / 5;
-      return new THREE.Vector3(
-        Math.cos(angle) * 0.83,
-        2.95 + (limb % 3) * 0.18,
-        Math.sin(angle) * 0.83,
-      );
-    };
+    const limbFor = (group: number) => limbOf(group, seed);
     const emergingLimbs = Array.from(
       { length: branchCount },
       (_, limb) => limb,
@@ -276,14 +406,11 @@ function branchGeometry(
       );
     }
     for (const group of groups) {
-      const endpoint = new THREE.Vector3(
-        ...leafPoint(group * 6, seed),
-      ).multiply(new THREE.Vector3(0.87, 0.96, 0.87));
-      const start = limbEnd(limbFor(group)),
-        middle = start
-          .clone()
-          .lerp(endpoint, 0.55)
-          .add(new THREE.Vector3(0, 0.18, 0));
+      const { start, endpoint } = clusterBranch(group, seed);
+      const middle = start
+        .clone()
+        .lerp(endpoint, 0.55)
+        .add(new THREE.Vector3(0, 0.18, 0));
       parts.push(
         woodTube(
           new THREE.CatmullRomCurve3([start, middle, endpoint]),
@@ -294,40 +421,15 @@ function branchGeometry(
       );
       // Short bare side twigs give the canopy an inner structure. They are
       // wood only: every leaf on the tree still stands for one wish.
-      const twigs = random(seed * 131 + group * 17);
-      for (let k = 0; k < 3; k++) {
-        const from = start.clone().lerp(endpoint, 0.3 + twigs() * 0.45),
-          angle = twigs() * Math.PI * 2,
-          length = 0.32 + twigs() * 0.38;
+      for (const { from, bend, tip } of twigsOf(group, seed))
         parts.push(
           woodTube(
-            new THREE.CatmullRomCurve3([
-              from,
-              from
-                .clone()
-                .add(
-                  new THREE.Vector3(
-                    Math.cos(angle) * length * 0.5,
-                    length * 0.35,
-                    Math.sin(angle) * length * 0.5,
-                  ),
-                ),
-              from
-                .clone()
-                .add(
-                  new THREE.Vector3(
-                    Math.cos(angle) * length,
-                    length * 0.55,
-                    Math.sin(angle) * length,
-                  ),
-                ),
-            ]),
+            new THREE.CatmullRomCurve3([from, bend, tip]),
             0.022 * thickness,
             5,
             4,
           ),
         );
-      }
     }
     for (const slot of slots) {
       const end = new THREE.Vector3(...leafPoint(slot, seed)),
@@ -374,7 +476,8 @@ function WishTree({
     highlight = useRef<THREE.Mesh>(null),
     glow = useRef<THREE.Sprite>(null),
     wood = useRef<THREE.Mesh>(null),
-    age = useRef(0);
+    age = useRef(0),
+    grown = useRef({ count: -1, from: 0, at: 0 });
   const births = useRef(
     new Map(
       tree.leaves.map((leaf) => [
@@ -404,6 +507,35 @@ function WishTree({
       ),
     [tree.seed, signature, detailed, tree === previewTree],
   );
+  const foliage = useMemo(
+      () =>
+        detailed
+          ? foliageMatrices(
+              tree.seed,
+              [
+                ...new Set([
+                  ...starterSlots,
+                  ...tree.leaves.map((l) => l.slot),
+                ]),
+              ],
+              tree.leaves.length,
+            )
+          : [],
+      [tree.seed, signature, detailed],
+    ),
+    foliageMesh = useRef<THREE.InstancedMesh>(null);
+  useLayoutEffect(() => {
+    const mesh = foliageMesh.current;
+    if (!mesh) return;
+    const shade = new THREE.Color();
+    foliage.forEach(({ matrix, shade: s }, i) => {
+      mesh.setMatrixAt(i, matrix);
+      mesh.setColorAt(i, shade.setHSL(0.23 + s * 0.05, 0.34, 0.27 + s * 0.1));
+    });
+    mesh.count = foliage.length;
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }, [foliage]);
   const leaf = useMemo(() => leafGeometry(detailed), [detailed]),
     edge = useMemo(leafEdgeGeometry, []),
     mound = useMemo(moundGeometry, []);
@@ -456,7 +588,7 @@ function WishTree({
     () =>
       new THREE.SpriteMaterial({
         map: glowTexture,
-        color: "#FFD766",
+        color: gmcxBrand.actionGold,
         transparent: true,
         opacity: 0,
         blending: THREE.AdditiveBlending,
@@ -499,7 +631,28 @@ function WishTree({
     group.current.rotation.z = reduced()
       ? 0
       : Math.sin(clock.elapsedTime * 0.45 + tree.seed) * 0.002;
-    const desired = Math.max(0.55, treeScale(tree.leaves.length)),
+    // Grow when a wish arrives: hold the previous size until the leaf blooms
+    // (about 3 s into the arrival), then swell slightly and settle larger.
+    const count = tree.leaves.length,
+      growth = grown.current;
+    if (count !== growth.count) {
+      const added = count > growth.count && growth.count >= 0;
+      grown.current = {
+        count,
+        from: added ? growth.count : count,
+        at: added && !reduced() ? age.current + 3 : age.current,
+      };
+    }
+    const { from, at } = grown.current,
+      since = age.current - at,
+      swell =
+        since >= 0 && since < 1.4 && from !== count
+          ? Math.sin((since / 1.4) * Math.PI) * 0.06
+          : 0,
+      desired =
+        tree === previewTree
+          ? 0.55
+          : treeScale(since < 0 ? from : count) * (1 + swell),
       scale = reduced()
         ? desired
         : THREE.MathUtils.damp(group.current.scale.x, desired, 2.4, dt);
@@ -629,15 +782,21 @@ function WishTree({
       ref={group}
       name={"wish-tree:" + tree.id}
       position={[isolated ? 0 : tree.x, 0, isolated ? 0 : tree.z]}
-      scale={Math.max(0.55, treeScale(tree.leaves.length))}
+      scale={tree === previewTree ? 0.55 : treeScale(tree.leaves.length)}
       onClick={(event) => {
         event.stopPropagation();
         const s = useSanctuary.getState();
         if (tree === previewTree || event.delta > 6) return;
         if (s.view === "home" || s.view === "mountain") {
+          // Thin twigs can sit in front of a leaf; any leaf along the tap
+          // ray counts, so wood never blocks selecting a leaf.
+          const leafHit = event.intersections.find(
+            (hit) =>
+              hit.object === mesh.current && hit.instanceId !== undefined,
+          );
           const leafSlot =
-            event.object === mesh.current && event.instanceId !== undefined
-              ? tree.leaves[event.instanceId]?.slot
+            leafHit?.instanceId !== undefined
+              ? tree.leaves[leafHit.instanceId]?.slot
               : undefined;
           s.set({
             selection:
@@ -683,6 +842,20 @@ function WishTree({
             />
           ))}
       </group>
+      {/* Wrapped in a group: scene probes treat the tree's first direct
+          instanced mesh child as its wish leaves. */}
+      <group name="foliage">
+        <instancedMesh
+          key={detailed ? "detailed" : "simple"}
+          ref={foliageMesh}
+          args={[leaf, materials.leaf, 400]}
+          count={foliage.length}
+          castShadow
+          frustumCulled={false}
+          raycast={() => {}}
+          dispose={null}
+        />
+      </group>
       <sprite
         ref={glow}
         name="leaf-yellow-glow"
@@ -724,7 +897,8 @@ function WishTree({
   );
 }
 function World() {
-  const { forest, view, focus, selection, quality } = useSanctuary();
+  const { forest, view, focus, selection, quality, demoInitialWishes } =
+    useSanctuary();
   const current = activeTree(forest.trees, selection?.treeId || focus);
   const overview =
     forest.trees.length > 0 && view === "mountain" && !focus && !selection;
@@ -791,6 +965,19 @@ function World() {
           isolated={!overview}
         />
       ))}
+      {!overview && current && (
+        <ThuenpaPuenzhi
+          key={current.id}
+          visible={
+            forest.demo && current.id === "demo-current"
+              ? demoInitialWishes === null
+                ? 0
+                : friendsFor(current.leaves.length, demoInitialWishes)
+              : friendsFor(current.leaves.length, forest.demo ? 0 : null)
+          }
+          reducedMotion={reduced}
+        />
+      )}
       <CameraRig />
     </>
   );

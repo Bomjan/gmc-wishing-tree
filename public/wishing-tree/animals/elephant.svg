@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 340">
+  <defs>
+    <radialGradient id="hide" cx="48%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.62" stop-color="#f0f2f4"/>
+      <stop offset="1" stop-color="#c4ced7"/>
+    </radialGradient>
+    <linearGradient id="leg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eef1f3"/>
+      <stop offset="1" stop-color="#cfd7de"/>
+    </linearGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d6dde3"/>
+      <stop offset="1" stop-color="#aebac5"/>
+    </linearGradient>
+    <radialGradient id="ear" cx="42%" cy="42%" r="62%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#fdecef"/>
+      <stop offset="0.85" stop-color="#f3adbd"/>
+      <stop offset="1" stop-color="#e98aa0"/>
+    </radialGradient>
+    <radialGradient id="peach" cx="35%" cy="35%" r="70%">
+      <stop offset="0" stop-color="#ffe9a8"/>
+      <stop offset="0.5" stop-color="#f8b26a"/>
+      <stop offset="1" stop-color="#e86f6f"/>
+    </radialGradient>
+  </defs>
+  <g stroke="#5b4636" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+    <!-- far legs, in shade -->
+    <path d="M124 226 C124 262 128 292 126 314 C138 321 162 321 170 314 C170 290 170 262 170 232 Z" fill="url(#far)"/>
+    <path d="M282 224 C284 260 286 290 284 314 C296 321 318 321 324 314 C324 288 322 258 320 228 Z" fill="url(#far)"/>
+    <!-- tail with tuft -->
+    <path d="M78 168 C56 182 50 212 56 236" fill="none"/>
+    <path d="M56 232 C46 244 48 258 57 260 C64 254 66 244 56 232 Z" fill="#7a6553"/>
+    <!-- near legs, tapered into rounded feet; the belly overlaps their tops -->
+    <path d="M84 210 C82 250 88 286 84 318 C98 327 128 327 140 318 C138 290 142 258 148 226 Z" fill="url(#leg)"/>
+    <path d="M246 214 C248 254 246 288 242 318 C256 327 286 327 296 318 C294 290 298 252 302 222 Z" fill="url(#leg)"/>
+    <path d="M92 316 C94 310 100 310 102 316 M106 319 C108 313 114 313 116 319 M120 317 C122 311 128 311 130 317" fill="none" stroke-width="2"/>
+    <path d="M250 316 C252 310 258 310 260 316 M264 319 C266 313 272 313 274 319 M278 317 C280 311 286 311 288 317" fill="none" stroke-width="2"/>
+    <!-- body and head as one rounded silhouette, trunk curling at the front -->
+    <path d="M74 196 C66 140 100 96 160 84 C210 74 262 78 292 92 C306 70 344 60 372 76 C396 90 402 130 394 160 C390 178 382 192 372 204 C366 230 368 256 380 276 C386 290 378 302 364 300 C352 298 350 286 360 282 C350 262 344 238 344 214 C330 222 314 226 300 232 C290 242 270 246 240 246 L128 248 C96 246 78 226 74 196 Z" fill="url(#hide)"/>
+    <!-- pink trunk tip -->
+    <path d="M360 282 C352 288 356 298 366 299 C374 298 378 292 376 286" fill="#f6c9d2" stroke-width="2"/>
+    <!-- large rounded ear with a pink rim -->
+    <path d="M302 96 C268 90 250 132 256 174 C262 210 290 228 314 214 C334 200 336 150 326 120 C320 104 312 98 302 96 Z" fill="url(#ear)"/>
+    <path d="M300 116 C278 120 270 156 276 184 C282 204 300 210 312 198" fill="none" stroke="#e47f96" stroke-width="2.2"/>
+    <!-- tusk -->
+    <path d="M350 212 C358 226 352 240 336 246 C346 234 348 224 342 214 Z" fill="#fffaf0"/>
+    <!-- gentle eye -->
+    <path d="M350 128 C356 121 368 121 372 128 C366 134 356 134 350 128 Z" fill="#ffffff"/>
+    <circle cx="361" cy="128" r="3.6" fill="#2b2119" stroke="none"/>
+    <path d="M346 116 C354 108 370 108 378 115" fill="none" stroke-width="2"/>
+    <!-- painted contour lines -->
+    <g fill="none" stroke="#9fb0bf" stroke-width="2">
+      <path d="M350 236 C356 240 364 238 368 232 M352 254 C358 258 366 256 370 250 M356 270 C362 274 370 272 374 266"/>
+      <path d="M120 106 C146 94 176 90 204 92 M110 128 C136 116 168 112 196 114"/>
+      <path d="M368 92 C378 98 386 108 388 120"/>
+      <path d="M92 270 C104 274 120 274 134 270 M252 272 C264 276 280 276 292 272"/>
+    </g>
+  </g>
+  <!-- peach held by the trunk -->
+  <g stroke="#5b4636" stroke-width="2.2">
+    <path d="M384 270 C396 260 410 266 406 278 C396 282 388 280 384 270 Z" fill="#6ea35a"/>
+    <circle cx="388" cy="292" r="15" fill="url(#peach)"/>
+    <path d="M388 278 C384 286 384 298 388 306" fill="none" stroke="#e0806b" stroke-width="1.6"/>
+  </g>
+</svg>

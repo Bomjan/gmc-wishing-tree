@@ -85,6 +85,7 @@ test("draw coloured strokes, choose a spot, and find the signature without publi
   const localAlias = new URL(baseURL!);
   localAlias.hostname = "127.0.0.1";
   await page.goto(localAlias.href);
+  await page.getByRole("button", { name: "Get started" }).click();
   await page.getByRole("button", { name: /Wall of Signatures/ }).click();
   await expect(
     page.getByRole("heading", { name: "Wall of Signatures" }),
@@ -95,13 +96,20 @@ test("draw coloured strokes, choose a spot, and find the signature without publi
   );
   const logo = page.locator(".signature-wall-logo");
   await expect(logo).toHaveCSS("opacity", "0.13");
+  // The wall fills the stage below the shared brand header.
+  const header = (await page.locator(".kiosk-header").boundingBox())!;
   const wall = (await page.locator(".signature-wall-surface").boundingBox())!;
-  expect(wall).toEqual({ x: 0, y: 0, width: 2160, height: 3840 });
+  expect(wall.x).toBe(0);
+  expect(wall.width).toBe(2160);
+  expect(wall.y).toBeCloseTo(header.y + header.height, 0);
+  expect(wall.y + wall.height).toBeCloseTo(3840, 0);
+  // Actions share the Wishing Tree's reachable right-edge rail.
   const add = (await page
     .getByRole("button", { name: "Add your signature" })
     .boundingBox())!;
-  expect(add.y).toBeGreaterThan(3840 * 0.8);
-  expect(add.y + add.height).toBeLessThan(3840 * 0.92);
+  expect(add.y).toBeGreaterThan(3840 * 0.15);
+  expect(add.y + add.height).toBeLessThan(3840 * 0.6);
+  expect(add.x + add.width).toBeGreaterThan(2160 * 0.9);
   const image = (await logo.boundingBox())!;
   expect(image.x + image.width / 2).toBeCloseTo(wall.x + wall.width / 2, 0);
   expect(image.y + image.height / 2).toBeCloseTo(wall.y + wall.height / 2, 0);
@@ -202,12 +210,20 @@ test("an occupied spot is rejected and the selected signature can be undone afte
   page,
 }) => {
   await page.goto("/signature-wall");
-  expect(await page.locator(".signature-wall-surface").boundingBox()).toEqual({
-    x: 0,
-    y: 0,
-    width: 1440,
-    height: 1000,
-  });
+  // Same fitted portrait stage as the tree; the wall fills it below the header.
+  const stage = (await page.locator(".kiosk-stage").boundingBox())!;
+  const header = (await page.locator(".kiosk-header").boundingBox())!;
+  const surfaceBox = (await page
+    .locator(".signature-wall-surface")
+    .boundingBox())!;
+  expect(stage.width / stage.height).toBeCloseTo(9 / 16, 2);
+  expect(surfaceBox.x).toBeCloseTo(stage.x, 0);
+  expect(surfaceBox.width).toBeCloseTo(stage.width, 0);
+  expect(surfaceBox.y).toBeCloseTo(header.y + header.height, 0);
+  expect(surfaceBox.y + surfaceBox.height).toBeCloseTo(
+    stage.y + stage.height,
+    0,
+  );
   await expect(page.locator(".signature-experience")).toHaveAttribute(
     "data-online",
     "true",
@@ -239,7 +255,9 @@ test("an occupied spot is rejected and the selected signature can be undone afte
   });
   expect(adjacentSpot.status()).toBe(201);
   await page.reload();
-  await expect(page.getByRole("button", { name: "← Home" })).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Home", exact: true }),
+  ).toBeDisabled();
   await page.getByRole("button", { name: /Undo ·/ }).click();
   await expect(page.getByText("Signature removed.")).toBeVisible();
   const wall = await (
@@ -276,7 +294,7 @@ test("nearby signatures can share empty space inside their outlines", async ({
   expect(seed.status()).toBe(201);
   const { id } = await seed.json();
   await page.goto("/signature-wall");
-  const home = page.getByRole("button", { name: "← Home" });
+  const home = page.getByRole("button", { name: "Home", exact: true });
   await expect(home).toBeVisible();
   expect((await home.boundingBox())!.y).toBeLessThan(30);
   await expect(page.locator(`svg[data-signature="${id}"]`)).toBeVisible();
@@ -299,10 +317,18 @@ test("nearby signatures can share empty space inside their outlines", async ({
     name: "Place signature",
     exact: true,
   });
-  await surface.tap({ position: { x: 1440 * placement.x, y: 300 } });
+  const box = (await surface.boundingBox())!;
+  await surface.tap({
+    position: { x: box.width * placement.x, y: box.height * placement.y },
+  });
   await expect(confirm).toBeDisabled();
   await expect(surface.locator('[data-preview="occupied"]')).toBeVisible();
-  await surface.tap({ position: { x: 1440 * placement.x, y: 326 } });
+  await surface.tap({
+    position: {
+      x: box.width * placement.x,
+      y: box.height * (placement.y + 0.026),
+    },
+  });
   const preview = surface.locator('[data-preview="open"]');
   const draft = (await preview.boundingBox())!;
   const existing = (await page

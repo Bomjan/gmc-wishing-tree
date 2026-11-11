@@ -11,6 +11,8 @@ type State = {
   cameraRevision: number;
   quality: "low" | "high";
   animations: Locator[];
+  /** Demo only: leaves on the demo tree before this demo's first new wish. */
+  demoInitialWishes: number | null;
   set: (patch: Partial<State>) => void;
   go: (view: View, focus?: string | null) => void;
   reset: () => void;
@@ -42,6 +44,7 @@ export const useSanctuary = create<State>((set) => ({
         ? "low"
         : "high",
   animations: [],
+  demoInitialWishes: null,
   set: (patch) => set(patch),
   go: (view, focus) =>
     set((s) => ({

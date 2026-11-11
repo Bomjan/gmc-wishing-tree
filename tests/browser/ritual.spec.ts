@@ -47,7 +47,7 @@ test("confirmed reveal highlights the visitor's actual leaf beyond the Undo coun
     });
   await expect
     .poll(async () => (await metrics()).highlights)
-    .toEqual([{ ...own, color: "ffd766", depthTest: false }]);
+    .toEqual([{ ...own, color: "ffd66b", depthTest: false }]);
   await page.waitForTimeout(2200);
   await page.screenshot({ path: "test-results/ritual-unfurl.png" });
   await expect(page.getByText("Permanently rooted")).toBeVisible({
@@ -57,7 +57,7 @@ test("confirmed reveal highlights the visitor's actual leaf beyond the Undo coun
   await page.waitForTimeout(3500);
   await expect
     .poll(async () => (await metrics()).highlights)
-    .toEqual([{ ...own, color: "ffd766", depthTest: false }]);
+    .toEqual([{ ...own, color: "ffd66b", depthTest: false }]);
   await page.screenshot({ path: "test-results/ritual-highlight.png" });
   await page.getByRole("button", { name: "Return to the tree" }).click();
   await expect(page.locator(".wish-ritual")).toHaveCount(0);

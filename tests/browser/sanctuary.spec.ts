@@ -28,14 +28,16 @@ test("tree showcase loads local materials and animates a confirmed contribution 
   const brand = await page.evaluate(() => ({
     font: getComputedStyle(document.querySelector(".primary")!).fontFamily,
     body: getComputedStyle(document.body).fontFamily,
-    action: getComputedStyle(document.querySelector(".primary svg")!)
+    action: getComputedStyle(document.querySelector(".minimal-dock .primary")!)
       .backgroundColor,
-    headers: document.querySelectorAll("header,footer").length,
+    headers: document.querySelectorAll(".kiosk-header").length,
+    footers: document.querySelectorAll("footer").length,
   }));
   expect(brand.font).toContain("Roboto");
   expect(brand.body).toContain("Roboto");
-  expect(brand.action).toBe("rgb(255, 215, 102)");
-  expect(brand.headers).toBe(0);
+  expect(brand.action).toBe("rgb(255, 214, 107)");
+  expect(brand.headers).toBe(1);
+  expect(brand.footers).toBe(0);
   await page.waitForTimeout(1200);
   await page.screenshot({ path: "test-results/natural-sanctuary.png" });
   const before = await (await request.get("/api/forest")).json();

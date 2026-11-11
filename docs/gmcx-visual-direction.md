@@ -1,38 +1,28 @@
-# GMCX visual direction
+# GMCX kiosk visual direction
 
-Reference: https://gmcx.bt/, inspected 10 November 2026. The public site uses Lora display typography, Roboto body typography, blue `#1776B2`, gold `#B69A5A`, yellow-gold action buttons `#FFD766` with `#745C00` text, neutral body text `#535961`, and white surfaces. Visitor sheets carry that identity directly: translucent glass surfaces, a compact GMC Experience Centre wordmark, blue Lora headings, restrained blue/gold rules, Roboto form controls and the yellow-gold primary action. Light blur preserves the tree beneath the sheet. The tree stage remains warm and visually quiet. The portrait museum interface does not import website navigation, headers, footers, analytics or cookie UI.
+Source: the GMC Experience Centre kiosk brand guide (November 2026). Its hex values are visual estimates of the Centre's website; PT Serif and Roboto are the suggested substitutes for the unverified website fonts. The logo in `src/shared/kiosk/KioskHeader.tsx` is a coded stand-in (black geometric square and stacked wordmark); replace it with the Centre's original artwork when supplied.
 
-Fonts are bundled locally with their open-font licences under `public/fonts/gmcx/`. Reusable token metadata is in `src/shared/branding.ts`.
+## Tokens
 
-## Minimal, reachable interaction
+| Token | Hex | Use |
+| --- | --- | --- |
+| Warm yellow | `#FFD66B` | Primary buttons, small highlights, the visitor's leaf |
+| Pressed yellow | `#E6B947` | Primary button while pressed |
+| Near black | `#171717` | Button labels, dark panels and overlays |
+| Warm off-white | `#F3F1EE` | Header and light backgrounds |
+| White | `#FFFFFF` | Text and secondary outlines on dark panels |
+| Blue | `#17658D` | Focus outlines and links on light surfaces |
 
-Make a wish and Explore form a narrow vertical rail at the right edge, using circular icons with short labels and a small contribution caption. The tree centre stays clear; expanded options open to the left of the rail. The default scene supports drag, two-finger zoom/pan and direct wish-leaf selection. Search and mountain navigation are revealed on demand. Controls default to 32% from the top on the floor-level 55-inch portrait display, approximately 83 cm above its bottom edge. Visitors drag the up/down handle or use the up/down arrows in Explore; the wish form and receipt use narrower right-aligned sheets at that position. Panels use compact padding and concise help. The form width is capped at 32rem, its height handle shares the title row, and a clear Back control closes it. Confirmation and options panels are smaller as well. The contextual keyboard expands below the form without recentering the fields, except when screen bounds require adjustment. Panel bounds are measured to keep controls on-screen. Keyboard arrows offer an accessible adjustment alternative. Physical reach and mounting clearances still need installation checks; this is not a claim of universal ergonomic compliance.
+Defined once in `src/shared/branding.ts` and as CSS custom properties in `src/shared/kiosk/brand.css`.
 
-## 3D scene
+## Type and spacing
 
-The current default scene is a focused tree portrait: a quiet warm cream background, soft hemisphere fill, one warm spotlight and a subtle contact shadow. There is no landscape, terrain, scenery vegetation or decorative foliage. Only actual visitor-contribution trees can be seen; the wider view arranges those trees at their persistent world positions. This keeps the tree as the sole visual subject and leaves interface actions along the edge unobtrusive.
+The stage is 1080 × 1920 design units (1 rem = 16 units) and scales 2× on the 2160 × 3840 panel, so the guide's pixel sizes are used directly: idle headline PT Serif Bold 72/78, screen title 48/56, panel title 32/40, body Roboto 24/34, button labels Roboto Bold 22/28, progress 18/24. Touch targets are 72 × 72 (56 minimum). Headings are uppercase.
 
-Wish trees use tapered textured wood, hierarchical branches and a layered crown with curved, vein-textured leaves and restrained movement. Trunk thickness and overall tree scale progress with the occupied contribution count; a small number of wishes reads as a sapling, while 108 leaves reach the mature model. Exactly one wish-leaf instance is rendered per occupied slot. Positions remain deterministic from the persisted tree seed, and the same slot mapping drives search and highlighting. Leaf/wood LOD, shared materials and bounded instancing keep draw calls controlled. Textures, materials and owned geometry are disposed on scene removal.
+## Screens
 
-## Leaf arrival
+- **Attract (`/`)**: full-screen Centre imagery (`public/kiosk/gmc-city-aerial.jpg`, from the GMC brief), a dark panel with the idle headline and one primary action, Get started.
+- **Choose (`/choose`)**: the two-choice menu, each experience as one large dark card.
+- **Wishing Tree and Wall of Signatures**: the shared header (logo, Back to the menu, Home, screen title), the live tree or wall, and the same dark right-edge action rail at the visitor-adjustable reach height. Forms open as dark sheets with a yellow top rule. After a contribution, its leaf or signature is highlighted and the Undo countdown is shown; wish text stays private.
 
-After a server-confirmed reservation reaches the authoritative forest snapshot, that contribution's own instance approaches its branch, unfolds and settles over 4.8 seconds. A brief warm colour/edge accent marks the new leaf. Incoming arrivals remain queued; no extra particle leaves are added. Existing search selection takes priority over arrival highlighting. The visitor's submission retains the existing gentle camera focus; remote contributions never request camera movement. Reduced-motion mode immediately renders the final pose.
-
-The visitor's accepted leaf takes a curved journey from the trunk into its assigned slot. A Remotion Player overlays root ripples, a light filament and a settling pulse using the live 3D projection. The leaf is marked in yellow with a filled lightweight overlay and edge that remain visible through foliage. Its receipt keeps the highlight until Done; search highlights still expire. The motion is decorative and never controls acceptance, Undo or finalisation. The contribution count remains exactly one leaf per occupied slot.
-
-Undo remains server-authorised for the original ten-second deadline and removes the reserved instance/slot. Animation does not finalise a wish or claim success before confirmation. Seeded positions and visual hashes do not contain wish text or usernames.
-
-## Review captures
-
-- [Four-leaf sapling](screenshots/tree-sapling-4.png)
-- [108-leaf mature tree](screenshots/tree-mature-108.png)
-- [GMCX-branded wish form](screenshots/gmcx-branded-form.png)
-- [GMCX-branded receipt](screenshots/gmcx-branded-receipt.png)
-- [Inline form validation](screenshots/form-validation-feedback.png)
-- [Current right-edge controls](screenshots/right-edge-controls.png)
-- [Earlier native portrait UHD, before right-edge controls](screenshots/minimal-tree-4k.png)
-- [Current compact form and keyboard](screenshots/compact-sheet-keyboard.png)
-- [Leaf arrival](screenshots/gmcx-leaf-arrival.png)
-- [Settled leaf](screenshots/gmcx-leaf-settled.png)
-
-The tree remains a procedural real-time model, not a claim of finished photorealism. Bark uses locally bundled material maps; production bark assets and on-device lighting review can further improve realism without adding a competing landscape. Physical Samsung touch behaviour and installed GPU performance still need on-device profiling.
+Buttons are rectangular. Primary: yellow fill, near-black label, one per view. Secondary: transparent with a 2 px outline, white on dark surfaces and near black on light ones.

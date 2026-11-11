@@ -1,0 +1,930 @@
+/* GMCX kiosk brand, shared by every view (attract, menu, Wishing Tree and
+   Wall of Signatures). Loaded last so it restyles the older experience rules.
+   Sizes follow the brand guide in 16 px design units (1 rem) on the
+   1080 × 1920 portrait stage; the stage scales 2× on the 2160 × 3840 panel. */
+@font-face {
+  font-family: "PT Serif";
+  src: url("/fonts/gmcx/PTSerif-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+:root {
+  --gmc-yellow: #ffd66b;
+  --gmc-yellow-pressed: #e6b947;
+  --gmc-near-black: #171717;
+  --gmc-off-white: #f3f1ee;
+  --gmc-white: #ffffff;
+  --gmc-link-blue: #17658d;
+  --gmc-panel: rgb(23 23 23 / 92%);
+  --gmc-muted-on-dark: rgb(255 255 255 / 76%);
+  --kiosk-header-h: 14.5rem;
+  --kiosk-margin: 3rem;
+  /* Older experience rules read these names; point them at the guide. */
+  --gmc-action: var(--gmc-yellow);
+  --gmc-action-ink: var(--gmc-near-black);
+  --gmc-blue: var(--gmc-link-blue);
+  --gmc-ink: var(--gmc-near-black);
+  --gmc-text: var(--gmc-near-black);
+}
+body {
+  background: var(--gmc-near-black);
+}
+
+/* One fitted portrait stage for every view, letterboxed on other screens. */
+.kiosk-stage {
+  position: relative;
+  width: var(--stage-width);
+  height: var(--stage-height);
+  overflow: hidden;
+  background: var(--gmc-off-white);
+  color: var(--gmc-near-black);
+  font-family: "Roboto", Arial, sans-serif;
+}
+.kiosk-stage > main {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Buttons: rectangular, 72 px preferred touch height, Roboto Bold labels. */
+.kiosk-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 4.5rem;
+  min-width: 4.5rem;
+  padding: 0 1.75rem;
+  border: 2px solid transparent;
+  border-radius: 0;
+  font:
+    700 1.375rem/1.75rem "Roboto",
+    Arial,
+    sans-serif;
+  cursor: pointer;
+}
+.kiosk-button svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+}
+.kiosk-primary {
+  background: var(--gmc-yellow);
+  border-color: var(--gmc-yellow);
+  color: var(--gmc-near-black);
+}
+.kiosk-primary:active:not(:disabled) {
+  background: var(--gmc-yellow-pressed);
+  border-color: var(--gmc-yellow-pressed);
+}
+.kiosk-secondary {
+  background: transparent;
+  border-color: var(--gmc-white);
+  color: var(--gmc-white);
+}
+.kiosk-secondary.on-light {
+  border-color: var(--gmc-near-black);
+  color: var(--gmc-near-black);
+}
+.kiosk-secondary:active:not(:disabled) {
+  background: rgb(255 255 255 / 14%);
+}
+.kiosk-secondary.on-light:active:not(:disabled) {
+  background: rgb(23 23 23 / 8%);
+}
+.kiosk-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.kiosk-stage :focus-visible {
+  outline: 0.1875rem solid var(--gmc-link-blue);
+  outline-offset: 0.1875rem;
+}
+
+/* Header: lockup top left on the light surface, navigation on the right. */
+.kiosk-header {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 40;
+  height: var(--kiosk-header-h);
+  padding: 1.5rem var(--kiosk-margin) 1.5rem;
+  background: var(--gmc-off-white);
+  border-bottom: 1px solid rgb(23 23 23 / 14%);
+}
+.kiosk-header:not(:has(.kiosk-title)) {
+  height: auto;
+}
+.kiosk-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-height: 4.5rem;
+}
+.kiosk-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  color: var(--gmc-near-black);
+}
+.kiosk-logo svg {
+  width: 4rem;
+  height: 4rem;
+  flex: none;
+}
+.kiosk-logo span {
+  display: grid;
+  gap: 0.2rem;
+}
+.kiosk-logo b {
+  font:
+    700 1.75rem/1 "PT Serif",
+    Georgia,
+    serif;
+  letter-spacing: 0.04em;
+}
+.kiosk-logo small {
+  font:
+    700 0.8rem/1.05 "Roboto",
+    Arial,
+    sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.kiosk-nav {
+  display: flex;
+  gap: 1rem;
+}
+.kiosk-title {
+  margin-top: 1.25rem;
+}
+.kiosk-title h1 {
+  margin: 0;
+  color: var(--gmc-near-black);
+  font:
+    700 3rem/3.5rem "PT Serif",
+    Georgia,
+    serif;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+.kiosk-title p {
+  margin: 0.25rem 0 0;
+  color: rgb(23 23 23 / 78%);
+  font:
+    400 1.5rem/2.125rem "Roboto",
+    Arial,
+    sans-serif;
+}
+
+/* Attract: full-screen Centre imagery, text on a dark panel, Get started. */
+.kiosk-attract,
+.kiosk-choose {
+  background:
+    linear-gradient(180deg, rgb(23 23 23 / 0%) 35%, rgb(23 23 23 / 55%)),
+    url("/kiosk/gmc-city-aerial.jpg") 0% 50% / cover no-repeat,
+    var(--gmc-near-black);
+}
+.kiosk-attract-panel {
+  position: absolute;
+  left: var(--kiosk-margin);
+  right: var(--kiosk-margin);
+  top: 30%;
+  padding: 3rem;
+  background: var(--gmc-panel);
+  color: var(--gmc-white);
+}
+.kiosk-eyebrow {
+  margin: 0;
+  color: var(--gmc-yellow);
+  font:
+    500 1.125rem/1.5rem "Roboto",
+    Arial,
+    sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.kiosk-attract-panel h1 {
+  margin: 0.75rem 0 1.25rem;
+  color: var(--gmc-white);
+  letter-spacing: 0.01em;
+  font:
+    700 4.5rem/4.875rem "PT Serif",
+    Georgia,
+    serif;
+  text-transform: uppercase;
+}
+.kiosk-attract-panel p:not(.kiosk-eyebrow) {
+  margin: 0 0 2rem;
+  font:
+    400 1.5rem/2.125rem "Roboto",
+    Arial,
+    sans-serif;
+}
+.kiosk-attract-panel .kiosk-button {
+  width: 100%;
+}
+
+/* Two-choice menu. Each card is one large touch target. */
+.kiosk-choose {
+  padding: calc(var(--kiosk-header-h) + 2.5rem) var(--kiosk-margin) 3rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.kiosk-choose-cards {
+  display: grid;
+  gap: 2rem;
+}
+.kiosk-choice {
+  display: grid;
+  grid-template-columns: 17rem 1fr;
+  align-items: stretch;
+  min-height: 17rem;
+  padding: 0;
+  border: 2px solid rgb(255 255 255 / 22%);
+  border-radius: 0;
+  background: var(--gmc-panel);
+  color: var(--gmc-white);
+  text-align: left;
+  cursor: pointer;
+}
+.kiosk-choice:active {
+  border-color: var(--gmc-yellow);
+}
+.kiosk-choice .card-art {
+  height: auto;
+  min-height: 100%;
+  background: var(--gmc-off-white);
+}
+.kiosk-choice .card-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.kiosk-choice-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem;
+}
+.kiosk-choice .card-number {
+  margin: 0;
+  color: var(--gmc-yellow);
+  font:
+    500 1.125rem/1.5rem "Roboto",
+    Arial,
+    sans-serif;
+  letter-spacing: 0.16em;
+}
+.kiosk-choice h2 {
+  margin: 0.5rem 0;
+  font:
+    700 2rem/2.5rem "PT Serif",
+    Georgia,
+    serif;
+  text-transform: uppercase;
+}
+.kiosk-choice p {
+  margin: 0 0 1.25rem;
+  color: var(--gmc-muted-on-dark);
+  font:
+    400 1.5rem/2.125rem "Roboto",
+    Arial,
+    sans-serif;
+}
+.kiosk-choice-go {
+  color: var(--gmc-yellow);
+  font:
+    700 1.375rem/1.75rem "Roboto",
+    Arial,
+    sans-serif;
+}
+.kiosk-loading {
+  display: grid;
+  place-items: center;
+  font:
+    700 2rem/2.5rem "PT Serif",
+    Georgia,
+    serif;
+  text-transform: uppercase;
+}
+.kiosk-stage .idle-warning {
+  position: absolute;
+  inset: auto var(--kiosk-margin) 3rem;
+  z-index: 70;
+  padding: 1.5rem 2rem;
+  border-radius: 0;
+  background: var(--gmc-panel);
+  border-top: 0.3rem solid var(--gmc-yellow);
+  color: var(--gmc-white);
+  font:
+    500 1.375rem/1.75rem "Roboto",
+    Arial,
+    sans-serif;
+}
+
+/* ---------- Wishing Tree ---------- */
+.kiosk-stage .sanctuary {
+  width: 100%;
+  height: 100%;
+}
+/* Right-edge action rail: a dark panel with stacked rectangular buttons. */
+.kiosk-stage .panel-welcome {
+  border-radius: 0;
+  width: 15rem;
+  right: 2rem;
+  padding: 1rem 1.25rem 1.25rem;
+  background: var(--gmc-panel);
+  box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 22%);
+}
+.kiosk-stage .panel-welcome > .reach-handle {
+  color: var(--gmc-white);
+  min-height: 3.5rem;
+}
+.kiosk-stage .panel-welcome > .reach-handle::after {
+  font-size: 0.875rem;
+}
+.kiosk-stage .minimal-dock {
+  align-items: stretch;
+  gap: 1rem;
+}
+.kiosk-stage .panel-welcome .minimal-dock .primary,
+.kiosk-stage .dock-options {
+  flex-direction: row;
+  width: 100%;
+  min-height: 4.5rem;
+  padding: 0 1rem;
+  gap: 0.6rem;
+  border: 2px solid var(--gmc-white);
+  border-radius: 0;
+  background: transparent;
+  color: var(--gmc-white);
+  font:
+    700 1.375rem/1.75rem "Roboto",
+    Arial,
+    sans-serif;
+  text-shadow: none;
+}
+.kiosk-stage .panel-welcome .minimal-dock .primary {
+  background: var(--gmc-yellow);
+  border-color: var(--gmc-yellow);
+  color: var(--gmc-near-black);
+}
+.kiosk-stage .panel-welcome .minimal-dock .primary:active {
+  background: var(--gmc-yellow-pressed);
+}
+.kiosk-stage .panel-welcome .minimal-dock .primary svg,
+.kiosk-stage .dock-options svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+}
+.kiosk-stage .minimal-dock .action-hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.kiosk-stage .dock-caption {
+  margin-top: 1rem;
+  color: var(--gmc-white);
+  font:
+    500 1.125rem/1.5rem "Roboto",
+    Arial,
+    sans-serif;
+}
+.kiosk-stage .dock-caption span:first-child:not(:last-child) {
+  color: var(--gmc-yellow);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.kiosk-stage .dock-tools {
+  width: 26rem;
+  padding: 0.75rem;
+  border: 0;
+  border-radius: 0;
+  background: rgb(23 23 23 / 96%);
+  backdrop-filter: none;
+  color: var(--gmc-white);
+}
+.kiosk-stage .dock-tools:has(.touch-keyboard) {
+  width: 34rem;
+}
+.kiosk-stage .tool-action {
+  min-height: 4.5rem;
+  color: var(--gmc-white);
+  font:
+    500 1.375rem/1.75rem "Roboto",
+    Arial,
+    sans-serif;
+}
+.kiosk-stage .tool-action svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--gmc-yellow);
+}
+.kiosk-stage .tool-action:hover,
+.kiosk-stage .tool-action:focus-visible {
+  background: rgb(255 255 255 / 8%);
+}
+.kiosk-stage .tools-hint,
+.kiosk-stage .height-caption {
+  color: var(--gmc-muted-on-dark);
+  border-color: rgb(255 255 255 / 16%);
+  font-size: 1rem;
+}
+.kiosk-stage .reach-options {
+  border-color: rgb(255 255 255 / 16%);
+}
+.kiosk-stage .reach-options button {
+  min-height: 4.5rem;
+  border: 2px solid var(--gmc-white);
+  border-radius: 0;
+  background: transparent;
+  color: var(--gmc-white);
+  font:
+    700 1.125rem/1.5rem "Roboto",
+    Arial,
+    sans-serif;
+}
+.kiosk-stage .reach-options button:last-child {
+  border: 0;
+  color: var(--gmc-muted-on-dark);
+}
+.kiosk-stage .dock-tools .search-form {
+  min-height: 4.5rem;
+  border-radius: 0;
+}
+.kiosk-stage .dock-tools .search-form input {
+  font-size: 1.375rem;
+}
+.kiosk-stage .search-form button {
+  border-radius: 0;
+  background: var(--gmc-yellow);
+  color: var(--gmc-near-black);
+  font-weight: 700;
+}
+.kiosk-stage .panel-welcome .notice,
+.kiosk-stage .panel-welcome .offline {
+  border: 0;
+  border-left: 0.3rem solid var(--gmc-yellow);
+  border-radius: 0;
+  background: rgb(23 23 23 / 96%);
+  color: var(--gmc-white);
+  font-size: 1.125rem;
+  box-shadow: none;
+}
+
+/* Wish form and receipt: dark sheets beside the rail, yellow top rule. */
+.kiosk-stage .panel:has(.wish-form),
+.kiosk-stage .panel:has(.acceptance) {
+  right: 2rem;
+  width: min(32rem, 88%);
+  padding: 1.5rem 2rem 2rem;
+  border: 0;
+  border-radius: 0;
+  background: rgb(23 23 23 / 95%);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  color: var(--gmc-white);
+  box-shadow: 0 1.25rem 3rem rgb(0 0 0 / 28%);
+}
+.kiosk-stage .panel:has(.acceptance) {
+  width: min(30rem, 88%);
+}
+.kiosk-stage .panel:has(.wish-form)::before,
+.kiosk-stage .panel:has(.acceptance)::before {
+  height: 0.3rem;
+  background: var(--gmc-yellow);
+}
+.kiosk-stage .sheet-brand {
+  display: none;
+}
+.kiosk-stage .panel:has(.wish-form) .sheet-header h1,
+.kiosk-stage .panel:has(.acceptance) .receipt-header h1 {
+  color: var(--gmc-white);
+  font:
+    700 2rem/2.5rem "PT Serif",
+    Georgia,
+    serif;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+.kiosk-stage .panel:has(.acceptance) .receipt-header h1 {
+  font-size: 1.75rem;
+  line-height: 2.25rem;
+}
+.kiosk-stage .sheet-header .reach-handle,
+.kiosk-stage .receipt-header .reach-handle {
+  color: var(--gmc-white);
+}
+.kiosk-stage .sheet-back {
+  min-height: 3.75rem;
+  min-width: 6.5rem;
+  padding: 0 1rem;
+  border: 2px solid var(--gmc-white);
+  border-radius: 0;
+  background: transparent;
+  color: var(--gmc-white);
+  font:
+    700 1.125rem/1.5rem "Roboto",
+    Arial,
+    sans-serif;
+}
+.kiosk-stage .form-guidance,
+.kiosk-stage .receipt-guidance {
+  color: var(--gmc-muted-on-dark);
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+.kiosk-stage .wish-form label {
+  color: var(--gmc-white);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 1rem 0 0.4rem;
+}
+.kiosk-stage .wish-form input,
+.kiosk-stage .wish-form textarea {
+  border: 2px solid transparent;
+  border-radius: 0;
+  background: var(--gmc-white);
+  color: var(--gmc-near-black);
+  font-size: 1.375rem;
+}
+.kiosk-stage .wish-form input {
+  min-height: 4.5rem;
+}
+.kiosk-stage .wish-form textarea {
+  height: 7rem;
+}
+.kiosk-stage .wish-form input:focus,
+.kiosk-stage .wish-form textarea:focus {
+  outline: 0.1875rem solid var(--gmc-yellow);
+  outline-offset: 2px;
+  border-color: var(--gmc-yellow);
+}
+.kiosk-stage .wish-form input[aria-invalid="true"],
+.kiosk-stage .wish-form textarea[aria-invalid="true"] {
+  border-color: #ff9a8a;
+}
+.kiosk-stage .wish-form .field-help,
+.kiosk-stage .wish-form .field-meta,
+.kiosk-stage .wish-form .privacy {
+  color: var(--gmc-muted-on-dark);
+  font-size: 1rem;
+}
+.kiosk-stage .field-error {
+  color: #ffb4a8;
+  font-size: 1rem;
+}
+.kiosk-stage .form-feedback {
+  border: 0;
+  border-left: 0.3rem solid var(--gmc-yellow);
+  border-radius: 0;
+  background: rgb(255 255 255 / 10%);
+  color: var(--gmc-white);
+  font-size: 1.125rem;
+}
+.kiosk-stage .wish-form .primary,
+.kiosk-stage .acceptance .primary {
+  min-height: 4.5rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--gmc-yellow);
+  color: var(--gmc-near-black);
+  font:
+    700 1.375rem/1.75rem "Roboto",
+    Arial,
+    sans-serif;
+  box-shadow: none;
+}
+.kiosk-stage .wish-form .primary:active:not(:disabled),
+.kiosk-stage .acceptance .primary:active:not(:disabled) {
+  background: var(--gmc-yellow-pressed);
+}
+.kiosk-stage .receipt-actions .secondary {
+  min-height: 4.5rem;
+  border: 2px solid var(--gmc-white);
+  border-radius: 0;
+  background: transparent;
+  color: var(--gmc-white);
+  font:
+    700 1.375rem/1.75rem "Roboto",
+    Arial,
+    sans-serif;
+}
+.kiosk-stage .panel:has(.acceptance) .rooted {
+  color: var(--gmc-yellow);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+/* On-screen keyboard inside dark sheets. */
+.kiosk-stage .touch-keyboard {
+  border-radius: 0;
+  background: rgb(255 255 255 / 8%);
+}
+.kiosk-stage .keyboard-heading span {
+  color: var(--gmc-white);
+  font-weight: 700;
+}
+.kiosk-stage .keyboard-heading button {
+  border: 2px solid var(--gmc-white);
+  border-radius: 0;
+  background: transparent;
+  color: var(--gmc-white);
+  font-weight: 700;
+}
+.kiosk-stage .keyboard-heading .keyboard-next {
+  border-color: var(--gmc-yellow);
+  background: var(--gmc-yellow);
+  color: var(--gmc-near-black);
+}
+.kiosk-stage .key-row button {
+  border-radius: 0;
+  border-color: transparent;
+  background: var(--gmc-white);
+  color: var(--gmc-near-black);
+  font-weight: 500;
+}
+.kiosk-stage .key-row button:active {
+  background: var(--gmc-yellow);
+}
+
+/* ---------- Wall of Signatures ---------- */
+.kiosk-stage .signature-experience {
+  width: 100%;
+  height: 100%;
+  background: var(--gmc-off-white);
+  color: var(--gmc-near-black);
+  font:
+    400 1.25rem/1.6 "Roboto",
+    Arial,
+    sans-serif;
+}
+/* The wall sits below the header so no signature hides behind it. */
+.kiosk-stage .signature-wall-surface {
+  inset: var(--kiosk-header-h) 0 0;
+}
+.kiosk-stage .signature-experience p,
+.kiosk-stage .signature-pagination > span {
+  text-shadow: none;
+}
+.kiosk-stage .signature-experience button {
+  min-height: 4.5rem;
+  border: 2px solid var(--gmc-white);
+  border-radius: 0;
+  background: transparent;
+  color: var(--gmc-white);
+  font:
+    700 1.375rem/1.75rem "Roboto",
+    Arial,
+    sans-serif;
+}
+.kiosk-stage .signature-experience button.primary {
+  border-color: var(--gmc-yellow);
+  background: var(--gmc-yellow);
+  color: var(--gmc-near-black);
+}
+.kiosk-stage .signature-experience button.primary:active:not(:disabled) {
+  background: var(--gmc-yellow-pressed);
+  border-color: var(--gmc-yellow-pressed);
+}
+.kiosk-stage .signature-experience :focus-visible {
+  outline: 0.1875rem solid var(--gmc-yellow);
+}
+/* Same right-edge action rail as the tree, at the same adjustable height. */
+.kiosk-stage .signature-dock {
+  border-radius: 0;
+  inset: auto 2rem auto auto;
+  width: 15rem;
+  max-height: none;
+  margin: 0;
+  padding: 1rem 1.25rem 1.25rem;
+  overflow: visible;
+  background: var(--gmc-panel);
+  color: var(--gmc-white);
+  box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 22%);
+  pointer-events: auto;
+}
+.kiosk-stage .signature-dock > .reach-handle {
+  color: var(--gmc-white);
+  min-height: 3.5rem;
+}
+.kiosk-stage .signature-dock .signature-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+  margin: 0;
+}
+.kiosk-stage .signature-dock .signature-status {
+  margin: 0 0 1rem;
+  color: var(--gmc-white);
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  text-align: left;
+}
+.kiosk-stage .signature-dock .signature-sections {
+  justify-content: space-between;
+  margin: 0 0 1rem;
+}
+.kiosk-stage .signature-dock .signature-sections button {
+  flex: 1;
+  min-width: 0;
+}
+.kiosk-stage .signature-dock .signature-caption {
+  margin: 1rem 0 0;
+  color: var(--gmc-white);
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  text-align: center;
+}
+.kiosk-stage .signature-dock .signature-caption span {
+  display: block;
+  color: var(--gmc-yellow);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.kiosk-stage .signature-experience .signature-undo {
+  width: 100%;
+  margin: 0;
+  border-color: var(--gmc-white);
+  background: transparent;
+  color: var(--gmc-white);
+}
+/* Search opens to the left of the rail, like the tree's Explore panel. */
+.kiosk-stage .signature-search {
+  position: absolute;
+  top: 0;
+  right: calc(100% + 1rem);
+  width: 30rem;
+  margin: 0;
+  padding: 1.25rem;
+  border: 0;
+  border-radius: 0;
+  background: rgb(23 23 23 / 96%);
+  box-shadow: none;
+  color: var(--gmc-white);
+}
+.kiosk-stage .signature-search label,
+.kiosk-stage .signature-drawing label {
+  color: var(--gmc-white);
+  font-weight: 700;
+}
+.kiosk-stage .signature-input input {
+  height: 4.5rem;
+  border: 2px solid transparent;
+  border-radius: 0;
+  background: var(--gmc-white);
+  color: var(--gmc-near-black);
+  font-size: 1.375rem;
+}
+.kiosk-stage .signature-input input:focus {
+  outline: 0.1875rem solid var(--gmc-yellow);
+  outline-offset: 2px;
+}
+.kiosk-stage .signature-search .signature-input,
+.kiosk-stage .signature-drawing .signature-input {
+  flex-direction: row;
+}
+/* Drawing panel: dark, movable sheet with the panel title as its handle. */
+.kiosk-stage .signature-drawing {
+  --drawing-width: min(calc(100% - 4rem), 44rem);
+  left: clamp(
+    0px,
+    var(--drawing-x, calc((100% - var(--drawing-width)) / 2)),
+    calc(100% - var(--drawing-width))
+  );
+  top: var(--drawing-y, 25%);
+  max-height: calc(100% - var(--drawing-y, 25%) - 1rem);
+  padding: 1.25rem 1.5rem 1.5rem;
+  border: 0;
+  border-top: 0.3rem solid var(--gmc-yellow);
+  border-radius: 0;
+  background: rgb(23 23 23 / 96%);
+  box-shadow: 0 1.25rem 3rem rgb(0 0 0 / 28%);
+  color: var(--gmc-white);
+}
+.kiosk-stage .signature-drawing .signature-drag-handle {
+  justify-content: flex-start;
+  border: 0;
+  background: rgb(23 23 23 / 96%);
+  color: var(--gmc-white);
+  font:
+    700 2rem/2.5rem "PT Serif",
+    Georgia,
+    serif;
+  text-align: left;
+  text-transform: uppercase;
+}
+.kiosk-stage .signature-drag-handle::before {
+  color: var(--gmc-yellow);
+}
+.kiosk-stage .signature-drawing p,
+.kiosk-stage .signature-experience .signature-help,
+.kiosk-stage .signature-drawing .signature-status {
+  color: var(--gmc-muted-on-dark);
+  text-align: left;
+}
+.kiosk-stage .signature-drawing .signature-status:not(:empty) {
+  color: var(--gmc-white);
+}
+.kiosk-stage .signature-pad {
+  border: 0;
+  border-radius: 0;
+}
+.kiosk-stage .signature-experience .signature-palette button {
+  width: 4.5rem;
+  min-height: 4.5rem;
+  border: 0.25rem solid var(--gmc-near-black);
+  border-radius: 50%;
+}
+.kiosk-stage .signature-palette button[aria-pressed="true"] {
+  outline: 0.1875rem solid var(--gmc-yellow);
+  outline-offset: 0.15rem;
+}
+.kiosk-stage .signature-experience .touch-keyboard button {
+  min-height: 3.5rem;
+  border: 0;
+  background: var(--gmc-white);
+  color: var(--gmc-near-black);
+  font-weight: 500;
+}
+.kiosk-stage .signature-experience .touch-keyboard .keyboard-heading button {
+  border: 2px solid var(--gmc-white);
+  background: transparent;
+  color: var(--gmc-white);
+  font-weight: 700;
+}
+.kiosk-stage .signature-mark[data-preview] {
+  outline-color: var(--gmc-link-blue);
+}
+.kiosk-stage .signature-dock > .reach-handle {
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.kiosk-stage .signature-dock > .reach-handle::after {
+  content: "Move controls";
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+.kiosk-stage .signature-experience .signature-help {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+.kiosk-stage .signature-experience .signature-palette button {
+  border-color: rgb(255 255 255 / 70%);
+}
+/* Keep the keyboard inside the narrow sheet: the heading row may wrap. */
+.kiosk-stage .keyboard-heading {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.kiosk-stage .key-row button {
+  min-width: 0;
+}
+
+/* Polish pass. */
+/* Rails fit the longest label on one line in both experiences. */
+.kiosk-stage .panel-welcome,
+.kiosk-stage .signature-dock {
+  width: 17rem;
+}
+.kiosk-stage .panel-welcome .minimal-dock .primary,
+.kiosk-stage .dock-options,
+.kiosk-stage .signature-dock button {
+  padding-inline: 0.75rem;
+  white-space: nowrap;
+}
+/* The primary action leads the rail, as on the tree. */
+.kiosk-stage .signature-dock .signature-row .primary {
+  order: -1;
+}
+.kiosk-stage .panel-welcome > .reach-handle::after,
+.kiosk-stage .signature-dock > .reach-handle::after {
+  font-size: 1rem;
+}
+/* With the keyboard open, widen the panel so keys meet the 56 px minimum.
+   These panels sit beside the rail, so a percentage would be a share of the
+   narrow rail; cap the width by the stage space left of the rail instead. */
+.kiosk-stage .dock-tools:has(.touch-keyboard),
+.kiosk-stage .signature-search:has(.touch-keyboard) {
+  width: 44rem;
+  max-width: calc(var(--stage-width) - 21rem);
+}
+.kiosk-stage .key-row button {
+  min-height: 3.5rem;
+  font-size: 1.25rem;
+}
+/* One constant width for the wish form, wide enough for 56 px keys, so the
+   fields never move when the keyboard opens. */
+.kiosk-stage .panel:has(.wish-form) {
+  width: min(42rem, 94%);
+}

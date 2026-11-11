@@ -7,7 +7,7 @@ import pg from "pg";
 import { z } from "zod";
 import { resolve } from "node:path";
 import { Store } from "./store.js";
-import { DemoStore } from "./demo.js";
+import { DemoStore, demoInitialWishes } from "./demo.js";
 import { moderate, PublicError } from "./moderation.js";
 import { signatureRouter } from "./signatures/router.js";
 import type { SignatureEvent } from "../src/shared/signatures.js";
@@ -104,6 +104,7 @@ app.get("/api/config", (_req, res) =>
     usernameMin: Number(process.env.USERNAME_MIN || 3),
     usernameMax: Math.min(24, Number(process.env.USERNAME_MAX || 24)),
     wishMax: Number(process.env.WISH_MAX || 500),
+    ...(demo ? { demoInitialWishes } : {}),
   }),
 );
 app.get("/api/forest", async (_req, res) => res.json(await store.forest()));
